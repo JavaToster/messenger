@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .main{
+            margin-left: 850px;
+            margin-top: 300px;
+        }
+
+        #send-message-form input{
+            color: white;
+            background-color: black;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <h3 id="username" th:text="${user.getUsername()}">Toster1</h3>
+
+        <form id="send-message-form" th:action="@{/user/{id}/send-message?from={username} (id=${user.getId()},username=${myUsername})}" th:method="POST">
+            <input type="submit" th:value="${language.getToSendOfUser()}">
+        </form>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>#chat-window {
+    margin-left: 750px;
+    margin-top: 250px;
+  width: 400px;
+  height: 500px;
+  border: 1px solid #ccc;
+  box-shadow: 2px 2px 5px #ccc;
+  display: flex;
+  flex-direction: column;
+}
+
+#chat-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ccc;
+  width: calc(100% - 1em);
+}
+
+#chat-messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 25px;
+  margin-top: 10px;
+}
+
+.sender {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.text {
+  padding: 5px;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+}
+
+.time {
+  font-size: 10px;
+  color: #888;
+  margin-top: 5px;
+}
+
+#chat-form {
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #ccc;
+}
+
+#chat-input {
+  flex: 1;
+  padding: 5px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+#chat-submit {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.read{
+        font-size: 10px;
+        margin-left: 350px;
+        margin-top: -20px;
+        margin-bottom: 5px;
+        color: black;
+}
+.read-container{
+
+}
+        .noMessagesHere{
+            margin-left: 125px;
+            margin-top: 150px;
+            margin-bottom: 205px;
+        }
+
+        .messagesHere{
+        margin-bottom: 0px;
+        overflow-y: auto;
+        height: 500px;
+        }
+        button{
+            font-size: 9px;
+            width: 60px;
+            height: 20px;
+        }
+
+        .translate-div{
+            margin-left: 270px;
+            margin-top: -40px;
+        }
+    </style>
+</head>
+<body>
+<a href="/messenger" style="font-size: 42px; text-decoration:none; color: black; margin-left: 20px;">Messenger</a>
+<div id="chat-window">
+
+    <div id="chat-header">
+        <div id="chat-partner" th:text="${chatTitle}"> User Name</div>
+        <div id="last-online" th:text="${lastOnlineTitle}">Last online at 8:00 PM</div>
+    </div>
+    <div class="messagesHere" th:if="${!noMessages}">
+        <div id="chat-messages">
+            <div th:each="messageDate: ${messageDateDTO}">
+                <p th:text="${messageDate.getDate()}"></p>
+                <div class="message" th:each="message: ${messageDate.getMessages()}">
+                    <div class="sender" th:text="${message.getOwner().getUsername()}"></div>
+                    <div class="text" th:text="${message.getMessageText()}">I'm doing well, thank you!</div>
+                    <div th:if="${message.isUserIsOwner()}">
+                        <div class="read" th:if="${message.isRead()}">✓✓</div>
+                        <div class="read" th:if="${!message.isRead()}">✓</div>
+                    </div>
+                    <div class="time" th:text="${message.getDate()}">9:06 PM</div>
+                    <div class="translate-div">
+                        <button th:attr="onclick=|send('${message.getMessageText()}', '${userId}')|" th:if="${language.getTranslateMessageButton()}">Перевод</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--    <div class="noMessagesHere" th:if="${noMessages}">-->
+    <!--        <h3>No messages here!</h3>-->
+    <!--    </div>-->
+    <form th:if="${userIsOwner}" id="chat-form" th:method="POST" th:action="@{/messenger/chats/{id}/send-message?user={user_id} (id=${chatId}, user_id=${userId})}" th:object="${sendingMessage}">
+        <input id="chat-input" type="text" th:placeholder="${language.getInputMessagePlaceholder()}" th:field="*{messageText}"/>
+        <input id="chat-submit" type="submit" th:value="${language.getSendMessageButton()}"/>
+    </form>
+</div>
+<script>
+    function send(text, userId){
+        const data = {
+           text: text,
+           userId: parseInt(userId)
+        };
+
+        const jsonString = JSON.stringify(data);
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/rest/messenger/translate');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+            const responseObject = JSON.parse(xhr.responseText);
+            alert(responseObject.translateText);
+        } else {
+           const response = JSON.parse(xhr.responseText);
+           alert(response.errorMessage);
+        }
+        };
+
+        xhr.onerror = function() {
+            console.error('Request failed');
+        };
+
+        xhr.send(JSON.stringify(data));
+    }
+</script>
+</body>
+</html>

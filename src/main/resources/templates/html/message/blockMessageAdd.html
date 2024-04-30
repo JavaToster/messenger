@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <form th:method="POST" th:action="@{/messenger/chats/{chatId}/block-messages/add (chatId=${chatId})}" th:object="${blockMessage}">
+        <input type="text" th:field="*{text}">
+        <input type="submit" value="Добавить">
+    </form>
+    <div th:each="blockMessage: ${blockMessages}">
+        <h5 th:text="${blockMessage.getText()}"></h5>
+        <a th:text="${blockMessage.getChatTitle()}" th:href="@{/messenger/chats/{chatId} (chatId=${blockMessage.getChat().getId()})}"></a>
+        <form th:method="POST" th:action="@{/messenger/chats/{chatId}/block-messages/remove-block-message (chatId=${blockMessage.getChat().getId()})}">
+            <input type="hidden" th:value="${blockMessage.getId()}" name="messageId">
+            <input type="submit" value="Разбанить">
+        </form>
+    </div>
+    <div th:if="${blockMessages.isEmpty()}">
+        <p>Тут пока ничего нет</p>
+    </div>
+</body>
+</html>

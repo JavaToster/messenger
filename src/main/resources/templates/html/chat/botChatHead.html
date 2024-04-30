@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        h3{
+          color: white;
+        }
+
+        p{
+          color: white;
+        }
+
+        a{
+         color: white;
+        }
+
+        body{
+          background-color: #161617;
+        }
+
+        .main{
+          margin-left: 600px;
+          margin-top: 200px;
+          background-color: #38383b;
+          width: 600px;
+          border: 2px solid #c8c8db;
+          border-radius: 10px;
+        }
+
+        .channelHeader{
+          width: 600px;
+          margin-top: 0px;
+        }
+
+        #channelName{
+          margin-top: 0px;
+          margin-left: 15px;
+          margin-bottom: 0px;
+        }
+
+        #subscribersCount{
+          margin-top: -15px;
+          margin-left: 35px;
+          font-size: 14px;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="main">
+    <div style="margin-left: 60px; background-color: #49494f; width: 460px;">
+        <div class="channelHeader" >
+            <h3 id="channelName" th:text="${chatHead.getName()}">ChannelName</h3>
+            <br>
+            <p id="subscribersCount" th:text="${chatHead.getUnderName()}">21 subscribers</p>
+        </div>
+        <br>
+    </div>
+</div>
+</body>
+</html>
