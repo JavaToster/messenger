@@ -4,13 +4,20 @@ public class ChannelMemberDTO {
     private int id;
     private String username;
     private boolean block;
+    private boolean admin;
 
     public ChannelMemberDTO(){}
 
-    public ChannelMemberDTO(int id, String username, boolean block){
+    public ChannelMemberDTO(int id, String username, boolean block, boolean admin){
         this.id = id;
         this.username = username;
         this.block = block;
+        this.admin = admin;
+    }
+
+    public ChannelMemberDTO(int id, String username){
+        this.id = id;
+        this.username = username;
     }
 
     public int getId() {
@@ -35,5 +42,13 @@ public class ChannelMemberDTO {
 
     public void setBlock(boolean block) {
         this.block = block;
+    }
+
+    public boolean isAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(boolean admin) {
+        this.admin = admin;
     }
 }

@@ -55,7 +55,7 @@
     <div style="margin-bottom: 20px; overflow-y: auto; width: 350px;">
         <div th:each="chat: ${chats}" class="chats">
             <a th:text="${chat.getChatTitle()}" th:href="@{/messenger/chats/{chatId} (chatId=${chat.getId()})}" style="margin-left: 20px;">Toster</a>
-            <p th:text="${chat.getLastMessage().getMessageText()}" style="margin-left: 20px; overflow-x: none;" >text</p>
+            <p th:text="${chat.getLastMessage().getContent()}" style="margin-left: 20px; overflow-x: none;" >text</p>
         </div>
     </div>
 
@@ -77,7 +77,7 @@
             <option value="ko">한국어</option>
             <option value="ja">日本語</option>
         </select>
-        <button th:attr="onclick=|sendSelectedLanguage('${userId}')|" style="position: absolute; top: 220px; right: 830px;" th:text="${language.getChangeLanguage()}">Поменять</button>
+        <button th:attr="onclick=|changeTranslateLanguage('${userId}')|" style="position: absolute; top: 220px; right: 830px;" th:text="${language.getChangeLanguage()}">Поменять</button>
     </div>
 
     <div class="app-lang">
@@ -94,43 +94,14 @@
         </form>
     </div>
 
-    <form action="/user/logout" method="post" style="margin-left: 35px; margin-bottom: 40px;">
+    <form action="/auth/logout" method="post" style="margin-left: 35px; margin-bottom: 40px;">
         <input type="submit" th:value=${language.getLogout()}>
     </form>
 </div>
 </body>
 
 <script>
-    function sendSelectedLanguage(userId){
-        var lang = document.getElementById('app-lang-select').value;
-
-        const data = {
-           userId: parseInt(userId),
-           lang: lang
-        };
-
-        const jsonString = JSON.stringify(data);
-
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/user/rest/change-app-lang');
-        xhr.setRequestHeader('Content-Type', 'application/json');
-
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-            alert('Good');
-        } else {
-            alert('Some problem');
-            console.error('Request failed', xhr.status, xhr.statusText);
-        }
-        };
-
-        xhr.onerror = function() {
-            console.error('Request failed');
-        };
-
-        xhr.send(JSON.stringify(data));
-    }
-    function changeAppLanguage(userId){
+    function changeTranslateLanguage(userId){
         var languageFromSelect = document.getElementById('languageFrom');
         var languageToSelect = document.getElementById('languageTo');
 

@@ -1,14 +1,8 @@
 package com.example.Messenger.util.threads;
 
-import com.example.Messenger.models.Chat;
-import com.example.Messenger.services.ChatService;
-import org.hibernate.Hibernate;
+import com.example.Messenger.services.chat.ChatService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 @Component
 public class DeleteEmptyChats extends Thread{

@@ -1,10 +1,8 @@
 package com.example.Messenger.util.message;
 
 import com.example.Messenger.dto.ChatDTO;
-import com.example.Messenger.dto.message.FoundMessageDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
-import com.example.Messenger.models.Chat;
-import com.example.Messenger.models.User;
+import com.example.Messenger.models.user.User;
 
 import java.util.Collections;
 import java.util.List;

@@ -1,11 +1,17 @@
 package com.example.Messenger.dto;
 
-import com.example.Messenger.models.Chat;
-import com.example.Messenger.models.Message;
+import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.message.Message;
+import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.services.message.MessageWrapperService;
+import com.example.Messenger.util.enums.MessageType;
+
+import java.util.List;
 
 public class ChatDTO {
     private int id;
-    private Message lastMessage;
+    private MessageWrapper lastMessage;
+    private String lastMessageText;
     private String chatTitle;
     private String lastMessageSendTime;
     private boolean bannedChat;
@@ -22,7 +28,6 @@ public class ChatDTO {
             this.lastMessage = message;
             return;
         }
-        this.lastMessage = chat.getMessages().getLast();
     }
 
     public ChatDTO(String title){
@@ -37,7 +42,7 @@ public class ChatDTO {
         this.id = id;
     }
 
-    public Message getLastMessage() {
+    public MessageWrapper getLastMessage() {
         return lastMessage;
     }
 
@@ -67,5 +72,13 @@ public class ChatDTO {
 
     public void setBannedChat(boolean bannedChat) {
         this.bannedChat = bannedChat;
+    }
+
+    public String getLastMessageText() {
+        return lastMessageText;
+    }
+
+    public void setLastMessageText(String lastMessageText) {
+        this.lastMessageText = lastMessageText;
     }
 }

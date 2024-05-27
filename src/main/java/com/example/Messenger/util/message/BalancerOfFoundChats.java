@@ -1,10 +1,9 @@
 package com.example.Messenger.util.message;
 
 import com.example.Messenger.dto.ChatDTO;
-import com.example.Messenger.dto.message.FoundMessageDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
-import com.example.Messenger.models.User;
-import com.example.Messenger.services.UserService;
+import com.example.Messenger.models.user.User;
+import com.example.Messenger.services.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -1,8 +1,7 @@
 package com.example.Messenger.controllers.rest;
 
 import com.example.Messenger.dto.cache.ChangeLangRequestDTO;
-import com.example.Messenger.models.User;
-import com.example.Messenger.services.UserService;
+import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.util.exceptions.LanguageNotSupportedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

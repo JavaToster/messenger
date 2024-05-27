@@ -45,7 +45,8 @@ submitButton.addEventListener('click', () => {
         const responseObject = JSON.parse(xhr.responseText);
         window.open('/messenger/chats/'+responseObject.chatId, '_self');
     } else {
-      console.error('Request failed', xhr.status, xhr.statusText);
+        const response = JSON.parse(xhr.responseText);
+        alert(response.errorMessage);
     }
   };
 

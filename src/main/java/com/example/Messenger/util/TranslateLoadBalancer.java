@@ -1,8 +1,7 @@
 package com.example.Messenger.util;
 
-import com.example.Messenger.models.User;
-import com.example.Messenger.services.MessageTranslateAPI;
-import org.springframework.context.annotation.Scope;
+import com.example.Messenger.models.user.User;
+import com.example.Messenger.services.message.MessageTranslateAPI;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

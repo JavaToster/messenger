@@ -1,6 +1,6 @@
 package com.example.Messenger.security;
 
-import com.example.Messenger.models.User;
+import com.example.Messenger.models.user.User;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;

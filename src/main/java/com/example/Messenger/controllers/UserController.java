@@ -1,10 +1,11 @@
 package com.example.Messenger.controllers;
 
 import com.example.Messenger.dto.ChatDTO;
-import com.example.Messenger.services.ChatService;
-import com.example.Messenger.services.MessengerUserService;
-import com.example.Messenger.services.UserService;
+import com.example.Messenger.services.chat.ChatService;
+import com.example.Messenger.services.user.MessengerUserService;
+import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.services.cache.LanguageOfAppService;
+import com.example.Messenger.util.Convertor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,18 +21,20 @@ public class UserController {
     private final ChatService chatService;
     private final MessengerUserService messengerUserService;
     private final LanguageOfAppService languageOfAppService;
+    private final Convertor convertor;
 
     @Autowired
-    public UserController(UserService userService, ChatService chatService, MessengerUserService messengerUserService, LanguageOfAppService languageOfAppService) {
+    public UserController(UserService userService, ChatService chatService, MessengerUserService messengerUserService, LanguageOfAppService languageOfAppService, Convertor convertor) {
         this.userService = userService;
         this.chatService = chatService;
         this.messengerUserService = messengerUserService;
         this.languageOfAppService = languageOfAppService;
+        this.convertor = convertor;
     }
 
     @GetMapping("/profile")
     public String profile(Model model, @CookieValue("username") String username){
-        List<ChatDTO> chats = chatService.convertToChatDTO(userService.findChatsByUsername(username), username);
+        List<ChatDTO> chats = convertor.convertToChatDTO(userService.findChatsByUsername(username), username);
 
         model.addAttribute("userId", userService.findByUsername(username).getId());
         model.addAttribute("chat", new ChatDTO());

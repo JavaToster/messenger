@@ -105,26 +105,65 @@
       </div>
       <br>
       <div class="channelMembers">
-        <h3 style="margin: 2px;">Участники</h3>
+        <h3 style="margin: 2px;">Это вы</h3>
         <div class="subscribers">
-          <div class="subscriber" th:each="channelMember: ${chatHead.getMembers()}">
-            <p class="member-text" th:text="${channelMember.getUsername()}" href="https://ya.ru">username</p>
-            <form th:if="${!channelMember.isBlock()}" method="post" th:action="@{/messenger/chats/{id}/show/block-user (id=${chat.getId()})}">
-              <input type="submit" value="Забанить" class="submit-button" style="color: #ff6f4b;">
-              <input type="hidden" th:value=${channelMember.getId()} name="user_id">
-            </form>
-            <form th:if="${channelMember.isBlock()}" method="post" th:action="@{/messenger/chats/{id}/show/unblock-user (id=${chat.getId()})}">
-              <input type="submit" value="Разбанить" class="submit-button" style="color: #4ce951;">
-              <input type="hidden" th:value=${channelMember.getId()} name="user_id">
-            </form>
+          <p class="member-text" th:text="${chatHead.getOwner().getUsername()}"></p>
+        </div>
+        <h3 style="margin: 2px;">Совладелец</h3>
+        <div class="subscribers">
+          <p class="member-text" th:text="${chatHead.getNextOwner().getUsername()}"></p>
+          <form method="post" th:action="@{/messenger/chats/{id}/show/reset-next-owner}">
+            <input type="submit" value="Снять с должности" class="submit-button" style="color: #ff6f4b;">
+            <input type="hidden" th:value="${chatHead.getNextOwner().getId()}" name="user_id">
+          </form>
+        </div>
+        <h3 style="margin: 2px;">Участники</h3>
+        <div th:if="${!chatHead.getMembers().isEmpty()}">
+          <div class="subscribers">
+            <div class="subscriber" th:each="channelMember: ${chatHead.getMembers()}">
+              <p class="member-text" th:text="${channelMember.getUsername()}">username</p>
+              <div>
+                <form th:if="${!channelMember.isBlock()}" method="post" th:action="@{/messenger/chats/{id}/show/block-user (id=${chat.getId()})}">
+                  <input type="submit" value="Забанить" class="submit-button" style="color: #ff6f4b;">
+                  <input type="hidden" th:value=${channelMember.getId()} name="user_id">
+                </form>
+                <form th:if="${!channelMember.isAdmin()}" method="post" th:action="@{/messenger/chats/{id}/show/set-admin (id=${chat.getId()})}">
+                  <input type="submit" value="Назначить админом" class="submit-button" style="color: #4ce951;">
+                  <input type="hidden" th:value=${channelMember.getId()} name="user_id">
+                </form>
+                <form>
+                  <input type="submit" value="Сделать совладельцем" class="submit-button" style="color: #4ce951;">
+                  <input type="hidden" th:value="${channelMember.getId()}" name="user_id">
+                </form>
+              </div>
+              <div>
+              <form th:if="${channelMember.isBlock()}" method="post" th:action="@{/messenger/chats/{id}/show/unblock-user (id=${chat.getId()})}">
+                <input type="submit" value="Разбанить" class="submit-button" style="color: #4ce951;">
+                <input type="hidden" th:value=${channelMember.getId()} name="user_id">
+              </form>
+              <form th:if="${channelMember.isAdmin()}" method="post" th:action="@{/messenger/chats/{id}/show/reset-admin (id=${chat.getId()})}">
+                <input type="submit" value="Снять админство" class="submit-button" style="color: #ff6f4b;">
+                <input type="hidden" th:value="${channelMember.getId()}" name="user_id">
+              </form>
+              </div>
+            </div>
           </div>
         </div>
+        <div th:if="${chatHead.getMembers().isEmpty()}" style="color: white; border: 2px solid #c8c8db; border-radius: 5px;"> Тут пока никого нет</div>
         <h3 style="margin: 2px;">Админы</h3>
         <div class="admins">
-          <div class="admin">
-            <p class="member-text" href="https://ya.ru">username</p>
+          <div th:if="${!chatHead.getAdmins().isEmpty()}">
+            <div class="admin" th:each="channelAdmin: ${chatHead.getAdmins()}">
+              <p th:text="${channelAdmin.getUsername()}" style="margin-left: 10px; margin-top: 2px; margin-bottom: 2px;">Toster</p>
+              <div style="margin: 2px;">
+                <form method="post" th:action="@{/messenger/chats/{id}/show/reset-admin (id=${chat.getId()})}">
+                  <input type="submit" value="Снять с админа" class="submit-button" style="color: #ff6f4b;">
+                  <input type="hidden" th:value="${channelAdmin.getId()}" name="user_id">
+                </form>
+              </div>
+            </div>
           </div>
-
+          <div th:if="${chatHead.getAdmins().isEmpty()}" style="color: white;"> Тут пока никого нет</div>
         </div>
       </div>
     </div>

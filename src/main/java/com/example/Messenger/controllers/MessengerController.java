@@ -5,16 +5,24 @@ import com.example.Messenger.dto.chatHead.ChatHeadDTO;
 import com.example.Messenger.dto.chatHead.channel.ChannelMemberDTO;
 import com.example.Messenger.dto.chatHead.group.GroupChatMemberDTO;
 import com.example.Messenger.dto.message.BlockMessageDTO;
-import com.example.Messenger.dto.message.FoundMessageDTO;
-import com.example.Messenger.dto.message.MessageResponseDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.dto.util.DateDayOfMessagesDTO;
-import com.example.Messenger.models.*;
-import com.example.Messenger.models.cache.LanguageOfApp;
+import com.example.Messenger.models.chat.*;
+import com.example.Messenger.models.message.BlockMessage;
+import com.example.Messenger.models.message.Message;
+import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.models.user.Bot;
+import com.example.Messenger.models.user.ChatMember;
+import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.security.UserDetails;
-import com.example.Messenger.services.*;
 import com.example.Messenger.services.cache.LanguageOfAppService;
-import com.example.Messenger.util.enums.LanguageType;
+import com.example.Messenger.services.chat.*;
+import com.example.Messenger.services.message.*;
+import com.example.Messenger.services.user.BotFatherService;
+import com.example.Messenger.services.user.BotService;
+import com.example.Messenger.services.user.MessengerUserService;
+import com.example.Messenger.services.user.UserService;
+import com.example.Messenger.util.Convertor;
 import com.example.Messenger.util.exceptions.bot.BotUsernameIsUsedException;
 import com.example.Messenger.util.message.BalancerOfFoundChats;
 import com.example.Messenger.util.message.UserFoundedChats;
@@ -30,19 +38,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Collections;
-import java.util.Date;
+import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @Controller
 @RequestMapping({"/messenger", "/messenger/", "/", ""})
 public class MessengerController {
-
-    private final PrivateChatService privateChatService;
     private final GroupChatService groupChatService;
     private final UserService userService;
     private final MessageService messageService;
@@ -51,9 +55,6 @@ public class MessengerController {
     private final BlockMessageService blockMessageService;
     private final DeleteEmptyChats deleteEmptyChats;
     private final MessengerMapper messengerMapper;
-    private final MessageTextEncoder encoder;
-    private final MessageTranslateAPI messageTranslateAPI;
-    private final TranslateLoadBalancer loadBalancer;
     private final BotFatherService botFatherService;
     private final BotChatService botChatService;
     private final MessengerUserService messengerUserService;
@@ -61,12 +62,16 @@ public class MessengerController {
     private final BalancerOfFoundChats balancerOfFoundChats;
     private final LanguageOfAppService languageOfAppService;
     private boolean startedThread;
+    private final MessageWrapperService messageWrapperService;
     @Value("${bot.father.database.id}")
     private int botFatherDatabaseId;
+    private final Convertor convertor;
     @Autowired
-    public MessengerController(PrivateChatService privateChatService, GroupChatService groupChatService, UserService userService,
-                               MessageService messageService, ChatService chatService, ChannelService channelService, BlockMessageService blockMessageService, DeleteEmptyChats deleteEmptyChats, MessengerMapper messengerMapper, MessageTextEncoder encoder, MessageTranslateAPI messageTranslateAPI, TranslateLoadBalancer loadBalancer, BotFatherService botFatherService, BotChatService botChatService, MessengerUserService messengerUserService, BotService botService, BalancerOfFoundChats balancerOfFoundChats, LanguageOfAppService languageOfAppService) {
-        this.privateChatService = privateChatService;
+    public MessengerController(GroupChatService groupChatService, UserService userService, MessageService messageService,
+                               ChatService chatService, ChannelService channelService, BlockMessageService blockMessageService,
+                               DeleteEmptyChats deleteEmptyChats, MessengerMapper messengerMapper, BotFatherService botFatherService,
+                               BotChatService botChatService, MessengerUserService messengerUserService, BotService botService, BalancerOfFoundChats balancerOfFoundChats,
+                               LanguageOfAppService languageOfAppService, MessageWrapperService messageWrapperService, Convertor convertor) {
         this.groupChatService = groupChatService;
         this.userService = userService;
         this.messageService = messageService;
@@ -75,18 +80,17 @@ public class MessengerController {
         this.blockMessageService = blockMessageService;
         this.deleteEmptyChats = deleteEmptyChats;
         this.messengerMapper = messengerMapper;
-        this.encoder = encoder;
-        this.messageTranslateAPI = messageTranslateAPI;
-        this.loadBalancer = loadBalancer;
         this.botFatherService = botFatherService;
         this.botChatService = botChatService;
         this.messengerUserService = messengerUserService;
         this.botService = botService;
         this.balancerOfFoundChats = balancerOfFoundChats;
         this.languageOfAppService = languageOfAppService;
+        this.messageWrapperService = messageWrapperService;
+        this.convertor = convertor;
     }
 
-    /**a main window
+    /** main window
      * главное окно*/
     @GetMapping("")
     public String messengerWindow(Authentication authentication, HttpServletResponse response, Model model){
@@ -98,7 +102,7 @@ public class MessengerController {
         List<Chat> sortedChats = chatService.sortChatsByLastMessage(userDetails.getUsername());
 
         //конвертируем чаты в dto
-        List<ChatDTO> chats = chatService.convertToChatDTO(sortedChats, userDetails.getUsername());
+        List<ChatDTO> chats = convertor.convertToChatDTO(sortedChats, userDetails.getUsername());
         //изменяем последнюю дату посещения на нынешнюю
         userService.setLastOnline(userDetails.getUsername());
 
@@ -180,13 +184,6 @@ public class MessengerController {
         return "redirect:/messenger/chats/"+id;
     }
 
-//    @PostMapping("/chats/create-chat-with-bot")
-//    public String createChatWithBot(@ModelAttribute("bot") Bot bot, @RequestParam("username") String username){
-//        int id = botChatService.createNewChat(userService.findByUsername(username), botService.findById(bot.getId()));
-//
-//        return "redirect:/messenger/chats/"+id;
-//    }
-
     //окно просмотра чата
     @GetMapping("/chats/{id}")
     public String showChat(@CookieValue("username")String username, @PathVariable("id") int chatId, Model model, @RequestParam(value = "type", required = false) String type){
@@ -199,17 +196,17 @@ public class MessengerController {
         }
 
 
-        List<Message> messages;
+        List<MessageWrapper> messages;
         //если во время этого try/catch не вылезли исключения, значит все прошло успешно
         try {
-            messages = messageService.findByChat(chatId);
+            messages = messageWrapperService.findByChat(chatId);
             isMember(username, chatId);
-        }catch (ChatNotFoundException | UserNotMemberException e){
+        }catch (ChatNotFoundException | UserNotMemberException e) {
             return "redirect:/messenger";
         }
 
         //когда окно чата откроется, то все сообщения собеседника пользователя будут изменены на "прочитано"
-        messageService.messageWasBeRead(chatId, username);
+        messageWrapperService.messageWasBeRead(chatId, username);
 
         Chat chat = chatService.findById(chatId);
         //определение заголовка чата
@@ -243,6 +240,7 @@ public class MessengerController {
             //у бота не может быть последнего захода, поэтому просто надпись "bot"
             lastOnlineTitle = "bot";
         }else{
+            // когда либо канал либо группа -> подсчитываем количество участников
             lastOnlineTitle = chatService.countMembers(chatId, languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
         }
 
@@ -252,20 +250,23 @@ public class MessengerController {
         model.addAttribute("chatTitle", chatTitle);
         model.addAttribute("userId", userService.findByUsername(username).getId());
         model.addAttribute("lastOnlineTitle", lastOnlineTitle);
-        model.addAttribute("sendingMessage", new Message());
+        model.addAttribute("sendingMessage", new MessageWrapper());
         model.addAttribute("language", languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
+        model.addAttribute("forwardChats", chatService.getForwardChats(username));
+        model.addAttribute("forwardChat", new ChatDTO());
+        model.addAttribute("isPrivate", chat.getClass()== PrivateChat.class);
+
 
         try {
             /** новый тип dto который предоставляет возможность собирать сообщения в группы
              * то есть, сообщения одного дня будут отделены от другого дня при помощи их даты отправки*/
-            messagesDateDTO = messageService.convertToMessageDayDTO(messages, username);
+            messagesDateDTO = convertor.convertToMessageDayDTO(messages, username);
         }catch (NoSuchElementException e){
             model.addAttribute("noMessages", true);
             return returnedView;
         }
 
-        System.out.println(languageOfAppService.getLanguage(userService.findByUsername(username).getLang()).getProfile()+1);
-        model.addAttribute("message", new Message());
+        model.addAttribute("message", new MessageWrapper());
         model.addAttribute("messageDateDTO", messagesDateDTO);
         model.addAttribute("messageDate", new DateDayOfMessagesDTO());
         model.addAttribute("noMessages", false);
@@ -273,20 +274,29 @@ public class MessengerController {
         return returnedView;
     }
 
+    //основной энд поинт чтобы отправить сообщение
     @PostMapping("/chats/{id}/send-message")
-    public String sendMessage(@ModelAttribute("sendingMessage") Message message, @PathVariable("id") int id, @RequestParam("user") int userId){
-        if (messageService.checkMessageIsBanned(message, id)) {
+    public String sendMessage(@RequestParam(value = "image") MultipartFile image, @RequestParam("text") String text, @RequestParam("user") int userId, @PathVariable("id") int id){
+        /** if user want to send a photo with text or only photo, we check, if image is empty
+         * if multipart file is present → user want to send an image.
+         * если пользователь хочет отправить фото с текстом или только фото, мы проверяем, если изображение пустое
+         * если изображение имеется → человек хочет отправить изображение
+        */
+        if(!image.isEmpty()){
+            messageWrapperService.sendPhoto(image, id, userId, text);
             return "redirect:/messenger/chats/"+id;
         }
 
-        messageService.sendMessage(id, userId, message);
-
+        // if user want to send only text
+        messageWrapperService.sendNotImage(text, id, userId);
         return "redirect:/messenger/chats/"+id;
     }
 
+    // энд поинт для проверки блокированных сообщений
+    // TODO ИЗМЕНИТЬ ДЛЯ НОВОГО ТИПА СООБЩЕНИЙ
     @GetMapping("/chats/{id}/block-messages")
     public String showBlockMessages(@PathVariable("id") int chatId, Model model, @CookieValue("username") String username){
-        List<BlockMessageDTO> blockMessageDTOList = blockMessageService.convertToChatDTO(blockMessageService.findByChat(chatId), username);
+        List<BlockMessageDTO> blockMessageDTOList = convertor.convertToChatDTOOfBlockMessage(blockMessageService.findByChat(chatId), username);
 
         model.addAttribute("chatId", chatId);
         model.addAttribute("blockMessage", new BlockMessage());
@@ -295,18 +305,22 @@ public class MessengerController {
         return "/html/message/blockMessageAdd";
     }
 
+    // TODO ИЗМЕНИТЬ ДЛЯ НОВОГО ТИПА СООБЩЕНИЙ
     @PostMapping("/chats/{id}/block-messages/add")
     public String addBlockMessage(@ModelAttribute("blockMessage") BlockMessage blockMessage, @PathVariable("id") int chatId){
+        //проверка для того, что нету ли уже такого текста в списке блокированных сообщений
         if(blockMessageService.isBlockMessage(blockMessage, chatId)){
             return "redirect:/messenger/chats/"+chatId+"/block-messages";
         }
 
+        //назначаем чат для блокированного сообщения
         blockMessage.setChat(chatService.findById(chatId));
         blockMessageService.add(blockMessage);
 
         return "redirect:/messenger/chats/"+chatId+"/block-messages";
     }
 
+    // TODO ИЗМЕНИТЬ ДЛЯ НОВОГО ТИПА СООБЩЕНИЙ
     @PostMapping("/chats/{id}/block-messages/remove-block-message")
     public String removeBlockMessage(@RequestParam("messageId") int messageId, @PathVariable("id") int id){
         blockMessageService.remove(messageId);
@@ -316,15 +330,17 @@ public class MessengerController {
 
     @GetMapping({"/chats/{id}/show", "/chats/{id}/show/"})
     public String showChatHeader(@CookieValue("username") String username, @PathVariable("id") int chatId, Model model){
-        if(chatService.findById(chatId).getClass() == GroupChat.class){
-            if(!groupChatService.getGroupOwner(chatId).equals(username)){
-                return "redirect:/messenger/chats/"+chatId;
-            }
-        }else if(chatService.findById(chatId).getClass() == Channel.class){
-            if(!channelService.getChannelOwner(chatId).equals(username)){
-                return "redirect:/messenger/chats/"+chatId;
+
+        if(chatService.findById(chatId).getClass() == GroupChat.class) {
+            if (!groupChatService.getGroupOwner(chatId).equals(username)) {
+                return "redirect:/messenger/chats/" + chatId;
             }
         }
+//        }else if(chatService.findById(chatId).getClass() == Channel.class){
+//            if(!channelService.getChannelOwner(chatId).equals(username)){
+//                return "redirect:/messenger/chats/"+chatId;
+//            }
+//        }
         model.addAttribute("chat", chatService.findById(chatId));
 
         //remake check chat type -> channel, group, private
@@ -341,6 +357,7 @@ public class MessengerController {
             return "/html/chat/groupChatHead";
         }else if(foundChat.getClass() == Channel.class){
             model.addAttribute("channelMember", new ChannelMemberDTO());
+            model.addAttribute("channelAdmin", new ChannelMemberDTO());
             chatHeadDTOList = messengerMapper.map(foundChat);
             model.addAttribute("chatHead", chatHeadDTOList);
             return "/html/chat/channelChatHead";
@@ -365,38 +382,33 @@ public class MessengerController {
         return "redirect:/messenger/chats/"+chatId+"/show";
     }
 
+    @PostMapping("/chats/{id}/show/set-admin")
+    public String setAdmin(@RequestParam("user_id") int userId, @PathVariable("id") int chatId){
+        messengerUserService.setAdmin(userId, chatId);
+
+        return "redirect:/messenger/chats/"+chatId+"/show";
+    }
+
+    @PostMapping("/chats/{id}/show/reset-admin")
+    public String resetAdmin(@RequestParam("user_id") int userId, @PathVariable("id") int chatId){
+        messengerUserService.resetAdmin(userId, chatId);
+
+        return "redirect:/messenger/chats/"+chatId+"/show";
+    }
+
     @GetMapping("/translate")
     public String translateText(@RequestParam("text") String text, @CookieValue("username") String username){
         return "redirect:/messenger";
     }
 
-    private void isMember(String username, int chatId){
+    private void isMember(String username, int chatId) {
         List<ChatMember> chatMembers = chatService.findById(chatId).getMembers();
-        for(ChatMember chatMember: chatMembers){
-            if((chatMember.getUser()).getUsername().equals(username)){
+        for (ChatMember chatMember : chatMembers) {
+            if ((chatMember.getUser()).getUsername().equals(username)) {
                 return;
             }
         }
         throw new UserNotMemberException();
-    }
-
-    @PostMapping("/bots/{id}/sendMessage")
-    public String botFatherSendMessages(@ModelAttribute("sendingMessage") Message message, @PathVariable("id") int id, @RequestParam("user") int userId){
-        if(message.getMessageText().isEmpty()){
-            return "redirect:/messenger/chats/"+id;
-        }
-
-        sendMessage(message, id, userId);
-        String answer;
-        try{
-            answer = botFatherService.getToken(message.getMessageText());
-        }catch (BotUsernameIsUsedException e){
-            answer = e.getMessage();
-        }
-
-        botService.sendMessage(id, botFatherDatabaseId, answer);
-
-        return "redirect:/messenger/chats/"+id;
     }
 
     @GetMapping("/findChat")

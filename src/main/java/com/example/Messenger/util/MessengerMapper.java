@@ -1,6 +1,6 @@
 package com.example.Messenger.util;
 
-import com.example.Messenger.dto.bot.response.message.InfoOfMessageByBotDTO;
+import com.example.Messenger.dto.bot.response.message.InfoByTextMessageDTO;
 import com.example.Messenger.dto.chatHead.ChatHeadDTO;
 import com.example.Messenger.dto.chatHead.botChat.BotChatHeadDTO;
 import com.example.Messenger.dto.chatHead.channel.ChannelHeadDTO;
@@ -8,15 +8,28 @@ import com.example.Messenger.dto.chatHead.channel.ChannelMemberDTO;
 import com.example.Messenger.dto.chatHead.group.GroupChatDTO;
 import com.example.Messenger.dto.chatHead.group.GroupChatMemberDTO;
 import com.example.Messenger.dto.chatHead.privateChat.PrivateChatDTO;
-import com.example.Messenger.dto.message.MessageResponseDTO;
-import com.example.Messenger.dto.util.DateDayOfMessagesDTO;
-import com.example.Messenger.models.*;
-import com.example.Messenger.services.*;
+import com.example.Messenger.models.chat.BotChat;
+import com.example.Messenger.models.chat.Channel;
+import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.message.Message;
+import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.models.message.ImageMessage;
+import com.example.Messenger.models.user.ChatMember;
+import com.example.Messenger.models.user.MessengerUser;
+import com.example.Messenger.models.user.User;
+import com.example.Messenger.repositories.chat.ChannelRepository;
+import com.example.Messenger.repositories.message.MessageRepository;
+import com.example.Messenger.repositories.message.MessageWrapperRepository;
+import com.example.Messenger.repositories.message.PhotoMessageRepository;
+import com.example.Messenger.services.chat.ChannelService;
+import com.example.Messenger.services.chat.ChatService;
+import com.example.Messenger.services.chat.GroupChatService;
+import com.example.Messenger.services.user.BotService;
+import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.util.enums.ChatMemberType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Component
@@ -24,23 +37,44 @@ public class MessengerMapper {
 
     private final ChannelService channelService;
     private final GroupChatService groupChatService;
-    private final ChatService chatService;
     private final UserService userService;
     private final BotService botService;
+    private final MessageRepository messageRepository;
+    private final PhotoMessageRepository photoMessageRepository;
+    private final MessageWrapperRepository messageWrapperRepository;
+    private final ChannelRepository channelRepository;
 
     @Autowired
-    public MessengerMapper(ChannelService channelService, GroupChatService groupChatService, ChatService chatService, UserService userService, BotService botService) {
+    public MessengerMapper(ChannelService channelService, GroupChatService groupChatService, ChatService chatService, UserService userService, BotService botService, MessageRepository messageRepository, PhotoMessageRepository photoMessageRepository, MessageWrapperRepository messageWrapperRepository, ChannelRepository channelRepository) {
         this.channelService = channelService;
-        this.groupChatService = groupChatService;
-        this.chatService = chatService;
-        this.userService = userService;
+        this.groupChatService = groupChatService;this.userService = userService;
         this.botService = botService;
+        this.messageRepository = messageRepository;
+        this.photoMessageRepository = photoMessageRepository;
+        this.messageWrapperRepository = messageWrapperRepository;
+        this.channelRepository = channelRepository;
+    }
+    //for channelConvert
+    private List<ChannelMemberDTO> convertToChannelMemberDTOOfSubscriber(List<ChatMember> members){
+        List<ChannelMemberDTO> memberDTOList = new LinkedList<>();
+        for(ChatMember member: members){
+            if(member.getMemberType() == ChatMemberType.OWNER || member.getMemberType() == ChatMemberType.ADMIN){
+                continue;
+            }
+            memberDTOList.add(new ChannelMemberDTO(member.getUser().getId(), member.getUsernameOfUser(), member.getMemberType() == ChatMemberType.BLOCK, member.getMemberType() == ChatMemberType.ADMIN));
+        }
+//        members.forEach(member -> memberDTOList.add(new ChannelMemberDTO(member.getUser().getId(), member.getUsernameOfUser(), member.getMemberType() == ChatMemberType.BLOCK, member.getMemberType() == ChatMemberType.ADMIN)));
+        return memberDTOList;
     }
 
-    //for channelConvert
-    private List<ChannelMemberDTO> convertToChannelMemberDTO(List<ChatMember> members){
+    private List<ChannelMemberDTO> convertToChannelMemberDTOOfAdmin(List<ChatMember> members){
         List<ChannelMemberDTO> memberDTOList = new LinkedList<>();
-        members.forEach(member -> memberDTOList.add(new ChannelMemberDTO(member.getUser().getId(), member.getUsernameOfUser(), member.getMemberType() == ChatMemberType.BLOCK)));
+        for(ChatMember member: members){
+            if(member.getMemberType() == ChatMemberType.ADMIN){
+                memberDTOList.add(new ChannelMemberDTO(member.getUser().getId(), member.getUsernameOfUser()));
+            }
+        }
+        System.out.println(memberDTOList.size());
         return memberDTOList;
     }
 
@@ -48,7 +82,7 @@ public class MessengerMapper {
     public ChatHeadDTO map(Chat chat){
         List<ChatMember> members = chat.getMembers();
         if(chat.getClass() == Channel.class){
-            return new ChannelHeadDTO(channelService.getChannelName(chat), channelService.countMembers(chat), "someDescription", convertToChannelMemberDTO(members), List.of());
+            return new ChannelHeadDTO(channelService.getChannelName(chat), channelService.countMembers(chat), "someDescription", channelService.getChannelOwner(chat.getId()), convertToChannelMemberDTOOfSubscriber(members), convertToChannelMemberDTOOfAdmin(members));
         }else if(chat.getClass() == BotChat.class){
             return new BotChatHeadDTO(botService.getBotName(chat), "Some description of bot");
         }else{
@@ -58,7 +92,7 @@ public class MessengerMapper {
 
     @Deprecated
     public ChatHeadDTO map(Chat chat, String username){
-        return new PrivateChatDTO(chatService.getInterlocutor(username, chat).getUsername(), userService.findByUsername(username).getLastOnline(), "79393826388");
+        return new PrivateChatDTO(getInterlocutor(username, chat).getUsername(), userService.findByUsername(username).getLastOnline(), "79393826388");
     }
 
 
@@ -68,99 +102,25 @@ public class MessengerMapper {
         return memberDTOList;
     }
 
-
     //for messages convert
 
-    public List<DateDayOfMessagesDTO> convertToMessagesDTO(List<Message> messages, String username){
-        List<DateDayOfMessagesDTO> returnMessageList = new ArrayList<>();
-        Date beginDate = messages.getLast().getSendingTime();
-        Date finishDate = messages.getFirst().getSendingTime();
-
-        while(!equalsTwoDate(beginDate, finishDate)){
-            List<Message> messagesOfDate = getMessagesOfDate(messages, beginDate);
-
-            if(messagesOfDate.isEmpty()){
-                beginDate = nextDay(beginDate);
-                continue;
-            }
-
-            DateDayOfMessagesDTO dayOfMessages = new DateDayOfMessagesDTO(beginDate, convertToMessageDTO(messagesOfDate, username));
-            returnMessageList.add(dayOfMessages);
-
-            messages = deleteAddedMessages(messages, messagesOfDate);
-
-            beginDate = nextDay(beginDate);
-        }
-
-        List<Message> messagesOfDate = getMessagesOfDate(messages, beginDate);
-
-        DateDayOfMessagesDTO dayOfMessages = new DateDayOfMessagesDTO(beginDate, convertToMessageDTO(messagesOfDate, username));
-        returnMessageList.add(dayOfMessages);
-
-        System.out.println(returnMessageList.getLast().getMessages().getLast().getMessageText());
-
-        return returnMessageList.reversed();
-    }
-
-    public List<MessageResponseDTO> convertToMessageDTO(List<Message> messages, String username){
-        List<MessageResponseDTO> messageResponseDTOS = new ArrayList<>();
-
-        for(Message message: messages){
-            MessageResponseDTO messageResponseDTO = new MessageResponseDTO(message.getMessageText(), message.getOwner(), message.getHasBeenRead());
-            messageResponseDTO.setDate(addZeroToTime(message.getSendingTime().getHours())+":"+addZeroToTime(message.getSendingTime().getMinutes()));
-            if(message.getOwner().equals(username)){
-                messageResponseDTO.setUserIsOwner(true);
-            }
-            messageResponseDTOS.add(messageResponseDTO);
-        }
-
-        return messageResponseDTOS;
-    }
-
     public <T> T map(Object obj, Class<T> clazz){
-        if(clazz == InfoOfMessageByBotDTO.class){
+        if(clazz == InfoByTextMessageDTO.class){
             Message message = (Message) obj;
-            InfoOfMessageByBotDTO infoOfMessage = new InfoOfMessageByBotDTO(message.getChat().getId(), message.getMessageText());
+            InfoByTextMessageDTO infoOfMessage = new InfoByTextMessageDTO(message.getChat().getId(), message.getContent());
             return (T) infoOfMessage;
+        }else if(clazz == Message.class && obj instanceof MessageWrapper){
+            return (T) messageRepository.findById(((MessageWrapper) obj).getId()).orElse(null);
+        }else if(clazz == ImageMessage.class && obj instanceof MessageWrapper){
+            return (T) photoMessageRepository.findById(((MessageWrapper) obj).getId()).orElse(null);
         }
-        return null;
+        throw new RuntimeException();
     }
 
-    private String addZeroToTime(int time){
-        return time<10? "0"+time : time+"";
-    }
-
-
-    private Date nextDay(Date beginDate) {
-        Calendar calendar = new GregorianCalendar();
-        calendar.setTime(beginDate);
-
-        calendar.add(Calendar.DAY_OF_MONTH,1);
-        return calendar.getTime();
-    }
-
-    private boolean equalsTwoDate(Date date1, Date date2){
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        String date1OfString = simpleDateFormat.format(date1);
-        String date2OfString = simpleDateFormat.format(date2);
-
-        return date1OfString.equals(date2OfString);
-    }
-
-    private List<Message> deleteAddedMessages(List<Message> allMessages, List<Message> addedMessages){
+    private List<MessageWrapper> deleteAddedMessages(List<MessageWrapper> allMessages, List<MessageWrapper> addedMessages){
         addedMessages.forEach(allMessages::remove);
 
         return allMessages;
-    }
-
-    private List<Message> getMessagesOfDate(List<Message> messages, Date date){
-        List<Message> messagesReturn = new LinkedList<>();
-        for(Message message: messages){
-            if(equalsTwoDate(message.getSendingTime(), date)){
-                messagesReturn.add(message);
-            }
-        }
-        return messagesReturn;
     }
 
     private <T> T map(MessengerUser user, Class<T> clazz){
@@ -169,5 +129,25 @@ public class MessengerMapper {
         }else{
             return (T) botService.findById(user.getId());
         }
+    }
+
+    public List<MessageWrapper> convertIdiesToMessage(List<Integer> integers) {
+        List<MessageWrapper> message = new LinkedList<>();
+        for(Integer integer: integers){
+            message.add(messageWrapperRepository.findById(integer).orElse(null));
+        }
+        return message;
+    }
+
+    private MessengerUser getInterlocutor(String username, Chat chat){
+        List<ChatMember> members = chat.getMembers();
+        for(ChatMember chatMember: members){
+            MessengerUser member = chatMember.getUser();
+            if(member.getUsername().equals(username)){
+                continue;
+            }
+            return member;
+        }
+        return null;
     }
 }

@@ -1,8 +1,14 @@
 package com.example.Messenger.controllers;
 
-import com.example.Messenger.models.Chat;
-import com.example.Messenger.models.User;
-import com.example.Messenger.services.*;
+import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.user.User;
+import com.example.Messenger.services.chat.ChannelService;
+import com.example.Messenger.services.chat.ChatService;
+import com.example.Messenger.services.chat.GroupChatService;
+import com.example.Messenger.services.chat.PrivateChatService;
+import com.example.Messenger.services.message.BlockMessageService;
+import com.example.Messenger.services.message.MessageService;
+import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.util.threads.DeleteEmptyChats;
 import com.example.Messenger.util.MessengerMapper;
 import org.junit.jupiter.api.DisplayName;

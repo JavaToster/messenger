@@ -1,24 +1,28 @@
 package com.example.Messenger.dto.chatHead.channel;
 
 import com.example.Messenger.dto.chatHead.ChatHeadDTO;
+import com.example.Messenger.models.user.MessengerUser;
 
 import java.beans.Transient;
 import java.util.List;
 
 public class ChannelHeadDTO extends ChatHeadDTO {
     private String description;
+    private MessengerUser owner;
+    private MessengerUser nextOwner;
     private List<ChannelMemberDTO> members;
     private List<ChannelMemberDTO> admins;
 
     public ChannelHeadDTO(){}
 
-    public ChannelHeadDTO(String name, int membersCount, String description, List<ChannelMemberDTO> members,
+    public ChannelHeadDTO(String name, int membersCount, String description, MessengerUser owner, MessengerUser nextOwner, List<ChannelMemberDTO> members,
                           List<ChannelMemberDTO> admins){
         this.name = name;
         this.description = description;
         this.members = members;
         this.admins = admins;
         this.underName = membersCount(membersCount);
+        this.owner = owner;
     }
 
     public String getDescription() {
@@ -47,5 +51,21 @@ public class ChannelHeadDTO extends ChatHeadDTO {
 
     private String membersCount(int count){
         return (count % 10)<5 ? count+" подписчик" : count+" подписчиков";
+    }
+
+    public MessengerUser getOwner() {
+        return owner;
+    }
+
+    public void setOwner(MessengerUser owner) {
+        this.owner = owner;
+    }
+
+    public MessengerUser getNextOwner() {
+        return nextOwner;
+    }
+
+    public void setNextOwner(MessengerUser nextOwner) {
+        this.nextOwner = nextOwner;
     }
 }

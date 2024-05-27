@@ -1,35 +1,51 @@
 package com.example.Messenger.dto.message;
 
-import com.example.Messenger.models.MessengerUser;
-import com.example.Messenger.util.enums.Message;
-import com.example.Messenger.models.User;
+import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.models.user.MessengerUser;
+import com.example.Messenger.util.abstractClasses.UtilSpecification;
+import com.example.Messenger.util.enums.MessageStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class MessageResponseDTO {
-    private String messageText;
+    private int id;
+    private MessageWrapper message;
     private String date;
     private MessengerUser owner;
+    private String type;
     @JsonIgnore
     private boolean read;
     @JsonIgnore
     private boolean userIsOwner;
+    //use only message with type of image
+    private UtilSpecification specification;
 
-    public MessageResponseDTO(String messageText, MessengerUser owner, Message message) {
-        this.messageText = messageText;
+
+    public MessageResponseDTO(MessageWrapper message, MessengerUser owner) {
+        this.id = message.getId();
+        this.message = message;
         this.owner = owner;
-        if(message == Message.READ){
+        this.type = message.typeToString();
+        if(message.getHasBeenRead() == MessageStatus.READ){
             this.read = true;
             return;
         }
         this.read = false;
     }
 
-    public String getMessageText() {
-        return messageText;
+    public MessageWrapper getMessage() {
+        return message;
     }
 
-    public void setMessageText(String messageText) {
-        this.messageText = messageText;
+    public void setMessage(MessageWrapper message) {
+        this.message = message;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getDate() {
@@ -62,5 +78,21 @@ public class MessageResponseDTO {
 
     public void setUserIsOwner(boolean userIsOwner) {
         this.userIsOwner = userIsOwner;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public UtilSpecification getSpecification() {
+        return specification;
+    }
+
+    public void setSpecification(UtilSpecification specification) {
+        this.specification = specification;
     }
 }

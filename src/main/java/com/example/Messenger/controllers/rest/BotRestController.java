@@ -3,12 +3,15 @@ package com.example.Messenger.controllers.rest;
 import com.example.Messenger.dto.bot.response.BotSuccessfulCreatedDTO;
 import com.example.Messenger.dto.bot.response.ErrorResponseDTO;
 import com.example.Messenger.dto.bot.response.InformationOfBotDTO;
-import com.example.Messenger.dto.bot.response.message.InfoOfMessageByBotDTO;
+import com.example.Messenger.dto.bot.response.message.InfoByImageMessageDTO;
+import com.example.Messenger.dto.bot.response.message.InfoByTextMessageDTO;
+import com.example.Messenger.dto.bot.response.message.InfoOfMessagesDTO;
 import com.example.Messenger.dto.bot.response.message.SendMessageForBotDTO;
-import com.example.Messenger.models.Bot;
-import com.example.Messenger.services.BotChatService;
-import com.example.Messenger.services.BotRestService;
-import com.example.Messenger.services.BotService;
+import com.example.Messenger.models.user.Bot;
+import com.example.Messenger.services.chat.BotChatService;
+import com.example.Messenger.services.user.BotRestService;
+import com.example.Messenger.services.user.BotService;
+import com.example.Messenger.util.abstractClasses.InfoOfMessage;
 import com.example.Messenger.util.exceptions.bot.BotNotFoundException;
 import com.example.Messenger.util.exceptions.bot.BotUsernameIsUsedException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +23,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
-@RequestMapping("/bot")
+@RequestMapping("/bot-rest")
 public class BotRestController {
 
     private final BotService botService;
@@ -50,22 +52,30 @@ public class BotRestController {
     }
 
     @GetMapping("/{botToken}/getMessages")
-    public ResponseEntity<Map<String, List<InfoOfMessageByBotDTO>>> getMessages(@PathVariable("botToken") String token) {
-        return new ResponseEntity<>(Map.of("messages", botRestService.getMessages(token)), HttpStatus.OK);
+    public ResponseEntity<InfoOfMessagesDTO> getMessages(@PathVariable("botToken") String token) {
+        InfoOfMessagesDTO info = new InfoOfMessagesDTO(botRestService.getMessages(token));
+        for(InfoOfMessage infoOfMessage: info.getMessages()){
+            if(infoOfMessage.getClass() == InfoByTextMessageDTO.class){
+                System.out.println(((InfoByTextMessageDTO) infoOfMessage).getText());
+            }else{
+                System.out.println(((InfoByImageMessageDTO) infoOfMessage).getBytesOfImage());
+            }
+        }
+        return new ResponseEntity<>(new InfoOfMessagesDTO(botRestService.getMessages(token)), HttpStatus.OK);
     }
 
     @GetMapping("/{botToken}/sendMessage")
-    public ResponseEntity<InfoOfMessageByBotDTO> sendMessages(@PathVariable("botToken") String token, @RequestParam("text") String text, @RequestParam("chat_id") int chatId){
+    public ResponseEntity<InfoByTextMessageDTO> sendMessages(@PathVariable("botToken") String token, @RequestParam("text") String text, @RequestParam("chat_id") int chatId){
         botService.sendMessage(chatId, botService.findByToken(token).getId(), text);
 
-        return new ResponseEntity(new InfoOfMessageByBotDTO(chatId, text), HttpStatus.OK);
+        return new ResponseEntity(new InfoByTextMessageDTO(chatId, text), HttpStatus.OK);
     }
 
     @PostMapping("/{botToken}/sendMessage")
-    public ResponseEntity<InfoOfMessageByBotDTO> sendMessages(@RequestBody SendMessageForBotDTO requestDTO, @RequestHeader("token") String token){
+    public ResponseEntity<InfoByTextMessageDTO> sendMessages(@RequestBody SendMessageForBotDTO requestDTO, @RequestHeader("token") String token){
         botService.sendMessage(requestDTO.getChatId(), botService.getIdByToken(token), requestDTO.getText());
 
-        return new ResponseEntity<>(new InfoOfMessageByBotDTO(requestDTO.getChatId(), requestDTO.getText()), HttpStatus.OK);
+        return new ResponseEntity<>(new InfoByTextMessageDTO(requestDTO.getChatId(), requestDTO.getText()), HttpStatus.OK);
     }
 
     @ExceptionHandler

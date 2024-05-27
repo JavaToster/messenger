@@ -1,7 +1,7 @@
 package com.example.Messenger.controllers;
 
-import com.example.Messenger.models.User;
-import com.example.Messenger.services.UserService;
+import com.example.Messenger.models.user.User;
+import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.services.cache.LanguageOfAppService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
