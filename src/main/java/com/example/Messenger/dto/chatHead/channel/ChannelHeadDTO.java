@@ -15,7 +15,7 @@ public class ChannelHeadDTO extends ChatHeadDTO {
 
     public ChannelHeadDTO(){}
 
-    public ChannelHeadDTO(String name, int membersCount, String description, MessengerUser owner, MessengerUser nextOwner, List<ChannelMemberDTO> members,
+    public ChannelHeadDTO(String name, int membersCount, String description, MessengerUser owner, List<ChannelMemberDTO> members,
                           List<ChannelMemberDTO> admins){
         this.name = name;
         this.description = description;
