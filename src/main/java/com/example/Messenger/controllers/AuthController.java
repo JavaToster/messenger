@@ -58,10 +58,7 @@ public class AuthController {
             return "redirect:/auth/register?error";
         }
 
-        System.out.println(username);
-        System.out.println(password);
-
-        userService.register(new User(firstName, lastName, username, password, phone, lang));
+        userService.register(new User(firstName, lastName, username, passwordEncoder.encode(password), phone, lang));
         return "redirect:/auth/login";
     }
 

@@ -82,7 +82,7 @@
         <input type="submit" value="Login">
         <a href="/auth/register" class="register-button">Registration</a>
     </form>
-    <div th:error="${param.error}" style="color: red; margin-left: 20px; margin-top: 10px; font-size: 18px;">Неправильное имя или пароль</div>
+    <div th:if="${error}" style="color: red; margin-left: 20px; margin-top: 10px; font-size: 18px;">Неправильное имя или пароль</div>
 </div>
 </body>
 </html>
