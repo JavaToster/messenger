@@ -28,6 +28,16 @@ public class User extends MessengerUser{
     @Enumerated(value = EnumType.STRING)
     private LanguageType lang;
 
+    public User(){}
+    public User(String firstName, String lastname, String username, String password, String phone, String lang){
+        this.name = firstName;
+        this.lastname = lastname;
+        this.username = username;
+        this.password = password;
+        this.phone = phone;
+        this.lang = LanguageType.valueOf(lang);
+    }
+
     public String getPhone() {
         return phone;
     }

@@ -7,10 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/auth")
@@ -30,14 +27,17 @@ public class AuthController {
     /** the login page
      * страница аутентификации*/
     @GetMapping("/login")
-    public String login(){
+    public String login(@RequestParam(value = "error", required = false) String error, Model model){
+        model.addAttribute("error", !(error==null));
+
         return "/html/auth/login";
     }
 
     /** the register page
      * страница регистрации*/
     @GetMapping("/register")
-    public String register(Model model){
+    public String register(Model model, @RequestParam(value = "error", required = false) String error){
+        model.addAttribute("error", !(error==null));
         model.addAttribute("user", new User());
 
         return "/html/auth/register";
@@ -45,16 +45,24 @@ public class AuthController {
 
 
     @PostMapping("/register")
-    public String registerPost(@ModelAttribute("user") User user){
+    public String registerPost(@RequestParam("firstName") String firstName, @RequestParam("lastName") String lastName, @RequestParam("username") String username,
+                               @RequestParam("password") String password, @RequestParam("phone") String phone, @RequestParam("language") String lang){
+
         //if user is present -> redirect to register page
         //если человек существует -> возвращаем его на страницу регистрации
-        if(userService.isUser(user.getUsername())){
-            return "redirect:/auth/register";
-        }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userService.register(user);
+//        if(userService.isUser(user.getUsername())){
+//            return "redirect:/auth/register";
+//        }
 
-        return "redirect:/login";
+        if(userService.isUser(username)){
+            return "redirect:/auth/register?error";
+        }
+
+        System.out.println(username);
+        System.out.println(password);
+
+        userService.register(new User(firstName, lastName, username, password, phone, lang));
+        return "redirect:/auth/login";
     }
 
     /**if languages in redis was removed to add
