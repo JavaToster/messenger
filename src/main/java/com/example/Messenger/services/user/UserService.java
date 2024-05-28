@@ -214,13 +214,14 @@ public class UserService implements UserDetailsService {
         return type;
     }
 
-    public boolean isUser(String username) {
-        List<User> users = userRepository.findAll();
-        for(User user: users){
-            if(user.equals(username)){
-                return true;
+    public boolean isUser(String username, String email) {
+        Optional<User> user = userRepository.findByUsername(username);
+        if(user.isEmpty()){
+            user = userRepository.findByEmail(email);
+            if(user.isEmpty()){
+                return false;
             }
         }
-        return false;
+        return true;
     }
 }

@@ -46,7 +46,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public String registerPost(@RequestParam("firstName") String firstName, @RequestParam("lastName") String lastName, @RequestParam("username") String username,
-                               @RequestParam("password") String password, @RequestParam("phone") String phone, @RequestParam("language") String lang){
+                               @RequestParam("password") String password, @RequestParam("email") String email, @RequestParam("phone") String phone, @RequestParam("language") String lang){
 
         //if user is present -> redirect to register page
         //если человек существует -> возвращаем его на страницу регистрации
@@ -54,11 +54,11 @@ public class AuthController {
 //            return "redirect:/auth/register";
 //        }
 
-        if(userService.isUser(username)){
+        if(userService.isUser(username, email)){
             return "redirect:/auth/register?error";
         }
 
-        userService.register(new User(firstName, lastName, username, passwordEncoder.encode(password), phone, lang));
+        userService.register(new User(firstName, lastName, username, passwordEncoder.encode(password), email, phone, lang));
         return "redirect:/auth/login";
     }
 
