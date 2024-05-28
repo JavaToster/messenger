@@ -31,16 +31,14 @@ public class UserService implements UserDetailsService {
     private final ChatMemberRepository chatMemberRepository;
     private final TranslateLoadBalancer loadBalancer;
     private final MessengerUserService messengerUserService;
-    private final LanguageOfAppService languageOfAppService;
-
     @Autowired
-    public UserService(UserRepository userRepository, ChatRepository chatRepository, ChatMemberRepository chatMemberRepository, TranslateLoadBalancer loadBalancer, MessengerUserService messengerUserService, LanguageOfAppService languageOfAppService) {
+    public UserService(UserRepository userRepository, ChatRepository chatRepository, ChatMemberRepository chatMemberRepository,
+                       TranslateLoadBalancer loadBalancer, MessengerUserService messengerUserService) {
         this.userRepository = userRepository;
         this.chatRepository = chatRepository;
         this.chatMemberRepository = chatMemberRepository;
         this.loadBalancer = loadBalancer;
         this.messengerUserService = messengerUserService;
-        this.languageOfAppService = languageOfAppService;
     }
 
     @Override
