@@ -26,7 +26,7 @@
         .container p {
             margin-bottom: 16px;
         }
-        .container input[type="text"], .container input[type="password"] {
+        .container input[type="text"], .container input[type="password"], .container input[type="email"] {
             width: 100%;
             padding: 8px;
             border: 1px solid #ccc;
@@ -99,6 +99,7 @@
         <input type="text" name="lastName" placeholder="Enter your last name">
         <input type="text" name="username" placeholder="Enter your username">
         <input type="password" name="password" placeholder="Enter your password">
+        <input type="email" name="email" placeholder="Enter your email">
         <input type="tel" name="phone" placeholder="Enter your phone number">
         <label for="lang">Select language:</label>
         <select id="lang" name="language">
@@ -111,7 +112,7 @@
         <input type="submit" value="Register">
         <a href="/auth/login" class="register-button">Login</a>
     </form>
-    <div th:if="${error}" style="color: red; margin-left: 90px; margin-top: 10px; font-size: 18px;">Register error</div>
+    <div th:if="${error}" style="color: red; margin-left: 40px; margin-top: 10px; font-size: 18px;">Username or email is exist</div>
 </div>
 </body>
 </html>

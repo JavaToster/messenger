@@ -18,6 +18,8 @@ public class User extends MessengerUser{
     private String lastname;
     @Column(name = "password")
     private String password;
+    @Column(name = "email")
+    private String email;
     @OneToMany(mappedBy = "user")
     private List<ChatMember> members;
     @OneToMany(mappedBy = "owner")
@@ -29,13 +31,14 @@ public class User extends MessengerUser{
     private LanguageType lang;
 
     public User(){}
-    public User(String firstName, String lastname, String username, String password, String phone, String lang){
+    public User(String firstName, String lastname, String username, String password, String email, String phone, String lang){
         this.name = firstName;
         this.lastname = lastname;
         this.username = username;
         this.password = password;
         this.phone = phone;
         this.lang = LanguageType.valueOf(lang);
+        this.email = email;
     }
 
     public String getPhone() {
@@ -116,5 +119,13 @@ public class User extends MessengerUser{
 
     public void setLang(LanguageType lang) {
         this.lang = lang;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }
