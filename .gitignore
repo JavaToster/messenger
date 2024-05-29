@@ -38,4 +38,4 @@ build/
 /src/main/resources/static/images/
 tasks.txt
 
-/src/main/java/com/example/Messenger/controllers/rest/RedisController.java
+src/main/java/com/example/Messenger/controllers/rest/RedisController.java
