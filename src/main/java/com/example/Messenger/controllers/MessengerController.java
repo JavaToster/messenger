@@ -9,7 +9,6 @@ import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.dto.util.DateDayOfMessagesDTO;
 import com.example.Messenger.models.chat.*;
 import com.example.Messenger.models.message.BlockMessage;
-import com.example.Messenger.models.message.Message;
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.Bot;
 import com.example.Messenger.models.user.ChatMember;
@@ -23,12 +22,10 @@ import com.example.Messenger.services.user.BotService;
 import com.example.Messenger.services.user.MessengerUserService;
 import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.util.Convertor;
-import com.example.Messenger.util.exceptions.bot.BotUsernameIsUsedException;
 import com.example.Messenger.util.message.BalancerOfFoundChats;
 import com.example.Messenger.util.message.UserFoundedChats;
 import com.example.Messenger.util.threads.DeleteEmptyChats;
 import com.example.Messenger.util.MessengerMapper;
-import com.example.Messenger.util.TranslateLoadBalancer;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import com.example.Messenger.util.exceptions.UserNotMemberException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -40,7 +37,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
 

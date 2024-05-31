@@ -13,12 +13,11 @@ import com.example.Messenger.services.chat.GroupChatService;
 import com.example.Messenger.services.message.ForwardMessageService;
 import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.util.Convertor;
-import com.example.Messenger.util.TranslateLoadBalancer;
+import com.example.Messenger.util.balancer.TranslateBalancer;
 import com.example.Messenger.util.exceptions.ErrorResponse;
 import com.example.Messenger.util.exceptions.LanguageModeException;
 import com.example.Messenger.util.exceptions.LengthOfTextException;
 import com.example.Messenger.util.exceptions.UserNotOwnerOfChannelException;
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,13 +35,13 @@ public class MessengerRestController {
     private final GroupChatService groupChatService;
     private final UserService userService;
     private final ChannelService channelService;
-    private final TranslateLoadBalancer loadBalancer;
+    private final TranslateBalancer loadBalancer;
     private final Convertor convertor;
     private final ForwardMessageService forwardMessageService;
 
     @Autowired
     public MessengerRestController(GroupChatService groupChatService, UserService userService, ChannelService channelService,
-                                   TranslateLoadBalancer loadBalancer, Convertor convertor, ForwardMessageService forwardMessageService) {
+                                   TranslateBalancer loadBalancer, Convertor convertor, ForwardMessageService forwardMessageService) {
         this.groupChatService = groupChatService;
         this.userService = userService;
         this.channelService = channelService;

@@ -1,4 +1,4 @@
-package com.example.Messenger.util;
+package com.example.Messenger.util.balancer;
 
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.services.message.MessageTranslateAPI;
@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class TranslateLoadBalancer {
+public class TranslateBalancer {
     private static Map<Integer, MessageTranslateAPI> usersTranslateApiMap = new HashMap<>();
 
     public void add(int userId){

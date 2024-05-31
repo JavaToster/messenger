@@ -7,16 +7,20 @@ import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.user.ChatMemberRepository;
 import com.example.Messenger.repositories.chat.ChatRepository;
 import com.example.Messenger.repositories.user.UserRepository;
-import com.example.Messenger.services.cache.LanguageOfAppService;
-import com.example.Messenger.util.TranslateLoadBalancer;
+import com.example.Messenger.services.email.SendRestoreCodeToEmailService;
+import com.example.Messenger.util.balancer.TranslateBalancer;
+import com.example.Messenger.util.balancer.UserStatusBalancer;
 import com.example.Messenger.util.enums.ChatMemberType;
 import com.example.Messenger.util.enums.LanguageType;
+import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import com.example.Messenger.util.exceptions.LanguageNotSupportedException;
 import jakarta.servlet.http.Cookie;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,21 +28,35 @@ import java.util.*;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final ChatRepository chatRepository;
     private final ChatMemberRepository chatMemberRepository;
-    private final TranslateLoadBalancer loadBalancer;
+    private final TranslateBalancer loadBalancer;
     private final MessengerUserService messengerUserService;
-    @Autowired
-    public UserService(UserRepository userRepository, ChatRepository chatRepository, ChatMemberRepository chatMemberRepository,
-                       TranslateLoadBalancer loadBalancer, MessengerUserService messengerUserService) {
-        this.userRepository = userRepository;
-        this.chatRepository = chatRepository;
-        this.chatMemberRepository = chatMemberRepository;
-        this.loadBalancer = loadBalancer;
-        this.messengerUserService = messengerUserService;
+    private final SendRestoreCodeToEmailService sendRestoreCodeToEmailService;
+    private final PasswordEncoder encoder;
+    private final UserStatusBalancer statusBalancer;
+
+    public static void setCookie(HttpServletResponse response, String name, String value, int age){
+        Cookie cookie = new Cookie(name, value);
+        cookie.setMaxAge(age);
+        response.addCookie(cookie);
+    }
+
+    public static void deleteCookie(HttpServletResponse response, String name){
+        Cookie cookie = new Cookie(name, "value");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
+
+    public static void deleteCookie(HttpServletResponse response, String... names){
+        for(String name: names){
+            Cookie cookie = new Cookie(name, "value");
+            response.addCookie(cookie);
+        }
     }
 
     @Override
@@ -221,5 +239,31 @@ public class UserService implements UserDetailsService {
             }
         }
         return true;
+    }
+
+    public boolean isEmail(String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
+
+    public void sendCodeToRestore(HttpServletResponse response, String email) {
+        sendRestoreCodeToEmailService.sendCode(email);
+        UserService.setCookie(response, "restoreEmail", email, 120);
+
+    }
+
+    public StatusOfEqualsCodes checkRestoreCode(String email, int code){
+        return sendRestoreCodeToEmailService.checkCode(email, code);
+    }
+
+    @Transactional
+    public void changePasswordByEmail(String email, String password) {
+        User user = userRepository.findByEmail(email).orElse(null);
+        user.setPassword(encoder.encode(password));
+        userRepository.save(user);
+        removeEmailFromRestoreBalancer(email);
+    }
+
+    private void removeEmailFromRestoreBalancer(String email) {
+        sendRestoreCodeToEmailService.removeEmailFromBalancer(email);
     }
 }
