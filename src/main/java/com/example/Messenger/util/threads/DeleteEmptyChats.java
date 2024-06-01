@@ -6,14 +6,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class DeleteEmptyChats extends Thread{
-
     private final ChatService chatService;
 
     @Autowired
     public DeleteEmptyChats(ChatService chatService) {
         this.chatService = chatService;
     }
-
 
     @Override
     public void run() {

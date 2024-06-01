@@ -14,6 +14,7 @@ import com.example.Messenger.util.enums.ChatMemberType;
 import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import com.example.Messenger.util.exceptions.LanguageNotSupportedException;
+import com.example.Messenger.util.threads.DeleteRestoreCode;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -247,8 +248,9 @@ public class UserService implements UserDetailsService {
 
     public void sendCodeToRestore(HttpServletResponse response, String email) {
         sendRestoreCodeToEmailService.sendCode(email);
+        DeleteRestoreCode deleteRestoreCode = new DeleteRestoreCode(email, sendRestoreCodeToEmailService);
         UserService.setCookie(response, "restoreEmail", email, 120);
-
+        deleteRestoreCode.start();
     }
 
     public StatusOfEqualsCodes checkRestoreCode(String email, int code){

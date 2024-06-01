@@ -6,9 +6,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -45,9 +43,13 @@ public class SendRestoreCodeToEmailService {
     }
 
     // возвращает освободившийся код
-    public void removeEmailFromBalancer(String email){
+    public synchronized void removeEmailFromBalancer(String email){
         int code = restoreEmailBalancer.removeEmail(email);
+        if(code == -1){
+            return;
+        }
         codesForRestore.add(code);
+        System.out.println("email was removed");
     }
 
     private int getIndexOfRestoreCode(){

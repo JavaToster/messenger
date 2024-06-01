@@ -105,7 +105,10 @@ public class AuthController {
     }
 
     @PostMapping("/check_restore_code")
-    public String checkRestoreCode(@RequestParam("restoreCode") int code, @CookieValue("restoreEmail") String email){
+    public String checkRestoreCode(@RequestParam("restoreCode") int code, @CookieValue(value = "restoreEmail", required = false) String email){
+        if(email == null){
+            return "redirect:/auth/forgot_password";
+        }
         StatusOfEqualsCodes status = userService.checkRestoreCode(email, code);
         if(status == StatusOfEqualsCodes.EQUAL){
             statusBalancer.addUserByEmail(email, UserStatus.CHANGE_PASSWORD);

@@ -15,11 +15,20 @@ public class RestoreByEmailBalancer {
     public void addEmail(String email, int code){
         if(!emailToCodeMap.containsKey(email)){
             emailToCodeMap.put(email, new RestoreEmailsBox(Integer.valueOf(code)));
+        }else{
+            RestoreEmailsBox box = emailToCodeMap.get(email);
+            box.setCode(code);
+            emailToCodeMap.put(email, box);
         }
     }
 
     public int removeEmail(String email){
-        int emptyCode = emailToCodeMap.get(email).getCode();
+        int emptyCode;
+        try {
+            emptyCode = emailToCodeMap.get(email).getCode();
+        }catch (NullPointerException e){
+            return -1;
+        }
         emailToCodeMap.remove(email);
         return emptyCode;
     }
