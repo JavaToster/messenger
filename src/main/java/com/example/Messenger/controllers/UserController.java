@@ -3,10 +3,13 @@ package com.example.Messenger.controllers;
 import com.example.Messenger.dto.ChatDTO;
 import com.example.Messenger.dto.user.InfoOfUserDTO;
 import com.example.Messenger.services.chat.ChatService;
+import com.example.Messenger.services.user.ComplaintOfUserService;
 import com.example.Messenger.services.user.MessengerUserService;
 import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.services.cache.LanguageOfAppService;
 import com.example.Messenger.util.Convertor;
+import com.example.Messenger.util.threads.CheckComplaintsOfUserThread;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +19,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/user")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
@@ -23,15 +27,7 @@ public class UserController {
     private final MessengerUserService messengerUserService;
     private final LanguageOfAppService languageOfAppService;
     private final Convertor convertor;
-
-    @Autowired
-    public UserController(UserService userService, ChatService chatService, MessengerUserService messengerUserService, LanguageOfAppService languageOfAppService, Convertor convertor) {
-        this.userService = userService;
-        this.chatService = chatService;
-        this.messengerUserService = messengerUserService;
-        this.languageOfAppService = languageOfAppService;
-        this.convertor = convertor;
-    }
+    private final ComplaintOfUserService complaintOfUserService;
 
     @GetMapping("/profile")
     public String profile(Model model, @CookieValue("username") String username){
@@ -67,6 +63,13 @@ public class UserController {
         int id = chatService.createPrivateOrBotChat(messengerUserService.findByUsername(username), fromUsername);
 
         return "redirect:/messenger/chats/"+id;
+    }
+
+    @PostMapping("/{username}/complaint")
+    public String sendAComplain(@RequestParam("complaint-text") String complaintText, @PathVariable("username") String username){
+        complaintOfUserService.addComplaint(username, complaintText);
+
+        return "redirect:/user/"+username;
     }
 
     @PostMapping("/{id}/changeUserLang")

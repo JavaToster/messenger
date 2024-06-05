@@ -5,11 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DeleteEmptyChats extends Thread{
+public class DeleteEmptyChatsThread extends Thread{
     private final ChatService chatService;
 
     @Autowired
-    public DeleteEmptyChats(ChatService chatService) {
+    public DeleteEmptyChatsThread(ChatService chatService) {
         this.chatService = chatService;
     }
 

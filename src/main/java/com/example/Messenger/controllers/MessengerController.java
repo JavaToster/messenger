@@ -17,17 +17,18 @@ import com.example.Messenger.security.UserDetails;
 import com.example.Messenger.services.cache.LanguageOfAppService;
 import com.example.Messenger.services.chat.*;
 import com.example.Messenger.services.message.*;
-import com.example.Messenger.services.user.BotFatherService;
 import com.example.Messenger.services.user.BotService;
 import com.example.Messenger.services.user.MessengerUserService;
 import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.util.Convertor;
 import com.example.Messenger.util.message.BalancerOfFoundChats;
 import com.example.Messenger.util.message.UserFoundedChats;
-import com.example.Messenger.util.threads.DeleteEmptyChats;
+import com.example.Messenger.util.threads.CheckComplaintsOfUserThread;
+import com.example.Messenger.util.threads.DeleteEmptyChatsThread;
 import com.example.Messenger.util.MessengerMapper;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import com.example.Messenger.util.exceptions.UserNotMemberException;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,26 +47,30 @@ import java.util.NoSuchElementException;
 public class MessengerController {
     private final GroupChatService groupChatService;
     private final UserService userService;
-    private final MessageService messageService;
     private final ChatService chatService;
     private final ChannelService channelService;
     private final BlockMessageService blockMessageService;
-    private final DeleteEmptyChats deleteEmptyChats;
+    private final DeleteEmptyChatsThread deleteEmptyChatsThread;
     private final MessengerMapper messengerMapper;
-    private final BotFatherService botFatherService;
     private final BotChatService botChatService;
     private final MessengerUserService messengerUserService;
     private final BotService botService;
     private final BalancerOfFoundChats balancerOfFoundChats;
     private final LanguageOfAppService languageOfAppService;
-    private boolean startedThread;
     private final MessageWrapperService messageWrapperService;
+    private final CheckComplaintsOfUserThread checkComplaintsOfUserThread;
     @Value("${bot.father.database.id}")
     private int botFatherDatabaseId;
     private final Convertor convertor;
 
     /** main window
      * главное окно*/
+
+    @PostConstruct
+    public void initialize(){
+        deleteEmptyChatsThread.start();
+        checkComplaintsOfUserThread.start();
+    }
     @GetMapping("")
     public String messengerWindow(Authentication authentication, HttpServletResponse response, Model model){
         //получаем user details и уже после используем его для получения никнейма
@@ -95,12 +100,6 @@ public class MessengerController {
         model.addAttribute("foundUsers", balancerOfFoundChats.foundUsers(userDetails.getUsername()));
         model.addAttribute("foundUser", new FoundUserOfUsername());
         response.addCookie(userService.createCookie("username", userDetails.getUsername(), 60*60));
-
-        //это условие используется для определния работает ли на данный момент дополнительный поток(поток нужен для удаления пустых чатов из базы данных, чтобы освободить память)
-        if(!startedThread){
-            deleteEmptyChats.start();
-            startedThread = !startedThread;
-        }
 
         return "/html/Messenger";
     }

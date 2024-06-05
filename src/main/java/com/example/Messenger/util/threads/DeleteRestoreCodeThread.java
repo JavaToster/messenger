@@ -2,11 +2,11 @@ package com.example.Messenger.util.threads;
 
 import com.example.Messenger.services.email.SendRestoreCodeToEmailService;
 
-public class DeleteRestoreCode extends Thread{
+public class DeleteRestoreCodeThread extends Thread{
     private volatile SendRestoreCodeToEmailService sendEmailService;
     private final String email;
 
-    public DeleteRestoreCode(String email, SendRestoreCodeToEmailService sendEmailService){
+    public DeleteRestoreCodeThread(String email, SendRestoreCodeToEmailService sendEmailService){
         this.email = email;
         this.sendEmailService = sendEmailService;
     }

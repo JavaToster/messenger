@@ -6,21 +6,24 @@ import com.example.Messenger.models.message.ImageMessage;
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.Bot;
 import com.example.Messenger.models.user.ChatMember;
+import com.example.Messenger.models.user.ComplaintOfUser;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.user.ChatMemberRepository;
 import com.example.Messenger.repositories.chat.ChatRepository;
+import com.example.Messenger.repositories.user.ComplaintOfUserRepository;
 import com.example.Messenger.repositories.user.UserRepository;
 import com.example.Messenger.services.email.SendRestoreCodeToEmailService;
 import com.example.Messenger.util.balancer.TranslateBalancer;
-import com.example.Messenger.util.balancer.UserStatusBalancer;
 import com.example.Messenger.util.enums.ChatMemberType;
 import com.example.Messenger.util.enums.LanguageType;
+import com.example.Messenger.util.enums.RoleOfUser;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import com.example.Messenger.util.exceptions.LanguageNotSupportedException;
-import com.example.Messenger.util.threads.DeleteRestoreCode;
+import com.example.Messenger.util.threads.DeleteRestoreCodeThread;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -42,7 +45,7 @@ public class UserService implements UserDetailsService {
     private final MessengerUserService messengerUserService;
     private final SendRestoreCodeToEmailService sendRestoreCodeToEmailService;
     private final PasswordEncoder encoder;
-    private final UserStatusBalancer statusBalancer;
+    private final ComplaintOfUserRepository complaintOfUserRepository;
 
     public static void setCookie(HttpServletResponse response, String name, String value, int age){
         Cookie cookie = new Cookie(name, value);
@@ -251,9 +254,9 @@ public class UserService implements UserDetailsService {
 
     public void sendCodeToRestore(HttpServletResponse response, String email) {
         sendRestoreCodeToEmailService.sendCode(email);
-        DeleteRestoreCode deleteRestoreCode = new DeleteRestoreCode(email, sendRestoreCodeToEmailService);
+        DeleteRestoreCodeThread deleteRestoreCodeThread = new DeleteRestoreCodeThread(email, sendRestoreCodeToEmailService);
         UserService.setCookie(response, "restoreEmail", email, 120);
-        deleteRestoreCode.start();
+        deleteRestoreCodeThread.start();
     }
 
     public StatusOfEqualsCodes checkRestoreCode(String email, int code){
@@ -309,5 +312,23 @@ public class UserService implements UserDetailsService {
 
     private User getUser(String username){
         return userRepository.findByUsername(username).orElse(null);
+    }
+
+    public List<ComplaintOfUser> getComplaintsOfUser(User user) {
+        return complaintOfUserRepository.findByOwner(user);
+    }
+
+    @Transactional
+    public void banComplaintsUser() {
+        List<User> users = userRepository.findAll();
+        for(User user: users){
+            if(user.getRole().equals(RoleOfUser.ROLE_BAN)){
+                continue;
+            }
+            if(user.getComplaints().size() >= 3){
+                user.setRole(RoleOfUser.ROLE_BAN);
+            }
+            userRepository.save(user);
+        }
     }
 }

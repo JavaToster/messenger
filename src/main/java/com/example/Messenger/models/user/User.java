@@ -2,6 +2,7 @@ package com.example.Messenger.models.user;
 
 import com.example.Messenger.models.message.Message;
 import com.example.Messenger.util.enums.LanguageType;
+import com.example.Messenger.util.enums.RoleOfUser;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -29,9 +30,13 @@ public class User extends MessengerUser{
     private Date lastOnline;
     @Enumerated(value = EnumType.STRING)
     private LanguageType lang;
+    @Enumerated(value = EnumType.STRING)
+    private RoleOfUser role;
+    @OneToMany(mappedBy = "owner")
+    private List<ComplaintOfUser> complaints;
 
     public User(){}
-    public User(String firstName, String lastname, String username, String password, String email, String phone, String lang){
+    public User(String firstName, String lastname, String username, String password, String email, String phone, String lang, RoleOfUser role){
         this.name = firstName;
         this.lastname = lastname;
         this.username = username;
@@ -127,5 +132,20 @@ public class User extends MessengerUser{
 
     public void setEmail(String email) {
         this.email = email;
+    }
+    public String getRole(){
+        return this.role.name();
+    }
+
+    public void setRole(RoleOfUser role){
+        this.role = role;
+    }
+
+    public List<ComplaintOfUser> getComplaints() {
+        return complaints;
+    }
+
+    public void setComplaints(List<ComplaintOfUser> complaints) {
+        this.complaints = complaints;
     }
 }

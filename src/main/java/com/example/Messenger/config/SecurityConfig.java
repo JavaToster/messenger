@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/auth/login", "/auth/register", "/error", "/bot-rest/**", "/rest-messenger/**", "/redis/**",
                                 "/auth/**").permitAll()
+                        .requestMatchers("/messenger/**", "/user/**").hasRole("USER")
                         .anyRequest().authenticated());
 
         return http.build();

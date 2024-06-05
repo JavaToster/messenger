@@ -4,24 +4,24 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
+        body{
+            display: flex;
+        }
       .main{
         width: 400px;
         border: 2px solid black;
-        margin-left: 750px;
+        margin-left: 350px;
         margin-top: 200px;
         border-radius: 10px;
       }
-
       img{
         width: 100px;
         height: 100px;
       }
-
       .header img{
         border-radius: 50px;
         margin-left: 140px;
       }
-
       .header p{
         margin-left: 30px;
         font-size: 20px;
@@ -46,7 +46,8 @@
       .first-image{
         margin-left: 15px;
         margin-right: 5px;
-        border: 1px
+        border: 1px;
+        border-radius: 12px;
       }
 
       .medium-image{
@@ -64,7 +65,7 @@
         height: 100px;
         position: absolute;
         top: 330px;
-        right: 950px;
+        left: 450px;
       }
 
       .send-to-user button{
@@ -84,7 +85,37 @@
         left: -142px;
         top: -2px;
       }
-
+      .complaint{
+        width: 397px;
+        height: 300px;
+        border: 2px solid black;
+        border-radius: 12px;
+        margin-left: 100px;
+        margin-top: 200px;
+      }
+      .complaint textarea{
+        border: 2px solid #67f4fa;
+        border-radius: 10px;
+        font-size: 13px;
+        width: 390px;
+      }
+      .complaint textarea:hover{
+        border: 2px solid #679dfa;
+      }
+      .complaint input[type="submit"]{
+        margin-left: 320px;
+        margin-top: 10px;
+        background-color: #67f4fa;
+        border: 2px solid black;
+        border-radius: 12px;
+        font-size: 18px;
+        color: white;
+      }
+      .complaint input[type="submit"]:hover{
+        background-color: #679dfa;
+        border: none;
+        font-size: 20px;
+      }
     </style>
 </head>
 <body>
@@ -107,12 +138,18 @@
             <p th:if="${infoOfUser.isLastname()}" th:text="'lastname: '+${infoOfUser.getLastname()}">lastname: Gizatullin</p>
             <p th:text="'email: '+${infoOfUser.getEmail()}">email: kamil.gizatullin.03@gmail.com</p>
           </div>
-      </div>
-      <h2 id="images-text">Images</h2>
-      <div class="images">
-        <img class="first-image" th:each="url: ${infoOfUser.getImagesUrl()}" th:src="${url}" alt="">
-      </div>
+            <h2 id="images-text">Images</h2>
+            <div class="images">
+                <img class="first-image" th:each="url: ${infoOfUser.getImagesUrl()}" th:src="${url}" alt="">
+            </div>
+        </div>
     </div>
-
+    <div class="complaint">
+      <h2>Send a complaint</h2>
+        <form method="post" th:action="@{/user/{username}/complaint (username=${infoOfUser.getUsername()})}">
+            <textarea name="complaint-text" cols="51" rows="10"></textarea>
+            <input type="submit" value="send">
+        </form>
+    </div>
 </body>
 </html>

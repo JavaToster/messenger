@@ -4,6 +4,7 @@ import com.example.Messenger.models.user.User;
 import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.services.cache.LanguageOfAppService;
 import com.example.Messenger.util.balancer.UserStatusBalancer;
+import com.example.Messenger.util.enums.RoleOfUser;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import com.example.Messenger.util.enums.UserStatus;
 import jakarta.servlet.http.HttpServletResponse;
@@ -59,7 +60,7 @@ public class AuthController {
             return "redirect:/auth/register?error";
         }
 
-        userService.register(new User(firstName, lastName, username, passwordEncoder.encode(password), email, phone, lang));
+        userService.register(new User(firstName, lastName, username, passwordEncoder.encode(password), email, phone, lang, RoleOfUser.ROLE_USER));
         return "redirect:/auth/login";
     }
 
