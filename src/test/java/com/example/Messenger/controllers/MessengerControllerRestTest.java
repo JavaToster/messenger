@@ -9,8 +9,9 @@ import com.example.Messenger.services.chat.PrivateChatService;
 import com.example.Messenger.services.message.BlockMessageService;
 import com.example.Messenger.services.message.MessageService;
 import com.example.Messenger.services.user.UserService;
-import com.example.Messenger.util.threads.DeleteEmptyChats;
+import com.example.Messenger.util.threads.DeleteEmptyChatsThread;
 import com.example.Messenger.util.MessengerMapper;
+import com.example.Messenger.util.threads.DeleteEmptyChatsThread;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -43,7 +44,7 @@ class MessengerControllerRestTest {
     @Mock
     private BlockMessageService blockMessageService;
     @Mock
-    private DeleteEmptyChats deleteEmptyChats;
+    private DeleteEmptyChatsThread deleteEmptyChats;
     @Mock
     private MessengerMapper messengerMapper;
 
