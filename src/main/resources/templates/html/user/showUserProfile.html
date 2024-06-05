@@ -4,25 +4,114 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style>
-        .main{
-            margin-left: 850px;
-            margin-top: 300px;
-        }
+      .main{
+        width: 400px;
+        border: 2px solid black;
+        margin-left: 750px;
+        margin-top: 200px;
+        border-radius: 10px;
+      }
 
-        #send-message-form input{
-            color: white;
-            background-color: black;
-            border-radius: 12px;
-        }
+      img{
+        width: 100px;
+        height: 100px;
+      }
+
+      .header img{
+        border-radius: 50px;
+        margin-left: 140px;
+      }
+
+      .header p{
+        margin-left: 30px;
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .info p{
+        font-size: 20px;
+        font-weight: bold;
+        margin-left: 30px;
+      }
+
+      #images-text{
+        margin-left: 160px;
+      }
+
+      .images{
+        width: 360px;
+        margin-left: 20px;
+        margin-bottom: 10px;
+      }
+      .first-image{
+        margin-left: 15px;
+        margin-right: 5px;
+        border: 1px
+      }
+
+      .medium-image{
+        margin-left: 5px;
+        margin-right: 5px;
+      }
+
+      .last-image{
+        margin-left: 5px;
+        margin-right: 15px;
+      }
+
+      .send-to-user{
+        width: 100px;
+        height: 100px;
+        position: absolute;
+        top: 330px;
+        right: 950px;
+      }
+
+      .send-to-user button{
+        background-color: white;
+        border: 0px;
+        border-radius: 20px;
+        width: 30px;
+        height: 30px;
+        position: absolute;
+        left: 200px;
+      }
+
+      #send-to-user-icon{
+        width: 30px;
+        height: 30px;
+        position: absolute;
+        left: -142px;
+        top: -2px;
+      }
+
     </style>
 </head>
 <body>
     <div class="main">
-        <h3 id="username" th:text="${user.getUsername()}">Toster1</h3>
-
-        <form id="send-message-form" th:action="@{/user/{id}/send-message?from={username} (id=${user.getId()},username=${myUsername})}" th:method="POST">
-            <input type="submit" th:value="${language.getToSendOfUser()}">
-        </form>
+        <div class="about-user">
+          <div class="header">
+            <img src="https://s0.rbk.ru/v6_top_pics/media/img/2/53/347128289038532.webp" alt="">
+            <p th:text="'username: '+${infoOfUser.getUsername()}">username: TosterW</p>
+            <p th:text="'last time: '+${infoOfUser.getLastTime()}">last time: 20:12</p>
+            <form class="send-to-user" th:action="@{/user/{username}/send-message?from={myUsername} (username=${infoOfUser.getUsername()}, myUsername=${myUsername})}" method="post">
+              <div>
+                <button type="submit">
+                  <img id="send-to-user-icon" src="https://cdn.onlinewebfonts.com/svg/img_136549.png" alt="Send">
+                </button>
+              </div>
+            </form>
+          </div>
+          <div class="info">
+            <p th:if="${infoOfUser.isFirstname()}" th:text="'firstname: '+${infoOfUser.getFirstname()}">firstname: Kamil</p>
+            <p th:if="${infoOfUser.isLastname()}" th:text="'lastname: '+${infoOfUser.getLastname()}">lastname: Gizatullin</p>
+            <p th:text="'email: '+${infoOfUser.getEmail()}">email: kamil.gizatullin.03@gmail.com</p>
+          </div>
+      </div>
+      <h2 id="images-text">Images</h2>
+      <div class="images">
+        <img class="first-image" th:each="url: ${infoOfUser.getImagesUrl()}" th:src="${url}" alt="">
+      </div>
     </div>
 
 </body>

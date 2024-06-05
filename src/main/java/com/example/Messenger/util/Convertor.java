@@ -9,6 +9,7 @@ import com.example.Messenger.dto.message.rest.ForwardMessageResponseDTO;
 import com.example.Messenger.dto.message.util.ForwardMessageSpecification;
 import com.example.Messenger.dto.message.util.ImageMessageSpecification;
 import com.example.Messenger.dto.message.util.LinkMessageSpecification;
+import com.example.Messenger.dto.user.InfoOfUserDTO;
 import com.example.Messenger.dto.util.DateDayOfMessagesDTO;
 import com.example.Messenger.models.chat.*;
 import com.example.Messenger.models.message.*;
@@ -283,6 +284,10 @@ public class Convertor {
     }
 
 
+    public InfoOfUserDTO convertToInfoOfUserDTO(User byUsername) {
+        return new InfoOfUserDTO(byUsername.getId(), byUsername.getUsername(), byUsername.getName(), byUsername.getLastname(), byUsername.getEmail());
+    }
+
     /** приватные методы для public методов */
 
 
@@ -399,5 +404,4 @@ public class Convertor {
         }
         return response;
     }
-
 }

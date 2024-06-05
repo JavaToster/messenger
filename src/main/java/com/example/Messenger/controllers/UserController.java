@@ -1,6 +1,7 @@
 package com.example.Messenger.controllers;
 
 import com.example.Messenger.dto.ChatDTO;
+import com.example.Messenger.dto.user.InfoOfUserDTO;
 import com.example.Messenger.services.chat.ChatService;
 import com.example.Messenger.services.user.MessengerUserService;
 import com.example.Messenger.services.user.UserService;
@@ -46,9 +47,17 @@ public class UserController {
     }
     @GetMapping("/{username}")
     public String showUserProfile(@PathVariable("username") String username, Model model, @CookieValue("username") String myUsername){
-        model.addAttribute("user", userService.findByUsername(username));
+        // нужно чтобы проверять не смотрит ли пользователь на свое же окно
+        if (username.equals(myUsername)) {
+            return "redirect:/user/profile";
+        }
+
+        InfoOfUserDTO infoOfUserDTO = convertor.convertToInfoOfUserDTO(userService.findByUsername(username));
+        infoOfUserDTO.setLastTime(userService.getLastOnlineTime(username));
+        infoOfUserDTO.setImagesUrl(userService.getImagesListByInterlocutors(username, myUsername));
+        model.addAttribute("infoOfUser", infoOfUserDTO);
         model.addAttribute("myUsername", myUsername);
-        model.addAttribute("language", languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
+        model.addAttribute("url", new String());
 
         return "/html/user/showUserProfile";
     }

@@ -141,7 +141,7 @@ public class ChatService {
     public int createPrivateOrBotChat(MessengerUser user, String username) {
         MessengerUser messengerUser = messengerUserService.findById(user.getId());
         if(messengerUser.getClass() == User.class){
-            int id = isPrivateChat(userService.findById(user.getId()), userService.findByUsername(username));
+            int id = isPrivateChat((User) user, userService.findByUsername(username));
             if(id == -1)
                 id = privateChatService.createNewChat(userService.findById(user.getId()), userService.findByUsername(username));
             return id;
@@ -259,11 +259,13 @@ public class ChatService {
     }
 
     private int isPrivateChat(User member1, User member2){
-        List<PrivateChat> chats = privateChatRepository.findAll();
-        for(PrivateChat chat: chats){
-            List<ChatMember> members = chat.getMembers();
-            if(members.get(0).getUser().getId() == member1.getId() && members.get(1).getUser().getId() == member2.getId()){
-                return chat.getId();
+        List<Chat> chatsOfUser = ChatMember.getChatsOfUser(member1);
+        for(Chat chat: chatsOfUser){
+            List<ChatMember> membersOfSecondUser = member2.getMembers();
+            for(ChatMember m: membersOfSecondUser){
+                if(m.getChat().equals(chat)){
+                    return chat.getId();
+                }
             }
         }
 

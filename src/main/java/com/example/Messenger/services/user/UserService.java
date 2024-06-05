@@ -1,6 +1,9 @@
 package com.example.Messenger.services.user;
 
 import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.chat.PrivateChat;
+import com.example.Messenger.models.message.ImageMessage;
+import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.Bot;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.User;
@@ -267,5 +270,44 @@ public class UserService implements UserDetailsService {
 
     private void removeEmailFromRestoreBalancer(String email) {
         sendRestoreCodeToEmailService.removeEmailFromBalancer(email);
+    }
+
+    // метод для получения изображений из приватного чата
+    // используется в окне просмотра пользователя
+    public List<String> getImagesListByInterlocutors(String username, String myUsername) {
+        List<ChatMember> membersList1 = chatMemberRepository.findByUser(getUser(username));
+        List<ChatMember> membersList2 = chatMemberRepository.findByUser(getUser(myUsername));
+
+        List<String> urls = new LinkedList<>();
+
+        for(ChatMember member: membersList1){
+            Chat chatOfMember = member.getChat();
+            if(chatOfMember.getClass() != PrivateChat.class){
+                continue;
+            }
+
+            for(ChatMember member2: membersList2){
+                if(chatOfMember.getMembers().contains(member2)){
+                    List<String> urlsByChat = getImagesFromChat(chatOfMember);
+                    urls.addAll(urlsByChat);
+                }
+            }
+        }
+        return urls;
+    }
+
+    private List<String> getImagesFromChat(Chat chat){
+        List<String> urlsOfImages = new LinkedList<>();
+
+        for(MessageWrapper message: chat.getMessages()){
+            if(message.getClass() == ImageMessage.class){
+                urlsOfImages.add(message.getContent());
+            }
+        }
+        return urlsOfImages;
+    }
+
+    private User getUser(String username){
+        return userRepository.findByUsername(username).orElse(null);
     }
 }

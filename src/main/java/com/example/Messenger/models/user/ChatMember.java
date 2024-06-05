@@ -4,6 +4,9 @@ import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.util.enums.ChatMemberType;
 import jakarta.persistence.*;
 
+import java.util.LinkedList;
+import java.util.List;
+
 @Entity
 @Table(name = "chat_member")
 public class ChatMember {
@@ -28,6 +31,13 @@ public class ChatMember {
         this.user = user;
         this.chat = chat;
         this.memberType = memberType;
+    }
+
+    public static List<Chat> getChatsOfUser(User member) {
+        List<ChatMember> members = member.getMembers();
+        List<Chat> chatsOfUser = new LinkedList<>();
+        members.forEach(m -> chatsOfUser.add(m.getChat()));
+        return chatsOfUser;
     }
 
     public int getId() {

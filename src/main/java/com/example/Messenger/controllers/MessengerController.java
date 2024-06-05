@@ -29,7 +29,7 @@ import com.example.Messenger.util.MessengerMapper;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import com.example.Messenger.util.exceptions.UserNotMemberException;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -42,6 +42,7 @@ import java.util.NoSuchElementException;
 
 @Controller
 @RequestMapping({"/messenger", "/messenger/", "/", ""})
+@RequiredArgsConstructor
 public class MessengerController {
     private final GroupChatService groupChatService;
     private final UserService userService;
@@ -62,29 +63,6 @@ public class MessengerController {
     @Value("${bot.father.database.id}")
     private int botFatherDatabaseId;
     private final Convertor convertor;
-    @Autowired
-    public MessengerController(GroupChatService groupChatService, UserService userService, MessageService messageService,
-                               ChatService chatService, ChannelService channelService, BlockMessageService blockMessageService,
-                               DeleteEmptyChats deleteEmptyChats, MessengerMapper messengerMapper, BotFatherService botFatherService,
-                               BotChatService botChatService, MessengerUserService messengerUserService, BotService botService, BalancerOfFoundChats balancerOfFoundChats,
-                               LanguageOfAppService languageOfAppService, MessageWrapperService messageWrapperService, Convertor convertor) {
-        this.groupChatService = groupChatService;
-        this.userService = userService;
-        this.messageService = messageService;
-        this.chatService = chatService;
-        this.channelService = channelService;
-        this.blockMessageService = blockMessageService;
-        this.deleteEmptyChats = deleteEmptyChats;
-        this.messengerMapper = messengerMapper;
-        this.botFatherService = botFatherService;
-        this.botChatService = botChatService;
-        this.messengerUserService = messengerUserService;
-        this.botService = botService;
-        this.balancerOfFoundChats = balancerOfFoundChats;
-        this.languageOfAppService = languageOfAppService;
-        this.messageWrapperService = messageWrapperService;
-        this.convertor = convertor;
-    }
 
     /** main window
      * главное окно*/
