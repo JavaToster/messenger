@@ -39,3 +39,4 @@ build/
 tasks.txt
 
 src/main/java/com/example/Messenger/controllers/rest/RedisController.java
+/src/main/resources/templates/html/auth/oauth_login.html
