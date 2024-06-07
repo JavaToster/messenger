@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style>
+      .main{
+        margin-left: 30px;
+        border: 2px solid black;
+        width: 500px;
+      }
+      .description{
+        border: 2px solid black;
+        width: 400px;
+        margin: 10px;
+      }
+      .description p{
+        margin: 5px;
+        work-break: break-all;
+      }
+      #from{
+        margin-left: 10px;
+      }
+      time{
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main">
+      <div class="description">
+        <p th:text="${complaint.getText()}">is a super gandon dgdhihfgdfgnidf igbfdugudf ugbufdhgdhfiug ughdfng;h</p>
+      </div>
+      <p id="from" th:text="'from: '+${complaint.getFrom().getUsername()}">from: Ilnur</p>
+      <time th:text="${complaint.getTime().getHours()}+':'+${complaint.getTime().getMinutes()}">20:20</time>
+    </div>
+  </body>
+</html>

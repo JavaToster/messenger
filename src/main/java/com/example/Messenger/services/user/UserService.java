@@ -20,6 +20,7 @@ import com.example.Messenger.util.enums.RoleOfUser;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import com.example.Messenger.util.exceptions.LanguageNotSupportedException;
 import com.example.Messenger.util.threads.DeleteRestoreCodeThread;
+import com.example.Messenger.util.threads.ReBlockUserThread;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -330,5 +331,47 @@ public class UserService implements UserDetailsService {
             }
             userRepository.save(user);
         }
+    }
+
+    public List<User> getUsersWithComplaint() {
+        List<ComplaintOfUser> complaints = complaintOfUserRepository.findAll();
+        System.out.println(complaints.size());
+        List<User> usersWithComplaint = new LinkedList<>();
+        for(ComplaintOfUser complaint: complaints){
+            User user = complaint.getOwner();
+            usersWithComplaint.add(user);
+            complaints.removeIf(complaint1 -> complaint1.getOwner().getId() == user.getId());
+            if(complaints.isEmpty()){
+                break;
+            }
+        }
+        return usersWithComplaint;
+    }
+
+    @Transactional
+    public void banUser(String username, String time) {
+        Calendar calendar = Calendar.getInstance();
+        switch (time){
+            case "12h" -> calendar.add(Calendar.SECOND, 30);
+            case "24h" -> calendar.add(Calendar.HOUR, 24);
+            case "14d" -> calendar.add(Calendar.DAY_OF_MONTH, 14);
+            case "30d" -> calendar.add(Calendar.DAY_OF_MONTH, 30);
+            case "120d" -> calendar.add(Calendar.DAY_OF_MONTH, 120);
+            case "0" -> calendar = null;
+            default -> calendar.add(Calendar.MINUTE, 0);
+        }
+
+        User user = getUser(username);
+        ReBlockUserThread reBlockUserThread = new ReBlockUserThread(user, (this), calendar);
+        reBlockUserThread.start();
+
+        user.setRole(RoleOfUser.ROLE_BAN);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public synchronized void unban(User user) {
+        user.setRole(RoleOfUser.ROLE_USER);
+        userRepository.save(user);
     }
 }

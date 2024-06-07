@@ -66,8 +66,8 @@ public class UserController {
     }
 
     @PostMapping("/{username}/complaint")
-    public String sendAComplain(@RequestParam("complaint-text") String complaintText, @PathVariable("username") String username){
-        complaintOfUserService.addComplaint(username, complaintText);
+    public String sendAComplain(@RequestParam("complaint-text") String complaintText, @PathVariable("username") String username, @CookieValue("username") String fromUsername){
+        complaintOfUserService.addComplaint(username, complaintText, fromUsername);
 
         return "redirect:/user/"+username;
     }
