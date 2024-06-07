@@ -39,7 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login", "/auth/register", "/error", "/bot-rest/**", "/rest-messenger/**", "/redis/**",
                                 "/auth/**").permitAll()
                         .requestMatchers("/messenger/**", "/user/**").hasAnyRole("USER", "BLOCKER")
-                        .requestMatchers("/admin/blocker/**").hasAnyRole("BLOCKER")
+                        .requestMatchers("/admin/blocker/**").hasAnyRole("BLOCKER", "ADMIN")
                         .anyRequest().authenticated());
 
         return http.build();

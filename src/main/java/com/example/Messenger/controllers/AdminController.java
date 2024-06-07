@@ -64,4 +64,26 @@ public class AdminController {
 
         return "redirect:/admin/blocker/complaint-users";
     }
+
+    @GetMapping("/users")
+    public String usersList(Model model){
+        model.addAttribute("users", userService.findAll());
+        model.addAttribute("user", new User());
+
+        return "/html/forAdmins/admin/setAdminsList";
+    }
+
+    @PostMapping("/blocker/{username}/set")
+    public String setBlocker(@PathVariable("username") String username){
+        userService.setBlocker(username);
+
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/blocker/{username}/unset")
+    public String unsetBlocker(@PathVariable("username") String username){
+        userService.unsetBlocker(username);
+
+        return "redirect:/admin/users";
+    }
 }

@@ -374,4 +374,18 @@ public class UserService implements UserDetailsService {
         user.setRole(RoleOfUser.ROLE_USER);
         userRepository.save(user);
     }
+
+    @Transactional
+    public void setBlocker(String username) {
+        User user = getUser(username);
+        user.setRole(RoleOfUser.ROLE_BLOCKER);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void unsetBlocker(String username){
+        User user = getUser(username);
+        user.setRole(RoleOfUser.ROLE_USER);
+        userRepository.save(user);
+    }
 }
