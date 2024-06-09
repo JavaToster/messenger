@@ -71,7 +71,7 @@
             text-decoration: none;
             margin-top: 16px;
         }
-        .container input[type="tel"]{
+        .container input[type="tel"], .container input[type="file"]{
             width: 290px;
             width: 100%;
             padding: 8px;
@@ -109,6 +109,8 @@
             <option value="CHINESE">中文</option>
             <option value="ITALIAN">Italiano</option>
         </select>
+        <label for="user-icon">Enter icon: </label>
+        <input type="file" name="user-icon" id="user-icon">
         <input type="submit" value="Register">
         <a href="/auth/login" class="register-button">Login</a>
     </form>

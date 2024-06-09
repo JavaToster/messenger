@@ -1,5 +1,6 @@
 package com.example.Messenger.services.user;
 
+import com.example.Messenger.dto.user.RegisterUserDTO;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.chat.PrivateChat;
 import com.example.Messenger.models.message.ImageMessage;
@@ -86,8 +87,13 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public void register(User user) {
+    public void register(User user){
         loadBalancer.add(userRepository.save(user).getId());
+    }
+
+    @Transactional
+    public void register(RegisterUserDTO user){
+
     }
 
     public User findById(int id){

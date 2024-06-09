@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 @RequestMapping("/auth")
@@ -48,7 +49,8 @@ public class AuthController {
 
     @PostMapping("/register")
     public String registerPost(@RequestParam("firstName") String firstName, @RequestParam("lastName") String lastName, @RequestParam("username") String username,
-                               @RequestParam("password") String password, @RequestParam("email") String email, @RequestParam("phone") String phone, @RequestParam("language") String lang){
+                               @RequestParam("password") String password, @RequestParam("email") String email, @RequestParam("phone") String phone,
+                               @RequestParam("language") String lang, @RequestParam("user-icon")MultipartFile icon){
 
         //if user is present -> redirect to register page
         //если человек существует -> возвращаем его на страницу регистрации
