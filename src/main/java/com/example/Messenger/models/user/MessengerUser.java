@@ -18,14 +18,6 @@ public class MessengerUser {
     @Column(name = "username")
     protected String username;
 
-    public List<ForwardMessage> getForwardMessages() {
-        return forwardMessages;
-    }
-
-    public void setForwardMessages(List<ForwardMessage> forwardMessages) {
-        this.forwardMessages = forwardMessages;
-    }
-
     @OneToMany(mappedBy = "fromOwner")
     protected List<ForwardMessage> forwardMessages;
 

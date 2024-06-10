@@ -5,6 +5,7 @@ import com.example.Messenger.models.message.ImageMessage;
 import com.example.Messenger.repositories.chat.ChatRepository;
 import com.example.Messenger.repositories.message.PhotoMessageRepository;
 import com.example.Messenger.repositories.user.UserRepository;
+import com.example.Messenger.util.CloudinaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -23,16 +24,16 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 public class PhotoMessageService {
     private final PhotoMessageRepository photoMessageRepository;
-    private final ClodinaryService clodinaryService;
+    private final CloudinaryService cloudinaryService;
     private final UserRepository userRepository;
     private final ChatRepository chatRepository;
-    @Value("${image.path}")
+    @Value("${image.path.messages}")
     private String imagePath;
 
     @Autowired
-    public PhotoMessageService(PhotoMessageRepository photoMessageRepository, ClodinaryService clodinaryService, UserRepository userRepository, ChatRepository chatRepository) {
+    public PhotoMessageService(PhotoMessageRepository photoMessageRepository, CloudinaryService cloudinaryService, UserRepository userRepository, ChatRepository chatRepository) {
         this.photoMessageRepository = photoMessageRepository;
-        this.clodinaryService = clodinaryService;
+        this.cloudinaryService = cloudinaryService;
         this.userRepository = userRepository;
         this.chatRepository = chatRepository;
     }
@@ -48,7 +49,7 @@ public class PhotoMessageService {
 
         String filePath = imagePath+(getLastImageId()+1)+getExpansion(file.getOriginalFilename());
         file.transferTo(new File(filePath));
-        String url = clodinaryService.sendMessage(filePath);
+        String url = cloudinaryService.sendMessage(filePath);
         ImageMessage imageMessage = new ImageMessage(chatRepository.findById(chatId).orElse(null), userRepository.findById(userId).orElse(null), url, underPhoto, getExpansion(file.getOriginalFilename()));
         photoMessageRepository.save(imageMessage);
     }

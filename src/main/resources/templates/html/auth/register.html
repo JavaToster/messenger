@@ -71,7 +71,7 @@
             text-decoration: none;
             margin-top: 16px;
         }
-        .container input[type="tel"]{
+        .container input[type="tel"], .container input[type="file"]{
             width: 290px;
             width: 100%;
             padding: 8px;
@@ -94,21 +94,23 @@
 <body>
 <div class="container">
     <h2 style="">Registration</h2>
-    <form name="f" method="post" action="/auth/register">
-        <input type="text" name="firstName" placeholder="Enter your first name">
-        <input type="text" name="lastName" placeholder="Enter your last name">
-        <input type="text" name="username" placeholder="Enter your username">
-        <input type="password" name="password" placeholder="Enter your password">
-        <input type="email" name="email" placeholder="Enter your email">
-        <input type="tel" name="phone" placeholder="Enter your phone number">
+    <form name="f" method="post" action="/auth/register" th:object="${register_user}" enctype="multipart/form-data">
+        <input type="text" name="firstName" placeholder="Enter your first name" th:field="*{firstname}">
+        <input type="text" name="lastName" placeholder="Enter your last name" th:field="*{lastname}">
+        <input type="text" name="username" placeholder="Enter your username" th:field="*{username}">
+        <input type="password" name="password" placeholder="Enter your password" th:field="*{password}">
+        <input type="email" name="email" placeholder="Enter your email" th:field="*{email}">
+        <input type="tel" name="phone" placeholder="Enter your phone number" th:field="*{phone}">
         <label for="lang">Select language:</label>
-        <select id="lang" name="language">
+        <select id="lang" name="language" th:field="*{lang}">
             <option value="ENGLISH">English</option>
             <option value="RUSSIAN">Русский</option>
             <option value="GERMAN">Deutsch</option>
             <option value="CHINESE">中文</option>
             <option value="ITALIAN">Italiano</option>
         </select>
+        <label for="icon">enter icon</label>
+        <input type="file" th:field="*{icon}" id="icon">
         <input type="submit" value="Register">
         <a href="/auth/login" class="register-button">Login</a>
     </form>

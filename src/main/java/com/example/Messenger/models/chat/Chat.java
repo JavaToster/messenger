@@ -76,4 +76,11 @@ public class Chat {
                 ", forwardMessages=" + forwardMessages +
                 '}';
     }
+
+    public boolean equals(Chat chat){
+        if(this.id == chat.getId()){
+            return true;
+        }
+        return false;
+    }
 }

@@ -2,7 +2,9 @@ package com.example.Messenger.models.user;
 
 import com.example.Messenger.models.message.Message;
 import com.example.Messenger.util.enums.LanguageType;
+import com.example.Messenger.util.enums.RoleOfUser;
 import jakarta.persistence.*;
+import com.example.Messenger.dto.user.RegisterUserDTO;
 
 import java.util.Date;
 import java.util.List;
@@ -29,6 +31,12 @@ public class User extends MessengerUser{
     private Date lastOnline;
     @Enumerated(value = EnumType.STRING)
     private LanguageType lang;
+    @Enumerated(value = EnumType.STRING)
+    private RoleOfUser role;
+    @OneToMany(mappedBy = "owner")
+    private List<ComplaintOfUser> complaints;
+    @OneToOne(mappedBy = "owner")
+    private IconOfUser icon;
 
     public User(){}
     public User(String firstName, String lastname, String username, String password, String email, String phone, String lang){
@@ -39,6 +47,18 @@ public class User extends MessengerUser{
         this.phone = phone;
         this.lang = LanguageType.valueOf(lang);
         this.email = email;
+        this.role = RoleOfUser.ROLE_USER;
+    }
+
+    public User(RegisterUserDTO registerDTO){
+        this.name = registerDTO.getFirstname();
+        this.lastname = registerDTO.getLastname();
+        this.username = registerDTO.getUsername();
+        this.password = registerDTO.getPassword();
+        this.phone = registerDTO.getPhone();
+        this.lang = LanguageType.valueOf(registerDTO.getLang());
+        this.email = registerDTO.getEmail();
+        this.role = RoleOfUser.ROLE_USER;
     }
 
     public String getPhone() {
@@ -127,5 +147,28 @@ public class User extends MessengerUser{
 
     public void setEmail(String email) {
         this.email = email;
+    }
+    public String getRole(){
+        return this.role.name();
+    }
+
+    public void setRole(RoleOfUser role){
+        this.role = role;
+    }
+
+    public List<ComplaintOfUser> getComplaints() {
+        return complaints;
+    }
+
+    public void setComplaints(List<ComplaintOfUser> complaints) {
+        this.complaints = complaints;
+    }
+
+    public IconOfUser getIcon() {
+        return icon;
+    }
+
+    public void setIcon(IconOfUser icon) {
+        this.icon = icon;
     }
 }

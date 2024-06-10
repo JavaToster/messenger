@@ -1,30 +1,40 @@
 package com.example.Messenger.services.user;
 
+import com.example.Messenger.dto.user.RegisterUserDTO;
 import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.chat.PrivateChat;
+import com.example.Messenger.models.message.ImageMessage;
+import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.Bot;
 import com.example.Messenger.models.user.ChatMember;
+import com.example.Messenger.models.user.ComplaintOfUser;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.user.ChatMemberRepository;
 import com.example.Messenger.repositories.chat.ChatRepository;
+import com.example.Messenger.repositories.user.ComplaintOfUserRepository;
 import com.example.Messenger.repositories.user.UserRepository;
 import com.example.Messenger.services.email.SendRestoreCodeToEmailService;
 import com.example.Messenger.util.balancer.TranslateBalancer;
-import com.example.Messenger.util.balancer.UserStatusBalancer;
 import com.example.Messenger.util.enums.ChatMemberType;
 import com.example.Messenger.util.enums.LanguageType;
+import com.example.Messenger.util.enums.RoleOfUser;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import com.example.Messenger.util.exceptions.LanguageNotSupportedException;
-import com.example.Messenger.util.threads.DeleteRestoreCode;
+import com.example.Messenger.util.threads.DeleteRestoreCodeThread;
+import com.example.Messenger.util.threads.ReBlockUserThread;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -39,7 +49,8 @@ public class UserService implements UserDetailsService {
     private final MessengerUserService messengerUserService;
     private final SendRestoreCodeToEmailService sendRestoreCodeToEmailService;
     private final PasswordEncoder encoder;
-    private final UserStatusBalancer statusBalancer;
+    private final ComplaintOfUserRepository complaintOfUserRepository;
+    private final IconOfUserService iconOfUserService;
 
     public static void setCookie(HttpServletResponse response, String name, String value, int age){
         Cookie cookie = new Cookie(name, value);
@@ -79,8 +90,13 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public void register(User user) {
+    public void register(User user, MultipartFile icon){
         loadBalancer.add(userRepository.save(user).getId());
+        try {
+            iconOfUserService.createNewIcon(icon, user);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public User findById(int id){
@@ -248,9 +264,9 @@ public class UserService implements UserDetailsService {
 
     public void sendCodeToRestore(HttpServletResponse response, String email) {
         sendRestoreCodeToEmailService.sendCode(email);
-        DeleteRestoreCode deleteRestoreCode = new DeleteRestoreCode(email, sendRestoreCodeToEmailService);
+        DeleteRestoreCodeThread deleteRestoreCodeThread = new DeleteRestoreCodeThread(email, sendRestoreCodeToEmailService);
         UserService.setCookie(response, "restoreEmail", email, 120);
-        deleteRestoreCode.start();
+        deleteRestoreCodeThread.start();
     }
 
     public StatusOfEqualsCodes checkRestoreCode(String email, int code){
@@ -267,5 +283,118 @@ public class UserService implements UserDetailsService {
 
     private void removeEmailFromRestoreBalancer(String email) {
         sendRestoreCodeToEmailService.removeEmailFromBalancer(email);
+    }
+
+    // метод для получения изображений из приватного чата
+    // используется в окне просмотра пользователя
+    public List<String> getImagesListByInterlocutors(String username, String myUsername) {
+        List<ChatMember> membersList1 = chatMemberRepository.findByUser(getUser(username));
+        List<ChatMember> membersList2 = chatMemberRepository.findByUser(getUser(myUsername));
+
+        List<String> urls = new LinkedList<>();
+
+        for(ChatMember member: membersList1){
+            Chat chatOfMember = member.getChat();
+            if(chatOfMember.getClass() != PrivateChat.class){
+                continue;
+            }
+
+            for(ChatMember member2: membersList2){
+                if(chatOfMember.getMembers().contains(member2)){
+                    List<String> urlsByChat = getImagesFromChat(chatOfMember);
+                    urls.addAll(urlsByChat);
+                }
+            }
+        }
+        return urls;
+    }
+
+    private List<String> getImagesFromChat(Chat chat){
+        List<String> urlsOfImages = new LinkedList<>();
+
+        for(MessageWrapper message: chat.getMessages()){
+            if(message.getClass() == ImageMessage.class){
+                urlsOfImages.add(message.getContent());
+            }
+        }
+        return urlsOfImages;
+    }
+
+    private User getUser(String username){
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
+    public List<ComplaintOfUser> getComplaintsOfUser(User user) {
+        return complaintOfUserRepository.findByOwner(user);
+    }
+
+    @Transactional
+    public void banComplaintsUser() {
+        List<User> users = userRepository.findAll();
+        for(User user: users){
+            if(user.getRole().equals(RoleOfUser.ROLE_BAN)){
+                continue;
+            }
+            if(user.getComplaints().size() >= 3){
+                user.setRole(RoleOfUser.ROLE_BAN);
+            }
+            userRepository.save(user);
+        }
+    }
+
+    public List<User> getUsersWithComplaint() {
+        List<ComplaintOfUser> complaints = complaintOfUserRepository.findAll();
+        System.out.println(complaints.size());
+        List<User> usersWithComplaint = new LinkedList<>();
+        for(ComplaintOfUser complaint: complaints){
+            User user = complaint.getOwner();
+            usersWithComplaint.add(user);
+            complaints.removeIf(complaint1 -> complaint1.getOwner().getId() == user.getId());
+            if(complaints.isEmpty()){
+                break;
+            }
+        }
+        return usersWithComplaint;
+    }
+
+    @Transactional
+    public void banUser(String username, String time) {
+        Calendar calendar = Calendar.getInstance();
+        switch (time){
+            case "12h" -> calendar.add(Calendar.SECOND, 30);
+            case "24h" -> calendar.add(Calendar.HOUR, 24);
+            case "14d" -> calendar.add(Calendar.DAY_OF_MONTH, 14);
+            case "30d" -> calendar.add(Calendar.DAY_OF_MONTH, 30);
+            case "120d" -> calendar.add(Calendar.DAY_OF_MONTH, 120);
+            case "0" -> calendar = null;
+            default -> calendar.add(Calendar.MINUTE, 0);
+        }
+
+        User user = getUser(username);
+        ReBlockUserThread reBlockUserThread = new ReBlockUserThread(user, (this), calendar);
+        reBlockUserThread.start();
+
+        user.setRole(RoleOfUser.ROLE_BAN);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public synchronized void unban(User user) {
+        user.setRole(RoleOfUser.ROLE_USER);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void setBlocker(String username) {
+        User user = getUser(username);
+        user.setRole(RoleOfUser.ROLE_BLOCKER);
+        userRepository.save(user);
+    }
+
+    @Transactional
+    public void unsetBlocker(String username){
+        User user = getUser(username);
+        user.setRole(RoleOfUser.ROLE_USER);
+        userRepository.save(user);
     }
 }

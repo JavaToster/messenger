@@ -17,19 +17,20 @@ import com.example.Messenger.security.UserDetails;
 import com.example.Messenger.services.cache.LanguageOfAppService;
 import com.example.Messenger.services.chat.*;
 import com.example.Messenger.services.message.*;
-import com.example.Messenger.services.user.BotFatherService;
 import com.example.Messenger.services.user.BotService;
 import com.example.Messenger.services.user.MessengerUserService;
 import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.util.Convertor;
 import com.example.Messenger.util.message.BalancerOfFoundChats;
 import com.example.Messenger.util.message.UserFoundedChats;
-import com.example.Messenger.util.threads.DeleteEmptyChats;
+import com.example.Messenger.util.threads.CheckComplaintsOfUserThread;
+import com.example.Messenger.util.threads.DeleteEmptyChatsThread;
 import com.example.Messenger.util.MessengerMapper;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import com.example.Messenger.util.exceptions.UserNotMemberException;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -42,52 +43,34 @@ import java.util.NoSuchElementException;
 
 @Controller
 @RequestMapping({"/messenger", "/messenger/", "/", ""})
+@RequiredArgsConstructor
 public class MessengerController {
     private final GroupChatService groupChatService;
     private final UserService userService;
-    private final MessageService messageService;
     private final ChatService chatService;
     private final ChannelService channelService;
     private final BlockMessageService blockMessageService;
-    private final DeleteEmptyChats deleteEmptyChats;
+    private final DeleteEmptyChatsThread deleteEmptyChatsThread;
     private final MessengerMapper messengerMapper;
-    private final BotFatherService botFatherService;
     private final BotChatService botChatService;
     private final MessengerUserService messengerUserService;
     private final BotService botService;
     private final BalancerOfFoundChats balancerOfFoundChats;
     private final LanguageOfAppService languageOfAppService;
-    private boolean startedThread;
     private final MessageWrapperService messageWrapperService;
+    private final CheckComplaintsOfUserThread checkComplaintsOfUserThread;
     @Value("${bot.father.database.id}")
     private int botFatherDatabaseId;
     private final Convertor convertor;
-    @Autowired
-    public MessengerController(GroupChatService groupChatService, UserService userService, MessageService messageService,
-                               ChatService chatService, ChannelService channelService, BlockMessageService blockMessageService,
-                               DeleteEmptyChats deleteEmptyChats, MessengerMapper messengerMapper, BotFatherService botFatherService,
-                               BotChatService botChatService, MessengerUserService messengerUserService, BotService botService, BalancerOfFoundChats balancerOfFoundChats,
-                               LanguageOfAppService languageOfAppService, MessageWrapperService messageWrapperService, Convertor convertor) {
-        this.groupChatService = groupChatService;
-        this.userService = userService;
-        this.messageService = messageService;
-        this.chatService = chatService;
-        this.channelService = channelService;
-        this.blockMessageService = blockMessageService;
-        this.deleteEmptyChats = deleteEmptyChats;
-        this.messengerMapper = messengerMapper;
-        this.botFatherService = botFatherService;
-        this.botChatService = botChatService;
-        this.messengerUserService = messengerUserService;
-        this.botService = botService;
-        this.balancerOfFoundChats = balancerOfFoundChats;
-        this.languageOfAppService = languageOfAppService;
-        this.messageWrapperService = messageWrapperService;
-        this.convertor = convertor;
-    }
 
     /** main window
      * главное окно*/
+
+    @PostConstruct
+    public void initialize(){
+        deleteEmptyChatsThread.start();
+        checkComplaintsOfUserThread.start();
+    }
     @GetMapping("")
     public String messengerWindow(Authentication authentication, HttpServletResponse response, Model model){
         //получаем user details и уже после используем его для получения никнейма
@@ -117,12 +100,6 @@ public class MessengerController {
         model.addAttribute("foundUsers", balancerOfFoundChats.foundUsers(userDetails.getUsername()));
         model.addAttribute("foundUser", new FoundUserOfUsername());
         response.addCookie(userService.createCookie("username", userDetails.getUsername(), 60*60));
-
-        //это условие используется для определния работает ли на данный момент дополнительный поток(поток нужен для удаления пустых чатов из базы данных, чтобы освободить память)
-        if(!startedThread){
-            deleteEmptyChats.start();
-            startedThread = !startedThread;
-        }
 
         return "/html/Messenger";
     }
@@ -175,6 +152,7 @@ public class MessengerController {
     //для создания приватного чата, внутри сервиса будет опеределено какой чат хочет создать пользователь(по типу 1 аргумента, если Messenger user будет ботом, то создадится чат с ботом, а если человек, то обычный приватный чат)
     @PostMapping("/chats/create-chat-private-or-bot")
     public String createPrivateChat(@ModelAttribute("user") MessengerUser user, @RequestParam("username") String username){
+        user = userService.findById(user.getId());
         int id = chatService.createPrivateOrBotChat(user, username);
 
         return "redirect:/messenger/chats/"+id;

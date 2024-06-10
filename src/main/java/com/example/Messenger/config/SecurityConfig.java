@@ -1,7 +1,7 @@
 package com.example.Messenger.config;
 
 import com.example.Messenger.security.AuthProvider;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -12,14 +12,10 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @EnableWebSecurity
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final AuthProvider authProvider;
-
-    @Autowired
-    public SecurityConfig(AuthProvider authProvider) {
-        this.authProvider = authProvider;
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
@@ -42,6 +38,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/auth/login", "/auth/register", "/error", "/bot-rest/**", "/rest-messenger/**", "/redis/**",
                                 "/auth/**").permitAll()
+                        .requestMatchers("/messenger/**", "/user/**").hasAnyRole("USER", "BLOCKER")
+                        .requestMatchers("/admin/blocker/**").hasAnyRole("BLOCKER", "ADMIN")
                         .anyRequest().authenticated());
 
         return http.build();

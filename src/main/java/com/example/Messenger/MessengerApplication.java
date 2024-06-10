@@ -2,6 +2,7 @@ package com.example.Messenger;
 
 import com.cloudinary.Cloudinary;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -13,6 +14,14 @@ import java.util.Map;
 
 @SpringBootApplication
 public class MessengerApplication {
+
+	@Value("${cloudinary.cloud.name}")
+	private String cloudName;
+	@Value("${cloudinary.api_key}")
+	private String apiKey;
+	@Value("${cloudinary.api_secret}")
+	private String apiSecret;
+
 	public static void main(String[] args) {
 		SpringApplication.run(MessengerApplication.class, args);
 	}
@@ -32,9 +41,9 @@ public class MessengerApplication {
 	@Bean
 	public Cloudinary cloudinary(){
 		return new Cloudinary(Map.of(
-				"cloud_name", "dyxjtpcdu",
-				"api_key", "598588667712299",
-				"api_secret", "6ryph5s7fUyG2JoXPBTQz0C9vPg"
+				"cloud_name", cloudName,
+				"api_key", apiKey,
+				"api_secret", apiSecret
 		));
 	}
 }

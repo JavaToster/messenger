@@ -30,3 +30,16 @@ translate.message.url=****
 
 #For bots
 bot.father.database.id=****
+
+#For cloudinary
+cloudinary.cloud.name=****
+cloudinary.api_key=****
+cloudinary.api_secret=****
+
+#For email
+spring.mail.username=****
+spring.mail.password=****
+spring.mail.properties.mail.smtp.auth=****
+spring.mail.properties.mail.smtp.starttls.enable=****
+spring.mail.host=****
+spring.mail.port=****

@@ -1,11 +1,15 @@
 package com.example.Messenger.controllers;
 
 import com.example.Messenger.dto.ChatDTO;
+import com.example.Messenger.dto.user.InfoOfUserDTO;
 import com.example.Messenger.services.chat.ChatService;
+import com.example.Messenger.services.user.ComplaintOfUserService;
 import com.example.Messenger.services.user.MessengerUserService;
 import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.services.cache.LanguageOfAppService;
 import com.example.Messenger.util.Convertor;
+import com.example.Messenger.util.threads.CheckComplaintsOfUserThread;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,6 +19,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/user")
+@RequiredArgsConstructor
 public class UserController {
 
     private final UserService userService;
@@ -22,33 +27,32 @@ public class UserController {
     private final MessengerUserService messengerUserService;
     private final LanguageOfAppService languageOfAppService;
     private final Convertor convertor;
-
-    @Autowired
-    public UserController(UserService userService, ChatService chatService, MessengerUserService messengerUserService, LanguageOfAppService languageOfAppService, Convertor convertor) {
-        this.userService = userService;
-        this.chatService = chatService;
-        this.messengerUserService = messengerUserService;
-        this.languageOfAppService = languageOfAppService;
-        this.convertor = convertor;
-    }
+    private final ComplaintOfUserService complaintOfUserService;
 
     @GetMapping("/profile")
     public String profile(Model model, @CookieValue("username") String username){
         List<ChatDTO> chats = convertor.convertToChatDTO(userService.findChatsByUsername(username), username);
 
-        model.addAttribute("userId", userService.findByUsername(username).getId());
         model.addAttribute("chat", new ChatDTO());
         model.addAttribute("chats", chats);
-        model.addAttribute("username", username);
         model.addAttribute("language", languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
+        model.addAttribute("infoOfUser", convertor.convertToInfoOfUserDTO(userService.findByUsername(username)));
 
         return "/html/user/profile";
     }
     @GetMapping("/{username}")
     public String showUserProfile(@PathVariable("username") String username, Model model, @CookieValue("username") String myUsername){
-        model.addAttribute("user", userService.findByUsername(username));
+        // нужно чтобы проверять не смотрит ли пользователь на свое же окно
+        if (username.equals(myUsername)) {
+            return "redirect:/user/profile";
+        }
+
+        InfoOfUserDTO infoOfUserDTO = convertor.convertToInfoOfUserDTO(userService.findByUsername(username));
+        infoOfUserDTO.setLastTime(userService.getLastOnlineTime(username));
+        infoOfUserDTO.setImagesUrl(userService.getImagesListByInterlocutors(username, myUsername));
+        model.addAttribute("infoOfUser", infoOfUserDTO);
         model.addAttribute("myUsername", myUsername);
-        model.addAttribute("language", languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
+        model.addAttribute("url", new String());
 
         return "/html/user/showUserProfile";
     }
@@ -58,6 +62,13 @@ public class UserController {
         int id = chatService.createPrivateOrBotChat(messengerUserService.findByUsername(username), fromUsername);
 
         return "redirect:/messenger/chats/"+id;
+    }
+
+    @PostMapping("/{username}/complaint")
+    public String sendAComplain(@RequestParam("complaint-text") String complaintText, @PathVariable("username") String username, @CookieValue("username") String fromUsername){
+        complaintOfUserService.addComplaint(username, complaintText, fromUsername);
+
+        return "redirect:/user/"+username;
     }
 
     @PostMapping("/{id}/changeUserLang")
