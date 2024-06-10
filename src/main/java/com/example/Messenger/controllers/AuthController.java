@@ -48,13 +48,6 @@ public class AuthController {
 
     @PostMapping("/register")
     public String registerPost(@Valid @ModelAttribute("register_user") RegisterUserDTO registerUser){
-
-        //if user is present -> redirect to register page
-        //если человек существует -> возвращаем его на страницу регистрации
-//        if(userService.isUser(user.getUsername())){
-//            return "redirect:/auth/register";
-//        }
-
         if(userService.isUser(registerUser.getUsername(), registerUser.getEmail())){
             return "redirect:/auth/register?error";
         }
