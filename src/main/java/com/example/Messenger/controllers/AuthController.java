@@ -1,5 +1,6 @@
 package com.example.Messenger.controllers;
 
+import com.example.Messenger.dto.user.RegisterUserDTO;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.services.cache.LanguageOfAppService;
@@ -8,6 +9,7 @@ import com.example.Messenger.util.enums.RoleOfUser;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import com.example.Messenger.util.enums.UserStatus;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import com.example.Messenger.services.message.ClodinaryService;
 
 @Controller
 @RequestMapping("/auth")
@@ -42,15 +45,14 @@ public class AuthController {
     public String register(Model model, @RequestParam(value = "error", required = false) String error){
         model.addAttribute("error", !(error==null));
         model.addAttribute("user", new User());
+        model.addAttribute("register_user", new RegisterUserDTO());
 
         return "/html/auth/register";
     }
 
 
     @PostMapping("/register")
-    public String registerPost(@RequestParam("firstName") String firstName, @RequestParam("lastName") String lastName, @RequestParam("username") String username,
-                               @RequestParam("password") String password, @RequestParam("email") String email, @RequestParam("phone") String phone,
-                               @RequestParam("language") String lang, @RequestParam("user-icon")MultipartFile icon){
+    public String registerPost(@Valid @ModelAttribute("register_user") RegisterUserDTO registerUser){
 
         //if user is present -> redirect to register page
         //если человек существует -> возвращаем его на страницу регистрации
@@ -58,11 +60,12 @@ public class AuthController {
 //            return "redirect:/auth/register";
 //        }
 
-        if(userService.isUser(username, email)){
+        if(userService.isUser(registerUser.getUsername(), registerUser.getEmail())){
             return "redirect:/auth/register?error";
         }
 
-        userService.register(new User(firstName, lastName, username, passwordEncoder.encode(password), email, phone, lang, RoleOfUser.ROLE_USER));
+        registerUser.setPassword(passwordEncoder.encode(registerUser.getPassword()));
+        userService.register(new User(registerUser));
         return "redirect:/auth/login";
     }
 

@@ -47,15 +47,24 @@
             top: 390px;
             right: 830px;
         }
+        img{
+        border-radius: 50px;
+        margin-left: 140px;
+        width:100px;
+        height: 100px;
+        }
     </style>
 </head>
 <body>
 <div class="main-div">
+    <div>
+        <img src="https://s0.rbk.ru/v6_top_pics/media/img/2/53/347128289038532.webp" alt="">
+    </div>
     <h2 th:text="${username}" id="username">Username</h2>
     <div style="margin-bottom: 20px; overflow-y: auto; width: 350px;">
         <div th:each="chat: ${chats}" class="chats">
             <a th:text="${chat.getChatTitle()}" th:href="@{/messenger/chats/{chatId} (chatId=${chat.getId()})}" style="margin-left: 20px;">Toster</a>
-            <p th:text="${chat.getLastMessage().getContent()}" style="margin-left: 20px; overflow-x: none;" >text</p>
+            <p th:text="${chat.getLastMessageText()}" style="margin-left: 20px; overflow-x: none;" >text</p>
         </div>
     </div>
 

@@ -4,6 +4,7 @@ import com.example.Messenger.models.message.Message;
 import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.enums.RoleOfUser;
 import jakarta.persistence.*;
+import com.example.Messenger.dto.user.RegisterUserDTO;
 
 import java.util.Date;
 import java.util.List;
@@ -34,9 +35,11 @@ public class User extends MessengerUser{
     private RoleOfUser role;
     @OneToMany(mappedBy = "owner")
     private List<ComplaintOfUser> complaints;
+    @Column(name = "image_link")
+    private String imageLink;
 
     public User(){}
-    public User(String firstName, String lastname, String username, String password, String email, String phone, String lang, RoleOfUser role){
+    public User(String firstName, String lastname, String username, String password, String email, String phone, String lang){
         this.name = firstName;
         this.lastname = lastname;
         this.username = username;
@@ -44,6 +47,18 @@ public class User extends MessengerUser{
         this.phone = phone;
         this.lang = LanguageType.valueOf(lang);
         this.email = email;
+        this.role = RoleOfUser.ROLE_USER;
+    }
+
+    public User(RegisterUserDTO registerDTO){
+        this.name = registerDTO.getFirstname();
+        this.lastname = registerDTO.getLastname();
+        this.username = registerDTO.getUsername();
+        this.password = registerDTO.getPassword();
+        this.phone = registerDTO.getPhone();
+        this.lang = LanguageType.valueOf(registerDTO.getLang());
+        this.email = registerDTO.getEmail();
+        this.role = RoleOfUser.ROLE_USER;
     }
 
     public String getPhone() {
@@ -147,5 +162,13 @@ public class User extends MessengerUser{
 
     public void setComplaints(List<ComplaintOfUser> complaints) {
         this.complaints = complaints;
+    }
+
+    public String getImageLink() {
+        return imageLink;
+    }
+
+    public void setImageLink(String imageLink) {
+        this.imageLink = imageLink;
     }
 }

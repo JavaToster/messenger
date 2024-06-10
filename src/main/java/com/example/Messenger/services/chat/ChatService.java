@@ -141,7 +141,9 @@ public class ChatService {
     public int createPrivateOrBotChat(MessengerUser user, String username) {
         MessengerUser messengerUser = messengerUserService.findById(user.getId());
         if(messengerUser.getClass() == User.class){
-            int id = isPrivateChat((User) user, userService.findByUsername(username));
+//            User user1 = userService.findById(user.getId());
+            User user1 = (User) user;
+            int id = isPrivateChat(user1, userService.findByUsername(username));
             if(id == -1)
                 id = privateChatService.createNewChat(userService.findById(user.getId()), userService.findByUsername(username));
             return id;

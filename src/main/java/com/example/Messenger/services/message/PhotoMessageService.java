@@ -26,7 +26,7 @@ public class PhotoMessageService {
     private final ClodinaryService clodinaryService;
     private final UserRepository userRepository;
     private final ChatRepository chatRepository;
-    @Value("${image.path}")
+    @Value("${image.path.messages}")
     private String imagePath;
 
     @Autowired

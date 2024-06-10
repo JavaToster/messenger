@@ -152,6 +152,7 @@ public class MessengerController {
     //для создания приватного чата, внутри сервиса будет опеределено какой чат хочет создать пользователь(по типу 1 аргумента, если Messenger user будет ботом, то создадится чат с ботом, а если человек, то обычный приватный чат)
     @PostMapping("/chats/create-chat-private-or-bot")
     public String createPrivateChat(@ModelAttribute("user") MessengerUser user, @RequestParam("username") String username){
+        user = userService.findById(user.getId());
         int id = chatService.createPrivateOrBotChat(user, username);
 
         return "redirect:/messenger/chats/"+id;

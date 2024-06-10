@@ -25,7 +25,7 @@ import com.example.Messenger.util.threads.ReBlockUserThread;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Hibernate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -89,11 +89,6 @@ public class UserService implements UserDetailsService {
     @Transactional
     public void register(User user){
         loadBalancer.add(userRepository.save(user).getId());
-    }
-
-    @Transactional
-    public void register(RegisterUserDTO user){
-
     }
 
     public User findById(int id){
