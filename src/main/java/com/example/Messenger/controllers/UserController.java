@@ -33,11 +33,10 @@ public class UserController {
     public String profile(Model model, @CookieValue("username") String username){
         List<ChatDTO> chats = convertor.convertToChatDTO(userService.findChatsByUsername(username), username);
 
-        model.addAttribute("userId", userService.findByUsername(username).getId());
         model.addAttribute("chat", new ChatDTO());
         model.addAttribute("chats", chats);
-        model.addAttribute("username", username);
         model.addAttribute("language", languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
+        model.addAttribute("infoOfUser", convertor.convertToInfoOfUserDTO(userService.findByUsername(username)));
 
         return "/html/user/profile";
     }

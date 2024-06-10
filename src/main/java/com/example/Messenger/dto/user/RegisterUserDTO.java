@@ -10,8 +10,9 @@ public class RegisterUserDTO {
     private String email;
     private String phone;
     private String lang;
+    private MultipartFile icon;
 
-    public RegisterUserDTO(String firstname, String lastname, String username, String password, String email, String phone, String lang) {
+    public RegisterUserDTO(String firstname, String lastname, String username, String password, String email, String phone, String lang, MultipartFile icon) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.username = username;
@@ -19,6 +20,7 @@ public class RegisterUserDTO {
         this.email = email;
         this.phone = phone;
         this.lang = lang;
+        this.icon = icon;
     }
 
     public RegisterUserDTO(){}
@@ -77,5 +79,13 @@ public class RegisterUserDTO {
 
     public void setLang(String lang) {
         this.lang = lang;
+    }
+
+    public MultipartFile getIcon() {
+        return icon;
+    }
+
+    public void setIcon(MultipartFile icon) {
+        this.icon = icon;
     }
 }

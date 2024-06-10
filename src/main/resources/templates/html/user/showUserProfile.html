@@ -116,13 +116,27 @@
         border: none;
         font-size: 20px;
       }
+        .icon-text{
+            background-color: #56acdd;
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            margin-left: 160px;
+        }
+        .icon-text h1{
+            margin-left: 20px;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="main">
         <div class="about-user">
           <div class="header">
-            <img src="https://s0.rbk.ru/v6_top_pics/media/img/2/53/347128289038532.webp" alt="">
+              <img th:if="${infoOfUser.isIconOfUser()}" th:src="${infoOfUser.getIconUrl()}" alt="">
+              <div th:if="${!infoOfUser.isIconOfUser()}" class="icon-text">
+                  <h1 th:text="${infoOfUser.getUsername().substring(0,1)}">P</h1>
+              </div>
             <p th:text="'username: '+${infoOfUser.getUsername()}">username: TosterW</p>
             <p th:text="'last time: '+${infoOfUser.getLastTime()}">last time: 20:12</p>
             <form class="send-to-user" th:action="@{/user/{username}/send-message?from={myUsername} (username=${infoOfUser.getUsername()}, myUsername=${myUsername})}" method="post">

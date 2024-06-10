@@ -109,6 +109,8 @@
             <option value="CHINESE">中文</option>
             <option value="ITALIAN">Italiano</option>
         </select>
+        <label for="icon">enter icon</label>
+        <input type="file" th:field="*{icon}" id="icon">
         <input type="submit" value="Register">
         <a href="/auth/login" class="register-button">Login</a>
     </form>

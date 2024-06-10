@@ -10,13 +10,15 @@ public class InfoOfUserDTO {
     private String lastname;
     private String email;
     private List<String> imagesUrl;
+    private String iconUrl;
 
-    public InfoOfUserDTO(int id, String username, String firstname, String lastname, String email) {
+    public InfoOfUserDTO(int id, String username, String firstname, String lastname, String email, String iconUrl) {
         this.id = id;
         this.username = username;
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
+        this.iconUrl = iconUrl;
     }
 
     public InfoOfUserDTO(){}
@@ -89,5 +91,19 @@ public class InfoOfUserDTO {
             return true;
         }
         return false;
+    }
+
+    public String getIconUrl() {
+        return iconUrl;
+    }
+
+    public void setIconUrl(String iconUrl) {
+        this.iconUrl = iconUrl;
+    }
+
+    public boolean isIconOfUser(){
+        if(iconUrl == null || iconUrl.isEmpty()){
+            return false;
+        }return true;
     }
 }

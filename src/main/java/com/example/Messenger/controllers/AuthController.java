@@ -5,20 +5,15 @@ import com.example.Messenger.models.user.User;
 import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.services.cache.LanguageOfAppService;
 import com.example.Messenger.util.balancer.UserStatusBalancer;
-import com.example.Messenger.util.enums.RoleOfUser;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import com.example.Messenger.util.enums.UserStatus;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import com.example.Messenger.services.message.ClodinaryService;
 
 @Controller
 @RequestMapping("/auth")
@@ -65,7 +60,7 @@ public class AuthController {
         }
 
         registerUser.setPassword(passwordEncoder.encode(registerUser.getPassword()));
-        userService.register(new User(registerUser));
+        userService.register(new User(registerUser), registerUser.getIcon());
         return "redirect:/auth/login";
     }
 

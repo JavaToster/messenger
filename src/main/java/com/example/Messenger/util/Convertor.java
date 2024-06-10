@@ -285,7 +285,7 @@ public class Convertor {
 
 
     public InfoOfUserDTO convertToInfoOfUserDTO(User byUsername) {
-        return new InfoOfUserDTO(byUsername.getId(), byUsername.getUsername(), byUsername.getName(), byUsername.getLastname(), byUsername.getEmail());
+        return new InfoOfUserDTO(byUsername.getId(), byUsername.getUsername(), byUsername.getName(), byUsername.getLastname(), byUsername.getEmail(), byUsername.getIcon()==null?"":byUsername.getIcon().getLink());
     }
 
     /** приватные методы для public методов */

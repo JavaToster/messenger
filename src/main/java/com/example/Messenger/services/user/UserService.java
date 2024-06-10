@@ -32,7 +32,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -48,6 +50,7 @@ public class UserService implements UserDetailsService {
     private final SendRestoreCodeToEmailService sendRestoreCodeToEmailService;
     private final PasswordEncoder encoder;
     private final ComplaintOfUserRepository complaintOfUserRepository;
+    private final IconOfUserService iconOfUserService;
 
     public static void setCookie(HttpServletResponse response, String name, String value, int age){
         Cookie cookie = new Cookie(name, value);
@@ -87,8 +90,13 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public void register(User user){
+    public void register(User user, MultipartFile icon){
         loadBalancer.add(userRepository.save(user).getId());
+        try {
+            iconOfUserService.createNewIcon(icon, user);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public User findById(int id){

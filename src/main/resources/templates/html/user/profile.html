@@ -53,14 +53,28 @@
         width:100px;
         height: 100px;
         }
+        .icon-text{
+            background-color: #56acdd;
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
+            margin-left: 200px;
+        }
+        .icon-text h1{
+            margin-left: 20px;
+            color: white;
+        }
     </style>
 </head>
 <body>
 <div class="main-div">
     <div>
-        <img src="https://s0.rbk.ru/v6_top_pics/media/img/2/53/347128289038532.webp" alt="">
+        <img th:if="${infoOfUser.isIconOfUser()}" th:src="${infoOfUser.getIconUrl()}" alt="">
+        <div th:if="${!infoOfUser.isIconOfUser()}" class="icon-text">
+            <h1 th:text="${infoOfUser.getUsername().substring(0,1)}">P</h1>
+        </div>
     </div>
-    <h2 th:text="${username}" id="username">Username</h2>
+    <h2 th:text="${infoOfUser.getUsername()}" id="username">Username</h2>
     <div style="margin-bottom: 20px; overflow-y: auto; width: 350px;">
         <div th:each="chat: ${chats}" class="chats">
             <a th:text="${chat.getChatTitle()}" th:href="@{/messenger/chats/{chatId} (chatId=${chat.getId()})}" style="margin-left: 20px;">Toster</a>
@@ -86,11 +100,11 @@
             <option value="ko">한국어</option>
             <option value="ja">日本語</option>
         </select>
-        <button th:attr="onclick=|changeTranslateLanguage('${userId}')|" style="position: absolute; top: 220px; right: 830px;" th:text="${language.getChangeLanguage()}">Поменять</button>
+        <button th:attr="onclick=|changeTranslateLanguage('${infoOfUser.getId()}')|" style="position: absolute; top: 220px; right: 830px;" th:text="${language.getChangeLanguage()}">Поменять</button>
     </div>
 
     <div class="app-lang">
-        <form th:method="POST" th:action="@{/user/{id}/changeUserLang (id=${userId})}">
+        <form th:method="POST" th:action="@{/user/{id}/changeUserLang (id=${infoOfUser.getId()})}">
             <label for="app-lang-select">Изменить язык</label>
             <select name="app-lang" id="app-lang-select" class="app-lang-select">
                 <option value="en">English</option>

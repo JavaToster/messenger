@@ -35,8 +35,8 @@ public class User extends MessengerUser{
     private RoleOfUser role;
     @OneToMany(mappedBy = "owner")
     private List<ComplaintOfUser> complaints;
-    @Column(name = "image_link")
-    private String imageLink;
+    @OneToOne(mappedBy = "owner")
+    private IconOfUser icon;
 
     public User(){}
     public User(String firstName, String lastname, String username, String password, String email, String phone, String lang){
@@ -164,11 +164,11 @@ public class User extends MessengerUser{
         this.complaints = complaints;
     }
 
-    public String getImageLink() {
-        return imageLink;
+    public IconOfUser getIcon() {
+        return icon;
     }
 
-    public void setImageLink(String imageLink) {
-        this.imageLink = imageLink;
+    public void setIcon(IconOfUser icon) {
+        this.icon = icon;
     }
 }
