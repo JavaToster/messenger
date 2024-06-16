@@ -27,6 +27,7 @@ import com.example.Messenger.services.message.MessageWrapperService;
 import com.example.Messenger.services.message.PhotoMessageService;
 import com.example.Messenger.util.abstractClasses.InfoOfMessage;
 import com.example.Messenger.util.enums.ChatMemberType;
+import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,9 +98,9 @@ public class Convertor {
             if(chat.getClass().equals(PrivateChat.class)){
                 chatDTO.setChatTitle(getInterlocutor(username, chat).getUsername());
             } else if (chat.getClass().equals(GroupChat.class)) {
-                chatDTO.setChatTitle(groupChatRepository.findById(chat.getId()).orElse(null).getGroupName());
+                chatDTO.setChatTitle(((GroupChat) chat).getGroupName());
             } else if(chat.getClass().equals(Channel.class)){
-                chatDTO.setChatTitle(channelRepository.findById(chat.getId()).orElse(null).getName());
+                chatDTO.setChatTitle(((Channel)chat).getName());
             }else if(chat.getClass().equals(BotChat.class)){
                 chatDTO.setChatTitle(getBotName(chat.getId()));
             }
@@ -124,7 +125,7 @@ public class Convertor {
 
     public ChatDTO convertToChatDTO(Chat chat, String username){
         if(!chat.getClass().equals(Channel.class)) {
-            if (chat.getMessages() == null | chat.getMessages().size() == 0) {
+            if (chat.getMessages() == null || chat.getMessages().size() == 0) {
                 return null;
             }
         }
@@ -133,9 +134,9 @@ public class Convertor {
         if(chat.getClass().equals(PrivateChat.class)){
             chatDTO.setChatTitle(getInterlocutor(username, chat).getUsername());
         }else if (chat.getClass().equals(GroupChat.class)) {
-            chatDTO.setChatTitle(groupChatRepository.findById(chat.getId()).orElse(null).getGroupName());
+            chatDTO.setChatTitle(((GroupChat) chat).getGroupName());
         }else if(chat.getClass().equals(Channel.class)){
-            chatDTO.setChatTitle(channelRepository.findById(chat.getId()).orElse(null).getName());
+            chatDTO.setChatTitle(((Channel) chat).getName());
         }else if(chat.getClass().equals(BotChat.class)){
             chatDTO.setChatTitle(getBotName(chat.getId()));
         }
@@ -144,6 +145,11 @@ public class Convertor {
             chatDTO.setBannedChat(true);
         }
 
+        try {
+            chatDTO.setLastMessageText(chat.getMessages().getLast().getContent());
+        }catch (NullPointerException e){
+            chatDTO.setLastMessageText("");
+        }
         try {
             chatDTO.setLastMessageSendTime(addZero(chat.getMessages().getLast().getSendingTime().getHours()) + ":" + addZero(chat.getMessages().getLast().getSendingTime().getMinutes()));
         }catch (NoSuchElementException ignored){}
@@ -314,8 +320,11 @@ public class Convertor {
     }
 
     private boolean isBan(String username, Chat chat){
-        List<ChatMember> banMembers = chatRepository.findById(chat.getId()).orElse(null).getMembers();
-        for(ChatMember chatMember: banMembers){
+        Optional<Chat> banMembers = chatRepository.findById(chat.getId());
+        if(banMembers.isEmpty()){
+            return false;
+        }
+        for(ChatMember chatMember: banMembers.get().getMembers()){
             if(chatMember.getUser().equals(username) && chatMember.getMemberType() == ChatMemberType.BLOCK){
                 return true;
             }

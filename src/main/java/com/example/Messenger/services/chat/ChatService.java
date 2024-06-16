@@ -249,11 +249,16 @@ public class ChatService {
             }
             Optional<String> returnedWord = textInnerOtherText(messages.get(i).getContent(), text);
             if(returnedWord.isPresent()){
-                ChatDTO chatDTO = convertor.convertToChatDTO(chat, usernameOfUser);
+                ChatDTO chatDTO;
+                try {
+                    chatDTO = convertor.convertToChatDTO(chat, usernameOfUser);
+                }catch (ChatNotFoundException e){
+                    return Optional.empty();
+                }
                 if(chatDTO == null){
                     return Optional.empty();
                 }
-                chatDTO.getLastMessage().setContent(returnedWord.get());
+//                chatDTO.getLastMessage().setContent(returnedWord.get());
                 return Optional.of(chatDTO);
             }
         }

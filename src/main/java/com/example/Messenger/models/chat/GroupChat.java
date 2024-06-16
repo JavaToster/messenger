@@ -13,6 +13,10 @@ public class GroupChat extends Chat{
     public GroupChat(String groupName) {
         this.groupName = groupName;
     }
+    public GroupChat(int id, String groupName){
+        this.id = id;
+        this.groupName = groupName;
+    }
 
     public String getGroupName() {
         return groupName;

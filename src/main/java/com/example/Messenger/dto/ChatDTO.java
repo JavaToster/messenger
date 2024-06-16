@@ -10,7 +10,7 @@ import java.util.List;
 
 public class ChatDTO {
     private int id;
-    private MessageWrapper lastMessage;
+//    private MessageWrapper lastMessage;
     private String lastMessageText;
     private String chatTitle;
     private String lastMessageSendTime;
@@ -22,12 +22,6 @@ public class ChatDTO {
     public ChatDTO(){}
     public ChatDTO(Chat chat) {
         this.id = chat.getId();
-        if(chat.getMessages().size() == 0){
-            Message message = new Message();
-            message.setMessageText("No messages here");
-            this.lastMessage = message;
-            return;
-        }
     }
 
     public ChatDTO(String title){
@@ -40,14 +34,6 @@ public class ChatDTO {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public MessageWrapper getLastMessage() {
-        return lastMessage;
-    }
-
-    public void setLastMessage(Message lastMessage) {
-        this.lastMessage = lastMessage;
     }
 
     public String getChatTitle() {
@@ -80,5 +66,25 @@ public class ChatDTO {
 
     public void setLastMessageText(String lastMessageText) {
         this.lastMessageText = lastMessageText;
+    }
+
+    @Override
+    public String toString() {
+        return "ChatDTO{" +
+                "id=" + id +
+                ", lastMessageText='" + lastMessageText + '\'' +
+                ", chatTitle='" + chatTitle + '\'' +
+                ", lastMessageSendTime='" + lastMessageSendTime + '\'' +
+                ", bannedChat=" + bannedChat +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if(o instanceof ChatDTO){
+            ChatDTO chatDTO = (ChatDTO) o;
+            return toString().equals(((ChatDTO) o).toString());
+        }
+        return false;
     }
 }
