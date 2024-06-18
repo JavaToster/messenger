@@ -151,48 +151,65 @@ public class ChatService {
         return willReturnChats;
     }
 
-    private Optional<String> textInnerOtherText(String beforeText, String word){
-        String text = beforeText.toLowerCase();
-
-        System.out.println(text);
-        System.out.println(word);
-
-        int textLength = text.length();
-        char firstCharacterOfText = word.toLowerCase().charAt(0);
-        int willEqualedTextLength = word.length();
-
-        if(willEqualedTextLength>textLength){
+    /** метод для определения того, есть ли какое либо слово внутри текста*/
+    /** возвращает Optional <полный текст> в случае обнаружения слова в тексте*/
+    /** возвращает Optional.empty() если слова нет в тексте*/
+    public Optional<String> textInnerOtherText(String fullText, String word){
+        if(word.length()>fullText.length()){
             return Optional.empty();
         }
 
-        while(textLength>=word.length()){
-            int indexWillFindCharacterInText = text.indexOf(firstCharacterOfText);
-            if(indexWillFindCharacterInText == -1){
-                return Optional.empty();
+        if(fullText.toLowerCase().equals(word.toLowerCase())) {
+            return Optional.of(fullText);
+        }
+
+        if(checkWordInnerText(fullText, word)){
+            return Optional.of(fullText);
+        }
+
+        return Optional.empty();
+    }
+
+    private int getFirstFoundCharacterId(String text, char firstCharacterOfText) {
+        return text.indexOf(firstCharacterOfText);
+    }
+
+    private String cutTextToWord(String text, int indexOfFirstFoundChar, int willEqualTextLength){
+        try {
+            return text.substring(indexOfFirstFoundChar - 1, indexOfFirstFoundChar + willEqualTextLength - 1);
+        }catch (StringIndexOutOfBoundsException e){
+            return text.substring(indexOfFirstFoundChar, indexOfFirstFoundChar+willEqualTextLength);
+        }
+    }
+
+    private boolean checkWordInnerText(String text, String word){
+        text = text.toLowerCase();
+        char firstCharacterOfText = word.toLowerCase().charAt(0);
+        while(text.length()>=word.length()){
+            int indexOfFirstFoundChar = getFirstFoundCharacterId(text, firstCharacterOfText);
+
+            /**если возвращает -1 значит такого символа нет в тексте -> этого слова тоже нет в тексте*/
+            if(indexOfFirstFoundChar == -1){
+                return false;
             }
 
-            text = text.substring(indexWillFindCharacterInText);
-            String substringText;
+            text = text.substring(indexOfFirstFoundChar);
 
-            indexWillFindCharacterInText = text.indexOf(firstCharacterOfText);
-            if(text.length() < willEqualedTextLength){
-                return Optional.empty();
+            indexOfFirstFoundChar = getFirstFoundCharacterId(text, firstCharacterOfText);
+
+            if(text.length() < word.length()){
+                return false;
             }
-            try {
-                substringText = text.substring(indexWillFindCharacterInText - 1, indexWillFindCharacterInText + willEqualedTextLength - 1);
-            }catch (StringIndexOutOfBoundsException e){
-                substringText = text.substring(indexWillFindCharacterInText, indexWillFindCharacterInText+willEqualedTextLength);
-            }
+
+            String substringText = cutTextToWord(text, indexOfFirstFoundChar, word.length());
 
             if(substringText.equals(word.toLowerCase())){
-                return Optional.of(beforeText);
+                return true;
             }
 
-            text = text.substring(indexWillFindCharacterInText+willEqualedTextLength);
+            text = text.substring(indexOfFirstFoundChar+word.length());
         }
-        if(beforeText.toLowerCase().equals(word.toLowerCase()))
-            return Optional.of(beforeText);
-        return Optional.empty();
+        return false;
     }
 
     public List<ChatDTO> findChatsBySearchTextByMessages(String text, String username){
