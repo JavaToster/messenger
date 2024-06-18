@@ -10,31 +10,22 @@ import com.example.Messenger.repositories.chat.PrivateChatRepository;
 import com.example.Messenger.repositories.user.ChatMemberRepository;
 import com.example.Messenger.repositories.user.UserRepository;
 import com.example.Messenger.util.enums.ChatMemberType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class PrivateChatService {
 
     private final PrivateChatRepository privateChatRepository;
-    private final ChatRepository chatRepository;
-    private final UserRepository userRepository;
-    private final GroupChatRepository groupChatRepository;
     private final ChatMemberRepository chatMemberRepository;
-    @Autowired
-    public PrivateChatService(PrivateChatRepository privateChatRepository, ChatRepository chatRepository, UserRepository userRepository, GroupChatRepository groupChatRepository, ChatMemberRepository chatMemberRepository) {
-        this.privateChatRepository = privateChatRepository;
-        this.chatRepository = chatRepository;
-        this.userRepository = userRepository;
-        this.groupChatRepository = groupChatRepository;
-        this.chatMemberRepository = chatMemberRepository;
-    }
-
     @Transactional
     public void save(PrivateChat privateChat){
         privateChatRepository.save(privateChat);

@@ -14,10 +14,13 @@ import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.util.Convertor;
 import com.example.Messenger.util.MessengerMapper;
 import com.example.Messenger.util.enums.MessageStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,35 +31,15 @@ import java.util.*;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class MessageWrapperService {
     private final MessageWrapperRepository messageWrapperRepository;
-    private final MessageRepository messageRepository;
-    private final PhotoMessageRepository photoMessageRepository;
     private final MessageService messageService;
-    private final MessengerMapper mapper;
     private final PhotoMessageService photoMessageService;
     private final ChatRepository chatRepository;
     private final ChatService chatService;
-    private final UserService userService;
     private final JdbcTemplate jdbcTemplate;
-    private final Convertor convertor;
     private final LinkMessageService linkMessageService;
-
-    @Autowired
-    public MessageWrapperService(MessageWrapperRepository messageWrapperRepository, MessageRepository messageRepository, PhotoMessageRepository photoMessageRepository, MessageService messageService, MessengerMapper mapper, PhotoMessageService photoMessageService, ChatRepository chatRepository, ChatService chatService, UserService userService, JdbcTemplate jdbcTemplate, Convertor convertor, LinkMessageService linkMessageService) {
-        this.messageWrapperRepository = messageWrapperRepository;
-        this.messageRepository = messageRepository;
-        this.photoMessageRepository = photoMessageRepository;
-        this.messageService = messageService;
-        this.mapper = mapper;
-        this.photoMessageService = photoMessageService;
-        this.chatRepository = chatRepository;
-        this.chatService = chatService;
-        this.userService = userService;
-        this.jdbcTemplate = jdbcTemplate;
-        this.convertor = convertor;
-        this.linkMessageService = linkMessageService;
-    }
 
     @Transactional
     public void sendTextMessage(MessageWrapper message, int chatId, int userId){
@@ -65,7 +48,7 @@ public class MessageWrapperService {
         }
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
     public void sendNotImage(String text, int chatId, int userId){
         if(!(text == null) || text.isEmpty()) {
             Optional<String> link = isLink(text);
@@ -77,7 +60,7 @@ public class MessageWrapperService {
         }
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
     public void sendPhoto(MultipartFile photo, int chatId, int userId, String underTextPhoto){
         try {
             photoMessageService.sendMessage(photo, chatId, userId, underTextPhoto);
@@ -94,7 +77,7 @@ public class MessageWrapperService {
         return sortMessagesById(messageWrapperRepository.findByChat(chatRepository.findById(chatId).orElse(null))).reversed();
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void messageWasBeRead(int chatId, String username){
         Chat chat = chatRepository.findById(chatId).orElse(null);
         if(chat.getClass() == BotChat.class){

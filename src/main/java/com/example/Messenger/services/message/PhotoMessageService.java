@@ -5,7 +5,8 @@ import com.example.Messenger.models.message.ImageMessage;
 import com.example.Messenger.repositories.chat.ChatRepository;
 import com.example.Messenger.repositories.message.PhotoMessageRepository;
 import com.example.Messenger.repositories.user.UserRepository;
-import com.example.Messenger.util.CloudinaryService;
+import com.example.Messenger.services.cloudinary.CloudinaryService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class PhotoMessageService {
     private final PhotoMessageRepository photoMessageRepository;
     private final CloudinaryService cloudinaryService;
@@ -29,14 +31,6 @@ public class PhotoMessageService {
     private final ChatRepository chatRepository;
     @Value("${image.path.messages}")
     private String imagePath;
-
-    @Autowired
-    public PhotoMessageService(PhotoMessageRepository photoMessageRepository, CloudinaryService cloudinaryService, UserRepository userRepository, ChatRepository chatRepository) {
-        this.photoMessageRepository = photoMessageRepository;
-        this.cloudinaryService = cloudinaryService;
-        this.userRepository = userRepository;
-        this.chatRepository = chatRepository;
-    }
 
     @Transactional
     public void sendMessage(MultipartFile file, int chatId, int userId, String underPhoto) throws IOException {
@@ -49,9 +43,12 @@ public class PhotoMessageService {
 
         String filePath = imagePath+(getLastImageId()+1)+getExpansion(file.getOriginalFilename());
         file.transferTo(new File(filePath));
-        String url = cloudinaryService.sendMessage(filePath);
-        ImageMessage imageMessage = new ImageMessage(chatRepository.findById(chatId).orElse(null), userRepository.findById(userId).orElse(null), url, underPhoto, getExpansion(file.getOriginalFilename()));
-        photoMessageRepository.save(imageMessage);
+        Optional<String> optionalUrl = cloudinaryService.sendMessage(filePath);
+        if(optionalUrl.isPresent()){
+            String url = optionalUrl.get();
+            ImageMessage imageMessage = new ImageMessage(chatRepository.findById(chatId).orElse(null), userRepository.findById(userId).orElse(null), url, underPhoto, getExpansion(file.getOriginalFilename()));
+            photoMessageRepository.save(imageMessage);
+        }
     }
 
     private int getLastImageId(){

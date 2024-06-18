@@ -10,6 +10,7 @@ import com.example.Messenger.repositories.user.ChatMemberRepository;
 import com.example.Messenger.repositories.user.MessengerUserRepository;
 import com.example.Messenger.util.enums.ChatMemberType;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,17 +20,12 @@ import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ChannelService {
 
     private final ChannelRepository channelRepository;
     private final ChatMemberRepository chatMemberRepository;
     private final MessengerUserRepository messengerUserRepository;
-    @Autowired
-    public ChannelService(ChannelRepository channelRepository, ChatMemberRepository chatMemberRepository, MessengerUserRepository messengerUserRepository) {
-        this.channelRepository = channelRepository;
-        this.chatMemberRepository = chatMemberRepository;
-        this.messengerUserRepository = messengerUserRepository;
-    }
 
     @Transactional
     public int createNewChannel(List<User> subscribers, User channelOwner, String channelName){

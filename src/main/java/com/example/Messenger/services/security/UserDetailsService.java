@@ -1,6 +1,7 @@
 package com.example.Messenger.services.security;
 
 import com.example.Messenger.repositories.user.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.example.Messenger.security.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -10,14 +11,10 @@ import com.example.Messenger.models.user.User;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
 
     private final UserRepository userRepository;
-
-    @Autowired
-    public UserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

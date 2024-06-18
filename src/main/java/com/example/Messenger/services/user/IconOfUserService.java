@@ -3,7 +3,7 @@ package com.example.Messenger.services.user;
 import com.example.Messenger.models.user.IconOfUser;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.user.IconOfUserRepository;
-import com.example.Messenger.util.CloudinaryService;
+import com.example.Messenger.services.cloudinary.CloudinaryService;
 import com.example.Messenger.util.threads.AutoUploadIcon;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

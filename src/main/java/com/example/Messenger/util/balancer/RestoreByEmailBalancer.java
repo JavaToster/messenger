@@ -6,12 +6,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class RestoreByEmailBalancer {
     // здесь будут хранится коды от email'ов, одному email 1 код
-    private final Map<String, RestoreEmailsBox> emailToCodeMap = new HashMap<>();
-
+    private final ConcurrentHashMap<String, RestoreEmailsBox> emailToCodeMap = new ConcurrentHashMap<>();
     public void addEmail(String email, int code){
         if(!emailToCodeMap.containsKey(email)){
             emailToCodeMap.put(email, new RestoreEmailsBox(Integer.valueOf(code)));

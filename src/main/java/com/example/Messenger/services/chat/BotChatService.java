@@ -11,8 +11,10 @@ import com.example.Messenger.repositories.message.MessageRepository;
 import com.example.Messenger.repositories.user.BotRepository;
 import com.example.Messenger.repositories.user.ChatMemberRepository;
 import com.example.Messenger.util.enums.ChatMemberType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -20,23 +22,12 @@ import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class BotChatService {
     private final BotChatRepository botChatRepository;
-    private final ChatRepository chatRepository;
-    private final MessageRepository messageRepository;
-    private final BotRepository botRepository;
     private final ChatMemberRepository chatMemberRepository;
 
-    @Autowired
-    public BotChatService(BotChatRepository botChatRepository, ChatRepository chatRepository, MessageRepository messageRepository, BotRepository botRepository, ChatMemberRepository chatMemberRepository) {
-        this.botChatRepository = botChatRepository;
-        this.chatRepository = chatRepository;
-        this.messageRepository = messageRepository;
-        this.botRepository = botRepository;
-        this.chatMemberRepository = chatMemberRepository;
-    }
-
-    @Transactional
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public int createNewChat(User byUsername, MessengerUser bot) {
         BotChat botChat = new BotChat();
         ChatMember chatMemberUser = new ChatMember(byUsername, botChat, ChatMemberType.MEMBER);

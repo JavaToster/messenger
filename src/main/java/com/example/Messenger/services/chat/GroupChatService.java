@@ -8,8 +8,11 @@ import com.example.Messenger.repositories.user.ChatMemberRepository;
 import com.example.Messenger.repositories.chat.GroupChatRepository;
 import com.example.Messenger.repositories.user.UserRepository;
 import com.example.Messenger.util.enums.ChatMemberType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -17,18 +20,11 @@ import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class GroupChatService {
 
     private final GroupChatRepository groupChatRepository;
     private final ChatMemberRepository chatMemberRepository;
-    private final UserRepository userRepository;
-
-    @Autowired
-    public GroupChatService(GroupChatRepository groupChatRepository, ChatMemberRepository chatMemberRepository, UserRepository userRepository) {
-        this.groupChatRepository = groupChatRepository;
-        this.chatMemberRepository = chatMemberRepository;
-        this.userRepository = userRepository;
-    }
 
     @Transactional
     public int createNewGroupChat(List<User> members, String name, User owner){

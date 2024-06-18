@@ -10,6 +10,7 @@ import com.example.Messenger.repositories.message.PhotoMessageRepository;
 import com.example.Messenger.repositories.user.MessengerUserRepository;
 import com.example.Messenger.services.chat.ChatService;
 import com.example.Messenger.util.enums.MessageType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import java.awt.*;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ForwardMessageService {
 
     private final ForwardMessageRepository forwardMessageRepository;
@@ -27,16 +29,6 @@ public class ForwardMessageService {
     private final PhotoMessageRepository photoMessageRepository;
     private final MessengerUserRepository messengerUserRepository;
     private final ChatRepository chatRepository;
-
-    @Autowired
-    public ForwardMessageService(ForwardMessageRepository forwardMessageRepository, MessageWrapperService messageWrapperService, ChatService chatService, PhotoMessageRepository photoMessageRepository, MessengerUserRepository messengerUserRepository, ChatRepository chatRepository) {
-        this.forwardMessageRepository = forwardMessageRepository;
-        this.messageWrapperService = messageWrapperService;
-        this.chatService = chatService;
-        this.photoMessageRepository = photoMessageRepository;
-        this.messengerUserRepository = messengerUserRepository;
-        this.chatRepository = chatRepository;
-    }
 
     @Transactional
     public ForwardMessage forward(int forwardMessageId, int toChatId, int ownerId, int fromChatId) {

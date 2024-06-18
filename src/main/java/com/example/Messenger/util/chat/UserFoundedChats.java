@@ -1,4 +1,4 @@
-package com.example.Messenger.util.message;
+package com.example.Messenger.util.chat;
 
 import com.example.Messenger.dto.ChatDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;

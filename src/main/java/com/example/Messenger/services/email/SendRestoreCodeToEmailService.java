@@ -43,7 +43,7 @@ public class SendRestoreCodeToEmailService {
     }
 
     // возвращает освободившийся код
-    public synchronized void removeEmailFromBalancer(String email){
+    public void removeEmailFromBalancer(String email){
         int code = restoreEmailBalancer.removeEmail(email);
         if(code == -1){
             return;

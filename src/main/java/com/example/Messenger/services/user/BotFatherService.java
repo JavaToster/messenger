@@ -9,37 +9,26 @@ import com.example.Messenger.repositories.user.BotRepository;
 import com.example.Messenger.repositories.user.ChatMemberRepository;
 import com.example.Messenger.repositories.user.MessengerUserRepository;
 import com.example.Messenger.util.exceptions.bot.BotUsernameIsUsedException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class BotFatherService {
 
     private final BotRepository botRepository;
-    private final PrivateChatRepository privateChatRepository;
-    private final BotChatRepository botChatRepository;
-    private final ChatMemberRepository chatMemberRepository;
     private final PasswordEncoder encoder;
-    private final MessageRepository messageRepository;
     private final MessengerUserRepository messengerUserRepository;
 
-    @Autowired
-    public BotFatherService(BotRepository botRepository, PrivateChatRepository privateChatRepository, BotChatRepository botChatRepository, ChatMemberRepository chatMemberRepository, PasswordEncoder encoder, MessageRepository messageRepository, MessengerUserRepository messengerUserRepository) {
-        this.botRepository = botRepository;
-        this.privateChatRepository = privateChatRepository;
-        this.botChatRepository = botChatRepository;
-        this.chatMemberRepository = chatMemberRepository;
-        this.encoder = encoder;
-        this.messageRepository = messageRepository;
-        this.messengerUserRepository = messengerUserRepository;
-    }
-
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public String getToken(String messageText) {
         String botName = messageText.replace("/create ", "");
 
@@ -51,7 +40,7 @@ public class BotFatherService {
         return createNewBot(botName);
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public String createNewBot(String name) throws BotUsernameIsUsedException {
         nameIsUnique(name);
         String token = createNewToken(name);

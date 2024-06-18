@@ -18,6 +18,7 @@ import com.example.Messenger.services.chat.ChatService;
 import com.example.Messenger.util.MessengerMapper;
 import com.example.Messenger.util.enums.MessageStatus;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ import java.util.*;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class MessageService {
 
     private final MessageRepository messageRepository;
@@ -33,25 +35,7 @@ public class MessageService {
     private final BlockMessageRepository blockMessageRepository;
     private final UserRepository userRepository;
     private final ChatService chatService;
-    private final MessengerMapper messengerMapper;
-    private final MessageTextEncoder encoder;
     private final MessageWrapperRepository messageWrapperRepository;
-    @Autowired
-    public MessageService(MessageRepository messageRepository, ChatRepository chatRepository, BlockMessageRepository blockMessageRepository, UserRepository userRepository, ChatService chatService, MessengerMapper messengerMapper, MessageTextEncoder encoder, MessageWrapperRepository messageWrapperRepository) {
-        this.messageRepository = messageRepository;
-        this.chatRepository = chatRepository;
-        this.blockMessageRepository = blockMessageRepository;
-        this.userRepository = userRepository;
-        this.chatService = chatService;
-        this.messengerMapper = messengerMapper;
-        this.encoder = encoder;
-        this.messageWrapperRepository = messageWrapperRepository;
-    }
-
-    @Transactional
-    public void save(Message message){
-        messageRepository.save(message);
-    }
 
     public List<Message> findByChat(int id) throws ChatNotFoundException {
         Chat chat = chatRepository.findById(id).orElseThrow(ChatNotFoundException::new);
@@ -66,7 +50,7 @@ public class MessageService {
         return messageRepository.findByOwner(userRepository.findById(userId).orElse(null));
     }
 
-    public List<Message> findBYUser(MessengerUser user){
+    public List<Message> findByUser(MessengerUser user){
         return messageRepository.findByOwner(user);
     }
 

@@ -13,6 +13,7 @@ import com.example.Messenger.repositories.user.BotRepository;
 import com.example.Messenger.repositories.user.ChatMemberRepository;
 import com.example.Messenger.util.exceptions.UserNotMemberException;
 import com.example.Messenger.util.exceptions.bot.BotNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,23 +24,12 @@ import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class BotService {
     private final BotRepository botRepository;
-    private final PasswordEncoder encoder;
-    private final PrivateChatRepository privateChatRepository;
     private final MessageRepository messageRepository;
     private final BotChatRepository botChatRepository;
     private final ChatMemberRepository chatMemberRepository;
-
-    @Autowired
-    public BotService(BotRepository botRepository, PasswordEncoder encoder, PrivateChatRepository privateChatRepository, MessageRepository messageRepository, BotChatRepository botChatRepository, ChatMemberRepository chatMemberRepository){
-        this.botRepository = botRepository;
-        this.encoder = encoder;
-        this.privateChatRepository = privateChatRepository;
-        this.messageRepository = messageRepository;
-        this.botChatRepository = botChatRepository;
-        this.chatMemberRepository = chatMemberRepository;
-    }
 
     public List<Bot> findAll(){
         return botRepository.findAll();

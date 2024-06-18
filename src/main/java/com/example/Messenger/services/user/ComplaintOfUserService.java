@@ -7,19 +7,21 @@ import com.example.Messenger.repositories.user.UserRepository;
 import com.example.Messenger.services.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
-@Transactional(readOnly = true)
+@Transactional(readOnly = true, isolation = Isolation.READ_COMMITTED)
 @RequiredArgsConstructor
 public class ComplaintOfUserService {
     private final ComplaintOfUserRepository complaintOfUserRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void addComplaint(String username, String complaintText, String fromUsername) {
         if(complaintText.isEmpty() || username.isEmpty()){
             return;
@@ -49,7 +51,7 @@ public class ComplaintOfUserService {
         emailService.send(userRepository.findByUsername(username).orElse(null).getEmail(), "Warning", textOfWarning);
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void removeComplaints(String username) {
         List<ComplaintOfUser> complaints = complaintOfUserRepository.findByOwner(getUser(username));
         complaints.forEach(complaint -> complaintOfUserRepository.delete(complaint));

@@ -27,6 +27,7 @@ import com.example.Messenger.services.message.MessageWrapperService;
 import com.example.Messenger.services.message.PhotoMessageService;
 import com.example.Messenger.util.abstractClasses.InfoOfMessage;
 import com.example.Messenger.util.enums.ChatMemberType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,7 @@ import java.util.*;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class Convertor {
 
     private final GroupChatRepository groupChatRepository;
@@ -46,17 +48,6 @@ public class Convertor {
     private final UserRepository userRepository;
     private final PhotoMessageRepository photoMessageRepository;
     private final PhotoMessageService photoMessageService;
-    @Autowired
-    public Convertor(GroupChatRepository groupChatRepository, ChannelRepository channelRepository, BotChatRepository botChatRepository, ChatRepository chatRepository, UserRepository userRepository, PhotoMessageRepository photoMessageRepository, PhotoMessageService photoMessageService){
-        this.groupChatRepository = groupChatRepository;
-        this.channelRepository = channelRepository;
-        this.botChatRepository = botChatRepository;
-        this.chatRepository = chatRepository;
-        this.userRepository = userRepository;
-        this.photoMessageRepository = photoMessageRepository;
-        this.photoMessageService = photoMessageService;
-    }
-
 
     public List<ChatDTO> convertToChatDTO(List<Chat> chats, String username){
         List<ChatDTO> chatsDTO = new ArrayList<>();

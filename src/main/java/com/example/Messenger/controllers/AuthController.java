@@ -3,7 +3,7 @@ package com.example.Messenger.controllers;
 import com.example.Messenger.dto.user.RegisterUserDTO;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.services.user.UserService;
-import com.example.Messenger.services.cache.LanguageOfAppService;
+import com.example.Messenger.services.languageOfApp.LanguageOfAppService;
 import com.example.Messenger.util.balancer.UserStatusBalancer;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import com.example.Messenger.util.enums.UserStatus;

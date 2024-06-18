@@ -18,44 +18,26 @@ import com.example.Messenger.services.user.MessengerUserService;
 import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.util.Convertor;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class ChatService {
 
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
-    private final GroupChatRepository groupChatRepository;
-    private final ChannelRepository channelRepository;
     private final UserService userService;
     private final BotChatService botChatService;
     private final MessengerUserService messengerUserService;
     private final PrivateChatService privateChatService;
-    private final GroupChatService groupChatService;
-    private final ChannelService channelService;
-    private final PrivateChatRepository privateChatRepository;
     private final Convertor convertor;
-    @Autowired
-    public ChatService(ChatRepository chatRepository, UserRepository userRepository, GroupChatRepository groupChatRepository, ChannelRepository channelRepository, UserService userService, BotChatService botChatService, MessengerUserService messengerUserService, PrivateChatService privateChatService, GroupChatService groupChatService, ChannelService channelService, PrivateChatRepository privateChatRepository, Convertor convertor) {
-        this.chatRepository = chatRepository;
-        this.userRepository = userRepository;
-        this.groupChatRepository = groupChatRepository;
-        this.channelRepository = channelRepository;
-        this.userService = userService;
-        this.botChatService = botChatService;
-        this.messengerUserService = messengerUserService;
-        this.privateChatService = privateChatService;
-        this.groupChatService = groupChatService;
-        this.channelService = channelService;
-        this.privateChatRepository = privateChatRepository;
-        this.convertor = convertor;
-    }
-
     public Chat findById(int id) {
         return chatRepository.findById(id). orElseThrow(ChatNotFoundException::new);
     }
@@ -110,13 +92,12 @@ public class ChatService {
         return time < 10 ? "0"+time : ""+time;
     }
 
-    @Transactional(readOnly = true)
     public List<Chat> findAll() {
         return chatRepository.findAll();
     }
 
-    @Transactional
-    public synchronized void deleteEmptyChats(){
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void deleteEmptyChats(){
         List<Chat> emptyChats = chatRepository.findAll();
         try{
             emptyChats.removeIf(chat -> !chat.getMessages().isEmpty());

@@ -31,6 +31,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -89,7 +91,7 @@ public class UserService implements UserDetailsService {
         return cookie;
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
     public void register(User user, MultipartFile icon){
         loadBalancer.add(userRepository.save(user).getId());
         try {
@@ -127,7 +129,7 @@ public class UserService implements UserDetailsService {
         return users;
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void setLastOnline(String name) {
         User user = userRepository.findByUsername(name).orElse(null);
         user.setLastOnline(new Date());
@@ -212,21 +214,21 @@ public class UserService implements UserDetailsService {
         return differenceOfDay < 5 ? "дня" : "дней";
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void block(int id, int chatId) {
         ChatMember chatMember = chatMemberRepository.findByUserAndChat(userRepository.findById(id).orElse(null), chatRepository.findById(chatId).orElse(null)).orElse(null);
         chatMember.setMemberType(ChatMemberType.BLOCK);
         chatMemberRepository.save(chatMember);
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void unblock(int id, int chatId) {
         ChatMember chatMember = chatMemberRepository.findByUserAndChat(userRepository.findById(id).orElse(null), chatRepository.findById(chatId).orElse(null)).orElse(null);
         chatMember.setMemberType(ChatMemberType.MEMBER);
         chatMemberRepository.save(chatMember);
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void changeLang(int userId, String lang){
         User user = userRepository.findById(userId).orElse(null);
         user.setLang(convertToLang(lang));
@@ -273,7 +275,7 @@ public class UserService implements UserDetailsService {
         return sendRestoreCodeToEmailService.checkCode(email, code);
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void changePasswordByEmail(String email, String password) {
         User user = userRepository.findByEmail(email).orElse(null);
         user.setPassword(encoder.encode(password));
@@ -328,7 +330,7 @@ public class UserService implements UserDetailsService {
         return complaintOfUserRepository.findByOwner(user);
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void banComplaintsUser() {
         List<User> users = userRepository.findAll();
         for(User user: users){
@@ -343,21 +345,17 @@ public class UserService implements UserDetailsService {
     }
 
     public List<User> getUsersWithComplaint() {
-        List<ComplaintOfUser> complaints = complaintOfUserRepository.findAll();
-        System.out.println(complaints.size());
-        List<User> usersWithComplaint = new LinkedList<>();
-        for(ComplaintOfUser complaint: complaints){
-            User user = complaint.getOwner();
-            usersWithComplaint.add(user);
-            complaints.removeIf(complaint1 -> complaint1.getOwner().getId() == user.getId());
-            if(complaints.isEmpty()){
-                break;
+        List<User> users = findAll();
+        List<User> complaintUsers = new LinkedList<>();
+        for(User user: users){
+            if(user.getComplaints() != null || user.getComplaints().size() > 0){
+                complaintUsers.add(user);
             }
         }
-        return usersWithComplaint;
+        return complaintUsers;
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
     public void banUser(String username, String time) {
         Calendar calendar = Calendar.getInstance();
         switch (time){
@@ -378,20 +376,20 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
     public synchronized void unban(User user) {
         user.setRole(RoleOfUser.ROLE_USER);
         userRepository.save(user);
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void setBlocker(String username) {
         User user = getUser(username);
         user.setRole(RoleOfUser.ROLE_BLOCKER);
         userRepository.save(user);
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void unsetBlocker(String username){
         User user = getUser(username);
         user.setRole(RoleOfUser.ROLE_USER);

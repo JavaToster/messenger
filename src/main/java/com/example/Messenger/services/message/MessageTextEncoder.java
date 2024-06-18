@@ -18,6 +18,7 @@ import java.util.Map;
 import static java.awt.SystemColor.text;
 
 @Service
+@Deprecated
 public class MessageTextEncoder {
 
     @Value("${encodeType}")
