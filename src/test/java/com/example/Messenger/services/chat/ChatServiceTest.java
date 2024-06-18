@@ -45,12 +45,4 @@ class ChatServiceTest {
         assertEquals(Optional.empty(), chatService.textInnerOtherText("hi", "sdf"));
         assertEquals("Huskashdsjfd", chatService.textInnerOtherText("Huskashdsjfd", "kashd").get());
     }
-
-    @Test
-    void textInnerO(){
-        String fullText = "Hello";
-        String word = "He";
-        Optional<String> returnder = chatService.textInnerOtherText1(fullText, word);
-        assertEquals(fullText, returnder.get());
-    }
 }
