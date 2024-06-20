@@ -1,7 +1,7 @@
-package com.example.Messenger.models.message;
+package com.example.Messenger.models.database.message;
 
-import com.example.Messenger.models.chat.Chat;
-import com.example.Messenger.models.user.MessengerUser;
+import com.example.Messenger.models.database.chat.Chat;
+import com.example.Messenger.models.database.user.MessengerUser;
 import com.example.Messenger.util.enums.MessageStatus;
 import com.example.Messenger.util.enums.MessageType;
 import jakarta.persistence.Column;
@@ -9,7 +9,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Table(name = "Link_message")

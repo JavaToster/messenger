@@ -1,9 +1,8 @@
 package com.example.Messenger.dto.chatHead.channel;
 
 import com.example.Messenger.dto.chatHead.ChatHeadDTO;
-import com.example.Messenger.models.user.MessengerUser;
+import com.example.Messenger.models.database.user.MessengerUser;
 
-import java.beans.Transient;
 import java.util.List;
 
 public class ChannelHeadDTO extends ChatHeadDTO {

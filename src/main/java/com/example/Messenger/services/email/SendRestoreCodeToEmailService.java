@@ -1,6 +1,6 @@
 package com.example.Messenger.services.email;
 
-import com.example.Messenger.util.balancer.RestoreByEmailBalancer;
+import com.example.Messenger.balancers.RestoreByEmailBalancer;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

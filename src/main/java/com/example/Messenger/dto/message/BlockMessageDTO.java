@@ -1,6 +1,6 @@
 package com.example.Messenger.dto.message;
 
-import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.database.chat.Chat;
 
 public class BlockMessageDTO {
     private int id;

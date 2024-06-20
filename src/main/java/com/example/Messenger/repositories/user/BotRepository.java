@@ -1,6 +1,6 @@
 package com.example.Messenger.repositories.user;
 
-import com.example.Messenger.models.user.Bot;
+import com.example.Messenger.models.database.user.Bot;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

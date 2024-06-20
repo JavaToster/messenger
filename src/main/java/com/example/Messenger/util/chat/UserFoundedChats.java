@@ -2,7 +2,7 @@ package com.example.Messenger.util.chat;
 
 import com.example.Messenger.dto.ChatDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
-import com.example.Messenger.models.user.User;
+import com.example.Messenger.models.database.user.User;
 
 import java.util.Collections;
 import java.util.List;

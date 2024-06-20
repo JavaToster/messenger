@@ -1,6 +1,6 @@
-package com.example.Messenger.models.user;
+package com.example.Messenger.models.database.user;
 
-import com.example.Messenger.models.message.Message;
+import com.example.Messenger.models.database.message.Message;
 import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.enums.RoleOfUser;
 import jakarta.persistence.*;
@@ -37,8 +37,11 @@ public class User extends MessengerUser{
     private List<ComplaintOfUser> complaints;
     @OneToOne(mappedBy = "owner")
     private IconOfUser icon;
+    @OneToOne(mappedBy = "owner")
+    private SettingsOfUser settingsOfUser;
 
     public User(){}
+
     public User(String firstName, String lastname, String username, String password, String email, String phone, String lang){
         this.name = firstName;
         this.lastname = lastname;
@@ -49,7 +52,6 @@ public class User extends MessengerUser{
         this.email = email;
         this.role = RoleOfUser.ROLE_USER;
     }
-
     public User(RegisterUserDTO registerDTO){
         this.name = registerDTO.getFirstname();
         this.lastname = registerDTO.getLastname();
@@ -148,10 +150,10 @@ public class User extends MessengerUser{
     public void setEmail(String email) {
         this.email = email;
     }
+
     public String getRole(){
         return this.role.name();
     }
-
     public void setRole(RoleOfUser role){
         this.role = role;
     }
@@ -170,5 +172,13 @@ public class User extends MessengerUser{
 
     public void setIcon(IconOfUser icon) {
         this.icon = icon;
+    }
+
+    public SettingsOfUser getSettingsOfUser() {
+        return settingsOfUser;
+    }
+
+    public void setSettingsOfUser(SettingsOfUser settingsOfUser) {
+        this.settingsOfUser = settingsOfUser;
     }
 }

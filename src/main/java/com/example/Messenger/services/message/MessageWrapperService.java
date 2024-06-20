@@ -1,21 +1,13 @@
 package com.example.Messenger.services.message;
 
-import com.example.Messenger.dto.util.DateDayOfMessagesDTO;
-import com.example.Messenger.models.chat.BotChat;
-import com.example.Messenger.models.chat.Chat;
-import com.example.Messenger.models.message.Message;
-import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.models.database.chat.BotChat;
+import com.example.Messenger.models.database.chat.Chat;
+import com.example.Messenger.models.database.message.MessageWrapper;
 import com.example.Messenger.repositories.chat.ChatRepository;
-import com.example.Messenger.repositories.message.MessageRepository;
 import com.example.Messenger.repositories.message.MessageWrapperRepository;
-import com.example.Messenger.repositories.message.PhotoMessageRepository;
 import com.example.Messenger.services.chat.ChatService;
-import com.example.Messenger.services.user.UserService;
-import com.example.Messenger.util.Convertor;
-import com.example.Messenger.util.MessengerMapper;
 import com.example.Messenger.util.enums.MessageStatus;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;

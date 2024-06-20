@@ -1,6 +1,6 @@
-package com.example.Messenger.models.message;
+package com.example.Messenger.models.database.message;
 
-import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.database.chat.Chat;
 import jakarta.persistence.*;
 
 @Entity

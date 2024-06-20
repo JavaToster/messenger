@@ -2,24 +2,22 @@ package com.example.Messenger.services.chat;
 
 import com.example.Messenger.dto.ChatDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
-import com.example.Messenger.models.cache.LanguageOfApp;
+import com.example.Messenger.models.database.chat.Channel;
+import com.example.Messenger.models.database.chat.Chat;
+import com.example.Messenger.models.database.chat.GroupChat;
+import com.example.Messenger.models.redis.LanguageOfApp;
 import com.example.Messenger.models.chat.*;
-import com.example.Messenger.models.message.Message;
-import com.example.Messenger.models.message.MessageWrapper;
-import com.example.Messenger.models.user.ChatMember;
-import com.example.Messenger.models.user.MessengerUser;
-import com.example.Messenger.models.user.User;
-import com.example.Messenger.repositories.chat.ChannelRepository;
+import com.example.Messenger.models.database.message.MessageWrapper;
+import com.example.Messenger.models.database.user.ChatMember;
+import com.example.Messenger.models.database.user.MessengerUser;
+import com.example.Messenger.models.database.user.User;
 import com.example.Messenger.repositories.chat.ChatRepository;
-import com.example.Messenger.repositories.chat.GroupChatRepository;
-import com.example.Messenger.repositories.chat.PrivateChatRepository;
 import com.example.Messenger.repositories.user.UserRepository;
 import com.example.Messenger.services.user.MessengerUserService;
 import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.util.Convertor;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -143,7 +141,7 @@ public class ChatService {
 
         for(int i = 0; i<chatDTOS.size(); i++){
             ChatDTO chat = chatDTOS.get(i);
-            if(textInnerOtherText(chat.getChatTitle(), findText).isPresent()){
+            if(findWordInnerText(chat.getChatTitle(), findText).isPresent()){
                 willReturnChats.add(chat);
             }
         }
@@ -154,19 +152,12 @@ public class ChatService {
     /** метод для определения того, есть ли какое либо слово внутри текста*/
     /** возвращает Optional <полный текст> в случае обнаружения слова в тексте*/
     /** возвращает Optional.empty() если слова нет в тексте*/
-    public Optional<String> textInnerOtherText(String fullText, String word){
-        if(word.length()>fullText.length()){
-            return Optional.empty();
+    public Optional<String> findWordInnerText(String fullText, String word){
+        if(fullText.length() >= word.length()){
+            if (fullText.toLowerCase().equals(word.toLowerCase()) || checkWordInnerText(fullText, word)) {
+                return Optional.of(fullText);
+            }
         }
-
-        if(fullText.toLowerCase().equals(word.toLowerCase())) {
-            return Optional.of(fullText);
-        }
-
-        if(checkWordInnerText(fullText, word)){
-            return Optional.of(fullText);
-        }
-
         return Optional.empty();
     }
 
@@ -229,7 +220,7 @@ public class ChatService {
         List<User> users = userService.findWithout(username);
         List<FoundUserOfUsername> willReturnList = new LinkedList<>();
         for(User user: users){
-            if(textInnerOtherText(user.getUsername(), text).isPresent()){
+            if(findWordInnerText(user.getUsername(), text).isPresent()){
                 willReturnList.add(new FoundUserOfUsername(user));
             }
         }
@@ -245,13 +236,13 @@ public class ChatService {
             if(i == messages.size()){
                 break;
             }
-            Optional<String> returnedWord = textInnerOtherText(messages.get(i).getContent(), text);
+            Optional<String> returnedWord = findWordInnerText(messages.get(i).getContent(), text);
             if(returnedWord.isPresent()){
                 ChatDTO chatDTO = convertor.convertToChatDTO(chat, usernameOfUser);
                 if(chatDTO == null){
                     return Optional.empty();
                 }
-                chatDTO.getLastMessage().setContent(returnedWord.get());
+                chatDTO.setLastMessageText(returnedWord.get());
                 return Optional.of(chatDTO);
             }
         }

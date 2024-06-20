@@ -1,6 +1,5 @@
 package com.example.Messenger.controllers;
 
-import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.services.chat.BotChatService;
 import com.example.Messenger.services.message.MessageService;
 import com.example.Messenger.services.message.MessageWrapperService;

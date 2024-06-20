@@ -1,15 +1,14 @@
 package com.example.Messenger.services.user;
 
-import com.example.Messenger.models.user.ChatMember;
-import com.example.Messenger.models.user.MessengerUser;
+import com.example.Messenger.models.database.user.ChatMember;
+import com.example.Messenger.models.database.user.MessengerUser;
 import com.example.Messenger.repositories.user.ChatMemberRepository;
 import com.example.Messenger.repositories.user.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.database.chat.Chat;
 
 import java.util.ArrayList;
 import java.util.List;

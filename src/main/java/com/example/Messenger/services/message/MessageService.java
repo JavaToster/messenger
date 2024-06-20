@@ -1,25 +1,21 @@
 package com.example.Messenger.services.message;
 
-import com.example.Messenger.dto.message.MessageResponseDTO;
-import com.example.Messenger.dto.util.DateDayOfMessagesDTO;
-import com.example.Messenger.models.chat.BotChat;
-import com.example.Messenger.models.chat.Chat;
-import com.example.Messenger.models.message.BlockMessage;
-import com.example.Messenger.models.message.Message;
-import com.example.Messenger.models.message.MessageWrapper;
-import com.example.Messenger.models.user.MessengerUser;
-import com.example.Messenger.models.user.User;
+import com.example.Messenger.models.database.chat.BotChat;
+import com.example.Messenger.models.database.chat.Chat;
+import com.example.Messenger.models.database.message.BlockMessage;
+import com.example.Messenger.models.database.message.Message;
+import com.example.Messenger.models.database.message.MessageWrapper;
+import com.example.Messenger.models.database.user.MessengerUser;
+import com.example.Messenger.models.database.user.User;
 import com.example.Messenger.repositories.chat.ChatRepository;
 import com.example.Messenger.repositories.message.BlockMessageRepository;
 import com.example.Messenger.repositories.message.MessageRepository;
 import com.example.Messenger.repositories.message.MessageWrapperRepository;
 import com.example.Messenger.repositories.user.UserRepository;
 import com.example.Messenger.services.chat.ChatService;
-import com.example.Messenger.util.MessengerMapper;
 import com.example.Messenger.util.enums.MessageStatus;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

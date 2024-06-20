@@ -1,14 +1,13 @@
 package com.example.Messenger.services.user;
 
-import com.example.Messenger.models.user.ComplaintOfUser;
-import com.example.Messenger.models.user.User;
+import com.example.Messenger.models.database.user.ComplaintOfUser;
+import com.example.Messenger.models.database.user.User;
 import com.example.Messenger.repositories.user.ComplaintOfUserRepository;
 import com.example.Messenger.repositories.user.UserRepository;
 import com.example.Messenger.services.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

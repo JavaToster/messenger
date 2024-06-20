@@ -1,4 +1,4 @@
-package com.example.Messenger.models.user;
+package com.example.Messenger.models.database.user;
 
 import jakarta.persistence.*;
 

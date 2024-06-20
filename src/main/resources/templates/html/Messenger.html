@@ -125,13 +125,13 @@
         </div>
         <div th:each="foundedChat: ${foundedChatsOfChatName}" class="foundedChats" style="margin-top: 5px; background-color: #e0e0e0; border-radius: 5px;">
             <a th:href="@{/messenger/chats/{id} (id=${foundedChat.getId()})}" style="margin-left: 10px; margin-top: 10px; text-decoration: none; color: black; margin-bottom: 5px;" th:text="${foundedChat.getChatTitle()}">Chat name</a>
-            <p style="margin-bottom: 1px; margin-left: 10px; margin-top: 5px;" th:text="${foundedChat.getLastMessage().getContent()}">Last message</p>
+            <p style="margin-bottom: 1px; margin-left: 10px; margin-top: 5px;" th:text="${foundedChat.getLastMessageText()}">Last message</p>
             <time style="font-size: 0.8em;color: #888; margin-left: 10px; margin-top: 0px;" th:text="${foundedChat.getLastMessageSendTime()}">12:00 PM</time>
         </div>
         <hr th:if="${!foundedChatsOfChatName.isEmpty()}">
         <div th:each="foundedChat1: ${foundedChatsOfMessage}" class="foundedChats" style="margin-top: 5px; background-color: #e0e0e0; border-radius: 5px;">
             <a th:href="@{/messenger/chats/{id} (id=${foundedChat1.getId()})}" style="margin-left: 10px; margin-top: 10px; text-decoration: none; color: black; margin-bottom: 5px;" th:text="${foundedChat1.getChatTitle()}">Chat name</a>
-            <p style="color: blue; margin-bottom: 1px; margin-left: 10px; margin-top: 5px;" th:text="${foundedChat1.getLastMessage().getContent()}">Last message</p>
+            <p style="color: blue; margin-bottom: 1px; margin-left: 10px; margin-top: 5px;" th:text="${foundedChat1.getLastMessageText()}">Last message</p>
             <time style="font-size: 0.8em;color: #888; margin-left: 10px; margin-top: 0px;" th:text="${foundedChat1.getLastMessageSendTime()}">12:00 PM</time>
         </div>
         <hr th:if="${!foundedChatsOfMessage.isEmpty()}">

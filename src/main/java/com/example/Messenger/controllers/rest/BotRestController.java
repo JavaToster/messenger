@@ -7,7 +7,7 @@ import com.example.Messenger.dto.bot.response.message.InfoByImageMessageDTO;
 import com.example.Messenger.dto.bot.response.message.InfoByTextMessageDTO;
 import com.example.Messenger.dto.bot.response.message.InfoOfMessagesDTO;
 import com.example.Messenger.dto.bot.response.message.SendMessageForBotDTO;
-import com.example.Messenger.models.user.Bot;
+import com.example.Messenger.models.database.user.Bot;
 import com.example.Messenger.services.chat.BotChatService;
 import com.example.Messenger.services.user.BotRestService;
 import com.example.Messenger.services.user.BotService;
@@ -20,9 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/bot-rest")

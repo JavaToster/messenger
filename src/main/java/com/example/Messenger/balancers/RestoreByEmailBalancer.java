@@ -1,11 +1,9 @@
-package com.example.Messenger.util.balancer;
+package com.example.Messenger.balancers;
 
 import com.example.Messenger.util.email.RestoreEmailsBox;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component

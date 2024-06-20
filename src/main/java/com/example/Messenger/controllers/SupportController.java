@@ -1,6 +1,5 @@
 package com.example.Messenger.controllers;
 
-import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.services.message.MessageWrapperService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

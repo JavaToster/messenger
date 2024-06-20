@@ -1,8 +1,7 @@
-package com.example.Messenger.models.user;
+package com.example.Messenger.models.database.user;
 
-import com.example.Messenger.models.message.ForwardMessage;
+import com.example.Messenger.models.database.message.ForwardMessage;
 import jakarta.persistence.*;
-import jakarta.websocket.ClientEndpoint;
 
 import java.util.List;
 

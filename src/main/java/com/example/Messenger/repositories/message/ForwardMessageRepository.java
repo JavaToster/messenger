@@ -1,6 +1,6 @@
 package com.example.Messenger.repositories.message;
 
-import com.example.Messenger.models.message.ForwardMessage;
+import com.example.Messenger.models.database.message.ForwardMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

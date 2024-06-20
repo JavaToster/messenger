@@ -1,4 +1,4 @@
-package com.example.Messenger.models.cache;
+package com.example.Messenger.models.redis;
 
 
 import lombok.Data;

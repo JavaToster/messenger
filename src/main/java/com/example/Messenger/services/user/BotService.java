@@ -1,21 +1,18 @@
 package com.example.Messenger.services.user;
 
-import com.example.Messenger.models.chat.BotChat;
-import com.example.Messenger.models.chat.Chat;
-import com.example.Messenger.models.message.Message;
-import com.example.Messenger.models.message.MessageWrapper;
-import com.example.Messenger.models.user.Bot;
-import com.example.Messenger.models.user.ChatMember;
+import com.example.Messenger.models.database.chat.BotChat;
+import com.example.Messenger.models.database.chat.Chat;
+import com.example.Messenger.models.database.message.Message;
+import com.example.Messenger.models.database.message.MessageWrapper;
+import com.example.Messenger.models.database.user.Bot;
+import com.example.Messenger.models.database.user.ChatMember;
 import com.example.Messenger.repositories.chat.BotChatRepository;
-import com.example.Messenger.repositories.chat.PrivateChatRepository;
 import com.example.Messenger.repositories.message.MessageRepository;
 import com.example.Messenger.repositories.user.BotRepository;
 import com.example.Messenger.repositories.user.ChatMemberRepository;
 import com.example.Messenger.util.exceptions.UserNotMemberException;
 import com.example.Messenger.util.exceptions.bot.BotNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

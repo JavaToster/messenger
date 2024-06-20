@@ -1,6 +1,6 @@
 package com.example.Messenger.repositories.cache;
 
-import com.example.Messenger.models.cache.LanguageOfApp;
+import com.example.Messenger.models.redis.LanguageOfApp;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,6 +1,6 @@
 package com.example.Messenger.repositories.chat;
 
-import com.example.Messenger.models.chat.GroupChat;
+import com.example.Messenger.models.database.chat.GroupChat;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

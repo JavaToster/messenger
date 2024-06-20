@@ -1,6 +1,6 @@
 package com.example.Messenger.controllers;
 
-import com.example.Messenger.models.user.User;
+import com.example.Messenger.models.database.user.User;
 import com.example.Messenger.services.user.ComplaintOfUserService;
 import com.example.Messenger.services.user.UserService;
 import lombok.RequiredArgsConstructor;

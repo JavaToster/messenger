@@ -1,20 +1,14 @@
 package com.example.Messenger.services.user;
 
-import com.example.Messenger.models.user.Bot;
-import com.example.Messenger.models.user.MessengerUser;
-import com.example.Messenger.repositories.chat.BotChatRepository;
-import com.example.Messenger.repositories.chat.PrivateChatRepository;
-import com.example.Messenger.repositories.message.MessageRepository;
+import com.example.Messenger.models.database.user.Bot;
+import com.example.Messenger.models.database.user.MessengerUser;
 import com.example.Messenger.repositories.user.BotRepository;
-import com.example.Messenger.repositories.user.ChatMemberRepository;
 import com.example.Messenger.repositories.user.MessengerUserRepository;
 import com.example.Messenger.util.exceptions.bot.BotUsernameIsUsedException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

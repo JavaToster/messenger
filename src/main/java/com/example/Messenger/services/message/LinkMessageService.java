@@ -1,12 +1,10 @@
 package com.example.Messenger.services.message;
 
-import com.example.Messenger.models.message.LinkMessage;
-import com.example.Messenger.models.user.MessengerUser;
+import com.example.Messenger.models.database.message.LinkMessage;
 import com.example.Messenger.repositories.chat.ChatRepository;
 import com.example.Messenger.repositories.message.LinkMessageRepository;
 import com.example.Messenger.repositories.user.MessengerUserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

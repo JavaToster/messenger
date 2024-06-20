@@ -1,6 +1,6 @@
 package com.example.Messenger.dto.user;
 
-import com.example.Messenger.models.user.User;
+import com.example.Messenger.models.database.user.User;
 
 public class FoundUserOfUsername {
     private String username;

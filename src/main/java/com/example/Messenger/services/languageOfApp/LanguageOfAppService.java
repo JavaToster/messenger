@@ -1,18 +1,16 @@
 package com.example.Messenger.services.languageOfApp;
 
-import com.example.Messenger.models.cache.LanguageOfApp;
+import com.example.Messenger.models.redis.LanguageOfApp;
 import com.example.Messenger.repositories.cache.LanguageOfAppRepository;
 import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.exceptions.LanguageNotSupportedException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class LanguageOfAppService {
     private final LanguageOfAppRepository languageOfAppRepository;
-
 
     // for admins, using when admin add new language for application
     public void addLanguage(LanguageOfApp language){

@@ -1,7 +1,7 @@
 package com.example.Messenger.services.message;
 
-import com.example.Messenger.models.message.BlockMessage;
-import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.database.message.BlockMessage;
+import com.example.Messenger.models.database.chat.Chat;
 import com.example.Messenger.repositories.message.BlockMessageRepository;
 import com.example.Messenger.repositories.chat.ChatRepository;
 import lombok.RequiredArgsConstructor;

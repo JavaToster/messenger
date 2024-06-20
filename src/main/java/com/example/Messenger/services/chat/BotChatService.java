@@ -1,18 +1,14 @@
 package com.example.Messenger.services.chat;
 
-import com.example.Messenger.models.chat.BotChat;
-import com.example.Messenger.models.user.Bot;
-import com.example.Messenger.models.user.ChatMember;
-import com.example.Messenger.models.user.MessengerUser;
-import com.example.Messenger.models.user.User;
+import com.example.Messenger.models.database.chat.BotChat;
+import com.example.Messenger.models.database.user.Bot;
+import com.example.Messenger.models.database.user.ChatMember;
+import com.example.Messenger.models.database.user.MessengerUser;
+import com.example.Messenger.models.database.user.User;
 import com.example.Messenger.repositories.chat.BotChatRepository;
-import com.example.Messenger.repositories.chat.ChatRepository;
-import com.example.Messenger.repositories.message.MessageRepository;
-import com.example.Messenger.repositories.user.BotRepository;
 import com.example.Messenger.repositories.user.ChatMemberRepository;
 import com.example.Messenger.util.enums.ChatMemberType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;

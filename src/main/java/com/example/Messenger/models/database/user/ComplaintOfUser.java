@@ -1,8 +1,6 @@
-package com.example.Messenger.models.user;
+package com.example.Messenger.models.database.user;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 

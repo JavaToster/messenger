@@ -1,8 +1,8 @@
-package com.example.Messenger.util.balancer;
+package com.example.Messenger.balancers;
 
 import com.example.Messenger.dto.ChatDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
-import com.example.Messenger.models.user.User;
+import com.example.Messenger.models.database.user.User;
 import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.util.chat.UserFoundedChats;
 import org.springframework.beans.factory.annotation.Autowired;

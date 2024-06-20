@@ -1,14 +1,8 @@
 package com.example.Messenger.util.threads;
 
-import com.example.Messenger.models.user.ComplaintOfUser;
-import com.example.Messenger.models.user.User;
-import com.example.Messenger.services.user.ComplaintOfUserService;
 import com.example.Messenger.services.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.thymeleaf.util.DateUtils;
-
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor

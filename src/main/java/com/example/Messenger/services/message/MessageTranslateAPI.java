@@ -9,54 +9,41 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class MessageTranslateAPI {
-    private String URL = "https://api.mymemory.translated.net/get";
+    private final String URL = "https://api.mymemory.translated.net/get?";
     private RestTemplate restTemplate;
-    private boolean parameterIs;
     private String fromToLanguages="en|ru";
-    public MessageTranslateAPI (){
 
-    }
-
-    @Autowired
     public MessageTranslateAPI(RestTemplate restTemplate){
         this.restTemplate = restTemplate;
     }
 
-    public RestTemplate getRestTemplate() {
-        return restTemplate;
-    }
-
     public String translate(String text){
-        addParameter("q", text);
-        addParameter("langpair", fromToLanguages);
-
-        String translate = sendRequest().getResponseData().getTranslatedText();
-        clearParameters();
+        String finallyUrl = setSettings(text, fromToLanguages);
+        
+        String translate = sendRequest(finallyUrl).getResponseData().getTranslatedText();
         return translate;
     }
 
-    private void clearParameters() {
-        URL = URL.substring(0, URL.indexOf("?"));
-        parameterIs = false;
-    }
-
-    private void addParameter(String parameterName, String parameterValue){
+    private String setSettings(String text, String languageMode){
         StringBuffer stringBuffer = new StringBuffer(URL);
-        if(!parameterIs){
-            stringBuffer.append("?"+parameterName+"="+parameterValue+"&");
-            parameterIs = !parameterIs;
-            URL=stringBuffer.toString();
-            return;
-        }
-        stringBuffer.append(parameterName+"="+parameterValue);
-        URL = stringBuffer.toString();
+        stringBuffer.append(createParameter("q", text));
+        stringBuffer.append(createParameter("langpair", languageMode));
+        return stringBuffer.toString();
     }
 
-    private TranslateMessageDTO sendRequest(){
-        return restTemplate.getForObject(URL, TranslateMessageDTO.class);
+    private String createParameter(String parameterKey, String parameterValue){
+        StringBuffer buffer = new StringBuffer(parameterKey);
+        buffer.append("=");
+        buffer.append(parameterValue);
+        buffer.append("&");
+        return buffer.toString();
+    }
+
+    private TranslateMessageDTO sendRequest(String url){
+        return restTemplate.getForObject(url, TranslateMessageDTO.class);
     }
 
     public void setFromToLanguages(String from, String to) {
-        this.fromToLanguages = from+"|"+to;
+        this.fromToLanguages = new StringBuffer(from).append("|").append(to).toString();
     }
 }

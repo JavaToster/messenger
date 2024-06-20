@@ -1,6 +1,5 @@
-package com.example.Messenger.util.balancer;
+package com.example.Messenger.balancers;
 
-import com.example.Messenger.models.user.User;
 import com.example.Messenger.util.enums.UserStatus;
 import org.springframework.stereotype.Component;
 

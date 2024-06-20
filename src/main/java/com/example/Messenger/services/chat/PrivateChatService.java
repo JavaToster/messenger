@@ -1,20 +1,15 @@
 package com.example.Messenger.services.chat;
 
-import com.example.Messenger.models.chat.Chat;
-import com.example.Messenger.models.chat.PrivateChat;
-import com.example.Messenger.models.user.ChatMember;
-import com.example.Messenger.models.user.User;
-import com.example.Messenger.repositories.chat.ChatRepository;
-import com.example.Messenger.repositories.chat.GroupChatRepository;
+import com.example.Messenger.models.database.chat.Chat;
+import com.example.Messenger.models.database.chat.PrivateChat;
+import com.example.Messenger.models.database.user.ChatMember;
+import com.example.Messenger.models.database.user.User;
 import com.example.Messenger.repositories.chat.PrivateChatRepository;
 import com.example.Messenger.repositories.user.ChatMemberRepository;
-import com.example.Messenger.repositories.user.UserRepository;
 import com.example.Messenger.util.enums.ChatMemberType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.ArrayList;
 import java.util.List;

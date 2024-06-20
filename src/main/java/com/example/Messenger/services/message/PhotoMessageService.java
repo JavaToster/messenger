@@ -1,13 +1,12 @@
 package com.example.Messenger.services.message;
 
-import com.example.Messenger.models.message.MessageWrapper;
-import com.example.Messenger.models.message.ImageMessage;
+import com.example.Messenger.models.database.message.MessageWrapper;
+import com.example.Messenger.models.database.message.ImageMessage;
 import com.example.Messenger.repositories.chat.ChatRepository;
 import com.example.Messenger.repositories.message.PhotoMessageRepository;
 import com.example.Messenger.repositories.user.UserRepository;
 import com.example.Messenger.services.cloudinary.CloudinaryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

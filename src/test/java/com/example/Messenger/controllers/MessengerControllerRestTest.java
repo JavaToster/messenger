@@ -1,7 +1,7 @@
 package com.example.Messenger.controllers;
 
-import com.example.Messenger.models.chat.Chat;
-import com.example.Messenger.models.user.User;
+import com.example.Messenger.models.database.chat.Chat;
+import com.example.Messenger.models.database.user.User;
 import com.example.Messenger.services.chat.ChannelService;
 import com.example.Messenger.services.chat.ChatService;
 import com.example.Messenger.services.chat.GroupChatService;
@@ -11,7 +11,6 @@ import com.example.Messenger.services.message.MessageService;
 import com.example.Messenger.services.user.UserService;
 import com.example.Messenger.util.threads.DeleteEmptyChatsThread;
 import com.example.Messenger.util.MessengerMapper;
-import com.example.Messenger.util.threads.DeleteEmptyChatsThread;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
