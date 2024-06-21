@@ -1,8 +1,7 @@
 package com.example.Messenger.util.threads;
 
-import com.example.Messenger.services.chat.ChatService;
+import com.example.Messenger.services.database.chat.ChatService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component

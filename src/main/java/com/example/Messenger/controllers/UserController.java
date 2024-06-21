@@ -2,11 +2,13 @@ package com.example.Messenger.controllers;
 
 import com.example.Messenger.dto.ChatDTO;
 import com.example.Messenger.dto.user.InfoOfUserDTO;
-import com.example.Messenger.services.chat.ChatService;
-import com.example.Messenger.services.user.ComplaintOfUserService;
-import com.example.Messenger.services.user.MessengerUserService;
-import com.example.Messenger.services.user.UserService;
-import com.example.Messenger.services.languageOfApp.LanguageOfAppService;
+import com.example.Messenger.models.database.user.SettingsOfUser;
+import com.example.Messenger.services.database.SettingsOfUserService;
+import com.example.Messenger.services.database.chat.ChatService;
+import com.example.Messenger.services.database.user.ComplaintOfUserService;
+import com.example.Messenger.services.database.user.MessengerUserService;
+import com.example.Messenger.services.database.user.UserService;
+import com.example.Messenger.services.redis.languageOfApp.LanguageOfAppService;
 import com.example.Messenger.util.Convertor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -26,6 +28,7 @@ public class UserController {
     private final LanguageOfAppService languageOfAppService;
     private final Convertor convertor;
     private final ComplaintOfUserService complaintOfUserService;
+    private final SettingsOfUserService settingsOfUserService;
 
     @GetMapping("/profile")
     public String profile(Model model, @CookieValue("username") String username){
@@ -71,7 +74,8 @@ public class UserController {
 
     @PostMapping("/{id}/changeUserLang")
     public String changeAppLang(@RequestParam("app-lang") String lang, @PathVariable("id") int id){
-        userService.changeLang(id, lang);
+        settingsOfUserService.changeAppLanguage(id, lang);
+
         return "redirect:/user/profile";
     }
 }

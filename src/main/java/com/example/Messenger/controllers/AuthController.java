@@ -2,8 +2,8 @@ package com.example.Messenger.controllers;
 
 import com.example.Messenger.dto.user.RegisterUserDTO;
 import com.example.Messenger.models.database.user.User;
-import com.example.Messenger.services.user.UserService;
-import com.example.Messenger.services.languageOfApp.LanguageOfAppService;
+import com.example.Messenger.services.database.user.UserService;
+import com.example.Messenger.services.redis.languageOfApp.LanguageOfAppService;
 import com.example.Messenger.balancers.UserStatusBalancer;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import com.example.Messenger.util.enums.UserStatus;
@@ -53,7 +53,7 @@ public class AuthController {
         }
 
         registerUser.setPassword(passwordEncoder.encode(registerUser.getPassword()));
-        userService.register(new User(registerUser), registerUser.getIcon());
+        userService.register(registerUser);
         return "redirect:/auth/login";
     }
 

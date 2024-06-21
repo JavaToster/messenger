@@ -1,11 +1,13 @@
 package com.example.Messenger.services.chat;
 
-import com.example.Messenger.repositories.chat.ChatRepository;
-import com.example.Messenger.repositories.user.UserRepository;
-import com.example.Messenger.services.user.MessengerUserService;
-import com.example.Messenger.services.user.UserService;
+import com.example.Messenger.repositories.database.chat.ChatRepository;
+import com.example.Messenger.repositories.database.user.UserRepository;
+import com.example.Messenger.services.database.chat.BotChatService;
+import com.example.Messenger.services.database.chat.ChatService;
+import com.example.Messenger.services.database.chat.PrivateChatService;
+import com.example.Messenger.services.database.user.MessengerUserService;
+import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.util.Convertor;
-import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

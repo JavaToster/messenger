@@ -8,16 +8,19 @@ import com.example.Messenger.dto.message.rest.ForwardMessageResponseDTO;
 import com.example.Messenger.dto.util.TranslateModeDTO;
 import com.example.Messenger.models.database.message.ForwardMessage;
 import com.example.Messenger.models.database.user.User;
-import com.example.Messenger.services.chat.ChannelService;
-import com.example.Messenger.services.chat.GroupChatService;
-import com.example.Messenger.services.message.ForwardMessageService;
-import com.example.Messenger.services.user.UserService;
+import com.example.Messenger.services.database.SettingsOfUserService;
+import com.example.Messenger.services.database.chat.ChannelService;
+import com.example.Messenger.services.database.chat.GroupChatService;
+import com.example.Messenger.services.database.message.ForwardMessageService;
+import com.example.Messenger.services.database.user.UserService;
+import com.example.Messenger.services.translate.TranslateService;
 import com.example.Messenger.util.Convertor;
 import com.example.Messenger.balancers.TranslateBalancer;
 import com.example.Messenger.util.exceptions.ErrorResponse;
 import com.example.Messenger.util.exceptions.LanguageModeException;
 import com.example.Messenger.util.exceptions.LengthOfTextException;
 import com.example.Messenger.util.exceptions.UserNotOwnerOfChannelException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +33,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/rest/messenger")
+@RequiredArgsConstructor
 public class MessengerRestController {
 
     private final GroupChatService groupChatService;
@@ -38,17 +42,8 @@ public class MessengerRestController {
     private final TranslateBalancer loadBalancer;
     private final Convertor convertor;
     private final ForwardMessageService forwardMessageService;
-
-    @Autowired
-    public MessengerRestController(GroupChatService groupChatService, UserService userService, ChannelService channelService,
-                                   TranslateBalancer loadBalancer, Convertor convertor, ForwardMessageService forwardMessageService) {
-        this.groupChatService = groupChatService;
-        this.userService = userService;
-        this.channelService = channelService;
-        this.loadBalancer = loadBalancer;
-        this.convertor = convertor;
-        this.forwardMessageService = forwardMessageService;
-    }
+    private final SettingsOfUserService settingsOfUserService;
+    private final TranslateService translateService;
 
     @PostMapping("/create-group-chat")
     public ResponseEntity<Map<String, Integer>> createGroupChat(@RequestBody CreateGroupChatDTO chatDTO){
@@ -75,15 +70,16 @@ public class MessengerRestController {
         return new ResponseEntity<>(responseMap, HttpStatus.OK);
     }
 
-    @PostMapping("/set-language")
-    public HttpStatus setLanguageMode(@RequestBody TranslateModeDTO translateModeDTO){
-        loadBalancer.updateTranslateMode(userService.findById(translateModeDTO.getUserId()), translateModeDTO.getFrom(), translateModeDTO.getTo());
+    @PostMapping("/set-translate-message-language")
+    public HttpStatus setTranslateMessageLanguageMode(@RequestBody TranslateModeDTO translateModeDTO){
+        settingsOfUserService.changeUserTranslateMessageLangMode(translateModeDTO);
+
         return HttpStatus.OK;
     }
 
     @PostMapping("/translate")
     public ResponseEntity<Map<String, String>> translate(@RequestBody TranslateTextRequestDTO requestDTO){
-        String translatedText = loadBalancer.translate(userService.findById(requestDTO.getUserId()), requestDTO.getText());
+        String translatedText = translateService.translate(requestDTO.getText(), userService.getSettings(requestDTO.getUserId()).getTranslateMessageMode());
 
         if(requestDTO.getText().length()>500){
             throw new LengthOfTextException("Length of text more 500 characters, please using another translator");

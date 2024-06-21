@@ -1,10 +1,10 @@
 package com.example.Messenger.controllers;
 
-import com.example.Messenger.services.chat.BotChatService;
-import com.example.Messenger.services.message.MessageService;
-import com.example.Messenger.services.message.MessageWrapperService;
-import com.example.Messenger.services.user.BotFatherService;
-import com.example.Messenger.services.user.BotService;
+import com.example.Messenger.services.database.chat.BotChatService;
+import com.example.Messenger.services.database.message.MessageService;
+import com.example.Messenger.services.database.message.MessageWrapperService;
+import com.example.Messenger.services.database.user.BotFatherService;
+import com.example.Messenger.services.database.user.BotService;
 import com.example.Messenger.util.exceptions.bot.BotUsernameIsUsedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

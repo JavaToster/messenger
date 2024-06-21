@@ -1,6 +1,6 @@
 package com.example.Messenger.services.security;
 
-import com.example.Messenger.repositories.user.UserRepository;
+import com.example.Messenger.repositories.database.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import com.example.Messenger.security.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

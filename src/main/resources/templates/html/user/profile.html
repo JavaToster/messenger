@@ -140,7 +140,7 @@
         const jsonString = JSON.stringify(data);
 
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/rest/messenger/set-language');
+        xhr.open('POST', '/rest/messenger/set-translate-message-language');
         xhr.setRequestHeader('Content-Type', 'application/json');
 
         xhr.onload = function() {

@@ -1,6 +1,6 @@
 package com.example.Messenger.util.threads;
 
-import com.example.Messenger.services.user.UserService;
+import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.models.database.user.User;
 
 import java.util.Calendar;

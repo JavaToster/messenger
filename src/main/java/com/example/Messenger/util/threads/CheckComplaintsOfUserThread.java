@@ -1,6 +1,6 @@
 package com.example.Messenger.util.threads;
 
-import com.example.Messenger.services.user.UserService;
+import com.example.Messenger.services.database.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

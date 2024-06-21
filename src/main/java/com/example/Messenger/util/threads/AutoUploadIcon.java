@@ -2,7 +2,7 @@ package com.example.Messenger.util.threads;
 
 import com.example.Messenger.models.database.user.IconOfUser;
 import com.example.Messenger.models.database.user.User;
-import com.example.Messenger.repositories.user.IconOfUserRepository;
+import com.example.Messenger.repositories.database.user.IconOfUserRepository;
 import com.example.Messenger.services.cloudinary.CloudinaryService;
 
 import java.util.Optional;
@@ -25,6 +25,7 @@ public class AutoUploadIcon extends Thread{
         Optional<String> optionalLink = cloudinaryService.sendIcon(path);
         if(optionalLink.isPresent()){
             String link = optionalLink.get();
+            System.out.println(link);
             iconOfUserRepository.save(new IconOfUser(link, owner));
         }
     }

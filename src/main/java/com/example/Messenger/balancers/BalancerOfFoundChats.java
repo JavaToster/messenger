@@ -3,7 +3,7 @@ package com.example.Messenger.balancers;
 import com.example.Messenger.dto.ChatDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.models.database.user.User;
-import com.example.Messenger.services.user.UserService;
+import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.util.chat.UserFoundedChats;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

@@ -1,8 +1,8 @@
 package com.example.Messenger.controllers;
 
 import com.example.Messenger.models.database.user.User;
-import com.example.Messenger.services.user.ComplaintOfUserService;
-import com.example.Messenger.services.user.UserService;
+import com.example.Messenger.services.database.user.ComplaintOfUserService;
+import com.example.Messenger.services.database.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

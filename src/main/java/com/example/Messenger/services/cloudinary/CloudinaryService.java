@@ -28,8 +28,10 @@ public class CloudinaryService {
     public Optional<String> sendIcon(String path){
         try {
             File file = new File(path);
+            Optional<String> url =  Optional.of((String) cloudinary.uploader().upload(file, ObjectUtils.asMap("resource_type", "image")).get("secure_url"));
+            System.out.println(url);
             file.delete();
-            return Optional.of((String) cloudinary.uploader().upload(file, ObjectUtils.asMap("resource_type", "image")).get("secure_url"));
+            return url;
         }catch (IOException e){
             return Optional.empty();
         }

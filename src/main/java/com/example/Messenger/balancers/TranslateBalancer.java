@@ -1,7 +1,7 @@
 package com.example.Messenger.balancers;
 
 import com.example.Messenger.models.database.user.User;
-import com.example.Messenger.services.message.MessageTranslateAPI;
+import com.example.Messenger.services.database.message.MessageTranslateAPI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
