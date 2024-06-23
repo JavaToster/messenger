@@ -1,11 +1,14 @@
 package com.example.Messenger.models.database.user;
 
 import com.example.Messenger.util.enums.LanguageType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.io.Serializable;
 
 @Entity
 @Table(name = "Settings_of_user")
-public class SettingsOfUser {
+public class SettingsOfUser implements Serializable {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,6 +19,7 @@ public class SettingsOfUser {
     private String translateMessageMode;
     @OneToOne
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    @JsonIgnore
     private User owner;
 
     public long getId() {

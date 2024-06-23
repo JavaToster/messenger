@@ -3,15 +3,18 @@ package com.example.Messenger.models.database.user;
 import com.example.Messenger.models.database.message.Message;
 import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.enums.RoleOfUser;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import com.example.Messenger.dto.user.RegisterUserDTO;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
 @Entity
 @Table(name = "person")
-public class User extends MessengerUser{
+public class User extends MessengerUser implements Serializable {
     @Column(name = "phone")
     private String phone;
     @Column(name = "firstname")
@@ -23,21 +26,28 @@ public class User extends MessengerUser{
     @Column(name = "email")
     private String email;
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<ChatMember> members;
     @OneToMany(mappedBy = "owner")
+    @JsonIgnore
     private List<Message> messages;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "lastOnline")
+    @JsonIgnore
     private Date lastOnline;
     @Enumerated(value = EnumType.STRING)
+    @JsonIgnore
     private LanguageType lang;
     @Enumerated(value = EnumType.STRING)
+    @JsonIgnore
     private RoleOfUser role;
     @OneToMany(mappedBy = "owner")
+    @JsonIgnore
     private List<ComplaintOfUser> complaints;
     @OneToOne(mappedBy = "owner")
     private IconOfUser icon;
     @OneToOne(mappedBy = "owner")
+    @JsonIgnore
     private SettingsOfUser settingsOfUser;
 
     public User(){}
@@ -51,6 +61,8 @@ public class User extends MessengerUser{
         this.lang = LanguageType.valueOf(lang);
         this.email = email;
         this.role = RoleOfUser.ROLE_USER;
+        this.lastOnline = new Date();
+
     }
     public User(RegisterUserDTO registerDTO){
         this.name = registerDTO.getFirstname();
@@ -61,6 +73,13 @@ public class User extends MessengerUser{
         this.lang = LanguageType.valueOf(registerDTO.getLang());
         this.email = registerDTO.getEmail();
         this.role = RoleOfUser.ROLE_USER;
+        this.lastOnline = new Date();
+    }
+
+    @Override
+    @JsonProperty("id")
+    public int getId(){
+        return this.id;
     }
 
     public String getPhone() {
@@ -79,6 +98,8 @@ public class User extends MessengerUser{
         this.name = name;
     }
 
+    @Override
+    @JsonProperty("username")
     public String getUsername(){
         return this.username;
     }
@@ -168,6 +189,13 @@ public class User extends MessengerUser{
 
     public IconOfUser getIcon() {
         return icon;
+    }
+
+    public String getLinkOfIcon(){
+        if(this.icon == null){
+            return "";
+        }
+        return this.icon.getLink();
     }
 
     public void setIcon(IconOfUser icon) {

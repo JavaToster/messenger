@@ -1,8 +1,9 @@
 package com.example.Messenger.dto.user;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class InfoOfUserDTO {
+public class InfoOfUserDTO implements Serializable {
     private int id;
     private String username;
     private String lastTime;

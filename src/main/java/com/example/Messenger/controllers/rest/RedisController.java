@@ -1,5 +1,8 @@
 package com.example.Messenger.controllers.rest;
 
+import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.redis.user.UserInfoRedis;
+import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.services.email.EmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,12 +15,5 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class RedisController {
 
-    private final EmailService emailService;
-
-    @PostMapping("/send-email")
-    public ResponseEntity<HttpStatus> sendEmail(@RequestParam("text") String text){
-        emailService.send("miljausha-gizatullina@mail.ru", "First email message", text);
-
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+    private final UserService userService;
 }

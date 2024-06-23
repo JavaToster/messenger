@@ -12,6 +12,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -19,6 +20,7 @@ import java.time.Duration;
 
 @Configuration
 @EnableRedisRepositories
+@EnableCaching
 public class RedisConfiguration{
     @Bean
     public RedisConnectionFactory connectionFactory(){
@@ -26,9 +28,11 @@ public class RedisConfiguration{
     }
 
     @Bean
-    public RedisTemplate<?, ?> redisTemplate(RedisConnectionFactory connectionFactory){
-        RedisTemplate<byte[], byte[]> template = new RedisTemplate<>();
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory){
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
     }
 }

@@ -15,6 +15,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+
 @Controller
 @RequestMapping("/auth")
 @RequiredArgsConstructor
@@ -53,7 +55,13 @@ public class AuthController {
         }
 
         registerUser.setPassword(passwordEncoder.encode(registerUser.getPassword()));
-        userService.register(registerUser);
+        try {
+            userService.register(registerUser);
+        }catch (RuntimeException e){
+            return "redirect:/auth/register";
+        }catch (IOException e){
+            return "redirect:/auth/register";
+        }
         return "redirect:/auth/login";
     }
 

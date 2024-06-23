@@ -1,15 +1,16 @@
 package com.example.Messenger.services.database.user;
 
+import com.example.Messenger.dto.user.InfoOfUserDTO;
 import com.example.Messenger.dto.user.RegisterUserDTO;
 import com.example.Messenger.models.database.chat.Chat;
 import com.example.Messenger.models.database.chat.PrivateChat;
 import com.example.Messenger.models.database.message.ImageMessage;
 import com.example.Messenger.models.database.message.MessageWrapper;
 import com.example.Messenger.models.database.user.*;
-import com.example.Messenger.repositories.database.user.ChatMemberRepository;
+import com.example.Messenger.models.redis.user.UserInfoRedis;
+import com.example.Messenger.repositories.database.user.*;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
-import com.example.Messenger.repositories.database.user.ComplaintOfUserRepository;
-import com.example.Messenger.repositories.database.user.UserRepository;
+import com.example.Messenger.services.cloudinary.CloudinaryService;
 import com.example.Messenger.services.database.SettingsOfUserService;
 import com.example.Messenger.services.email.SendRestoreCodeToEmailService;
 import com.example.Messenger.balancers.TranslateBalancer;
@@ -18,11 +19,17 @@ import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.enums.RoleOfUser;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import com.example.Messenger.util.exceptions.LanguageNotSupportedException;
+import com.example.Messenger.util.threads.AutoUploadIcon;
 import com.example.Messenger.util.threads.DeleteRestoreCodeThread;
 import com.example.Messenger.util.threads.ReBlockUserThread;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.annotations.Cache;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -33,6 +40,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -51,6 +59,11 @@ public class UserService implements UserDetailsService {
     private final ComplaintOfUserRepository complaintOfUserRepository;
     private final IconOfUserService iconOfUserService;
     private final SettingsOfUserService settingsOfUserService;
+    private final IconOfUserRepository iconOfUserRepository;
+    private final CloudinaryService cloudinaryService;
+
+    @Value("${image.path.user.icons}")
+    private String imagePath;
 
     public static void setCookie(HttpServletResponse response, String name, String value, int age){
         Cookie cookie = new Cookie(name, value);
@@ -90,15 +103,12 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
-    public void register(RegisterUserDTO registerUserDTO){
+    public void register(RegisterUserDTO registerUserDTO) throws RuntimeException, IOException{
+        System.out.println("I was registered");
         User user = userRepository.save(new User(registerUserDTO));
         loadBalancer.add(user.getId());
         settingsOfUserService.create(registerUserDTO, user);
-        try {
-            iconOfUserService.createNewIcon(registerUserDTO.getIcon(), user);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        iconOfUserService.createNewIcon(registerUserDTO.getIcon(), user);
     }
 
     public User findById(int id){
@@ -116,6 +126,11 @@ public class UserService implements UserDetailsService {
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElse(null);
+    }
+
+//    @Cacheable(value = "userInfoByUsername", key = "#username")
+    public InfoOfUserDTO findUserInfoByUsername(String username, String myUsername){
+        return convertToUserDTO(getUser(username), myUsername);
     }
 
     public List<User> findAll() {
@@ -207,13 +222,13 @@ public class UserService implements UserDetailsService {
             return differenceOfYear<5 ? "года" : "лет";
         }
     }
+
     private String getNameOfMonth(int differenceOfMonth){
         return differenceOfMonth == 1 ? "месяц" : "месяцев";
     }
     private String getNameOfDay(int differenceOfDay){
         return differenceOfDay < 5 ? "дня" : "дней";
     }
-
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void block(int id, int chatId) {
         ChatMember chatMember = chatMemberRepository.findByUserAndChat(userRepository.findById(id).orElse(null), chatRepository.findById(chatId).orElse(null)).orElse(null);
@@ -268,6 +283,7 @@ public class UserService implements UserDetailsService {
 
     // метод для получения изображений из приватного чата
     // используется в окне просмотра пользователя
+
     public List<String> getImagesListByInterlocutors(String username, String myUsername) {
         List<ChatMember> membersList1 = chatMemberRepository.findByUser(getUser(username));
         List<ChatMember> membersList2 = chatMemberRepository.findByUser(getUser(myUsername));
@@ -289,7 +305,6 @@ public class UserService implements UserDetailsService {
         }
         return urls;
     }
-
     private List<String> getImagesFromChat(Chat chat){
         List<String> urlsOfImages = new LinkedList<>();
 
@@ -385,5 +400,29 @@ public class UserService implements UserDetailsService {
 
     public SettingsOfUser getSettings(int userId) {
         return getUser(userId).getSettingsOfUser();
+    }
+
+    private InfoOfUserDTO convertToUserDTO(User user, String myUsername) {
+        InfoOfUserDTO info = new InfoOfUserDTO(user.getId(), user.getUsername(), user.getName(), user.getLastname(), user.getEmail(), user.getLinkOfIcon());
+        info.setLastTime(getLastOnlineTime(user.getUsername()));
+        info.setImagesUrl(getImagesListByInterlocutors(user.getUsername(), myUsername));
+        return info;
+    }
+
+    private InfoOfUserDTO convertToUserDTO(User user){
+        return new InfoOfUserDTO(user.getId(), user.getUsername(), user.getName(), user.getLastname(), user.getEmail(), user.getLinkOfIcon());
+    }
+
+    private int getLastImageId(){
+        List<IconOfUser> photos = iconOfUserRepository.findAll();
+        if(!photos.isEmpty()){
+            return photos.getLast().getId();
+        }else{
+            return 0;
+        }
+    }
+
+    private String getExpansion(String fileName){
+        return fileName.substring(fileName.indexOf("."), fileName.length());
     }
 }

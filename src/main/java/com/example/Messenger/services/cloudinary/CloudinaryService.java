@@ -29,7 +29,6 @@ public class CloudinaryService {
         try {
             File file = new File(path);
             Optional<String> url =  Optional.of((String) cloudinary.uploader().upload(file, ObjectUtils.asMap("resource_type", "image")).get("secure_url"));
-            System.out.println(url);
             file.delete();
             return url;
         }catch (IOException e){

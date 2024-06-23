@@ -1,10 +1,13 @@
 package com.example.Messenger.models.database.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.io.Serializable;
 
 @Entity
 @Table(name = "Icon_of_user")
-public class IconOfUser {
+public class IconOfUser implements Serializable {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,6 +16,7 @@ public class IconOfUser {
     private String link;
     @OneToOne
     @JoinColumn(name = "owner_id")
+    @JsonIgnore
     private User owner;
 
     public IconOfUser(){}

@@ -37,7 +37,7 @@ public class UserController {
         model.addAttribute("chat", new ChatDTO());
         model.addAttribute("chats", chats);
         model.addAttribute("language", languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
-        model.addAttribute("infoOfUser", convertor.convertToInfoOfUserDTO(userService.findByUsername(username)));
+        model.addAttribute("infoOfUser", userService.findUserInfoByUsername(username, username));
 
         return "/html/user/profile";
     }
@@ -48,9 +48,7 @@ public class UserController {
             return "redirect:/user/profile";
         }
 
-        InfoOfUserDTO infoOfUserDTO = convertor.convertToInfoOfUserDTO(userService.findByUsername(username));
-        infoOfUserDTO.setLastTime(userService.getLastOnlineTime(username));
-        infoOfUserDTO.setImagesUrl(userService.getImagesListByInterlocutors(username, myUsername));
+        InfoOfUserDTO infoOfUserDTO = userService.findUserInfoByUsername(username, myUsername);
         model.addAttribute("infoOfUser", infoOfUserDTO);
         model.addAttribute("myUsername", myUsername);
         model.addAttribute("url", new String());

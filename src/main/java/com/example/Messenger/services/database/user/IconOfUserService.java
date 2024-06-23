@@ -3,6 +3,7 @@ package com.example.Messenger.services.database.user;
 import com.example.Messenger.models.database.user.IconOfUser;
 import com.example.Messenger.models.database.user.User;
 import com.example.Messenger.repositories.database.user.IconOfUserRepository;
+import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.cloudinary.CloudinaryService;
 import com.example.Messenger.util.threads.AutoUploadIcon;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -21,15 +23,26 @@ import java.util.List;
 public class IconOfUserService {
     private final IconOfUserRepository iconOfUserRepository;
     private final CloudinaryService cloudinaryService;
+    private final UserRepository userRepository;
     @Value("${image.path.user.icons}")
     private String imagePath;
 
     @Transactional
-    public void createNewIcon(MultipartFile icon, User owner) throws IOException {
+    public void createNewIcon(MultipartFile icon, User owner) throws IOException, RuntimeException {
         String filePath = imagePath+(getLastImageId()+1)+getExpansion(icon.getOriginalFilename());
         icon.transferTo(new File(filePath));
-        AutoUploadIcon uploadIcon = new AutoUploadIcon(filePath, owner, cloudinaryService, iconOfUserRepository);
-        uploadIcon.start();
+        AutoUploadIcon autoUploadIcon = new AutoUploadIcon(filePath, owner, cloudinaryService, iconOfUserRepository, userRepository );
+        autoUploadIcon.start();
+//        Optional<String> linkOptional = cloudinaryService.sendIcon(filePath);
+//        if(linkOptional.isPresent()){
+//            IconOfUser iconOfUser = new IconOfUser(linkOptional.get(), owner);
+//            owner.setIcon(iconOfUser);
+//            iconOfUserRepository.save(iconOfUser);
+//            userRepository.save(owner);
+//        }else{
+//            throw new RuntimeException();
+//        }
+
     }
 
     private int getLastImageId(){
