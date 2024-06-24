@@ -2,6 +2,7 @@ package com.example.Messenger.controllers;
 
 import com.example.Messenger.dto.user.RegisterUserDTO;
 import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.services.database.user.IconOfUserService;
 import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.services.redis.languageOfApp.LanguageOfAppService;
 import com.example.Messenger.balancers.UserStatusBalancer;
@@ -26,6 +27,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final LanguageOfAppService languageOfAppService;
     private final UserStatusBalancer statusBalancer;
+    private final IconOfUserService iconOfUserService;
 
     /** the login page
      * страница аутентификации*/
@@ -56,7 +58,7 @@ public class AuthController {
 
         registerUser.setPassword(passwordEncoder.encode(registerUser.getPassword()));
         try {
-            userService.register(registerUser);
+            User user = userService.register(registerUser);
         }catch (RuntimeException e){
             return "redirect:/auth/register";
         }catch (IOException e){

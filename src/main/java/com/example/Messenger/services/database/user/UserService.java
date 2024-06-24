@@ -57,10 +57,8 @@ public class UserService implements UserDetailsService {
     private final SendRestoreCodeToEmailService sendRestoreCodeToEmailService;
     private final PasswordEncoder encoder;
     private final ComplaintOfUserRepository complaintOfUserRepository;
-    private final IconOfUserService iconOfUserService;
     private final SettingsOfUserService settingsOfUserService;
-    private final IconOfUserRepository iconOfUserRepository;
-    private final CloudinaryService cloudinaryService;
+    private final IconOfUserService iconOfUserService;
 
     @Value("${image.path.user.icons}")
     private String imagePath;
@@ -103,12 +101,13 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
-    public void register(RegisterUserDTO registerUserDTO) throws RuntimeException, IOException{
+    public User register(RegisterUserDTO registerUserDTO) throws RuntimeException, IOException{
         System.out.println("I was registered");
         User user = userRepository.save(new User(registerUserDTO));
         loadBalancer.add(user.getId());
         settingsOfUserService.create(registerUserDTO, user);
         iconOfUserService.createNewIcon(registerUserDTO.getIcon(), user);
+        return user;
     }
 
     public User findById(int id){
@@ -128,7 +127,7 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username).orElse(null);
     }
 
-//    @Cacheable(value = "userInfoByUsername", key = "#username")
+    @Cacheable(value = "userInfoByUsername", key = "#username")
     public InfoOfUserDTO findUserInfoByUsername(String username, String myUsername){
         return convertToUserDTO(getUser(username), myUsername);
     }
@@ -414,7 +413,7 @@ public class UserService implements UserDetailsService {
     }
 
     private int getLastImageId(){
-        List<IconOfUser> photos = iconOfUserRepository.findAll();
+        List<IconOfUser> photos = iconOfUserService.findAll();
         if(!photos.isEmpty()){
             return photos.getLast().getId();
         }else{

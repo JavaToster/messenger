@@ -1,13 +1,17 @@
 package com.example.Messenger.services.database.user;
 
+import com.example.Messenger.dto.user.InfoOfUserDTO;
 import com.example.Messenger.models.database.user.IconOfUser;
 import com.example.Messenger.models.database.user.User;
 import com.example.Messenger.repositories.database.user.IconOfUserRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.cloudinary.CloudinaryService;
+import com.example.Messenger.services.redis.user.UserCachingService;
 import com.example.Messenger.util.threads.AutoUploadIcon;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
+import com.example.Messenger.util.Convertor;
 
 @Service
 @Transactional(readOnly = true)
@@ -23,7 +27,7 @@ import java.util.Optional;
 public class IconOfUserService {
     private final IconOfUserRepository iconOfUserRepository;
     private final CloudinaryService cloudinaryService;
-    private final UserRepository userRepository;
+    private final UserCachingService userCachingService;
     @Value("${image.path.user.icons}")
     private String imagePath;
 
@@ -31,18 +35,8 @@ public class IconOfUserService {
     public void createNewIcon(MultipartFile icon, User owner) throws IOException, RuntimeException {
         String filePath = imagePath+(getLastImageId()+1)+getExpansion(icon.getOriginalFilename());
         icon.transferTo(new File(filePath));
-        AutoUploadIcon autoUploadIcon = new AutoUploadIcon(filePath, owner, cloudinaryService, iconOfUserRepository, userRepository );
+        AutoUploadIcon autoUploadIcon = new AutoUploadIcon(filePath, owner, cloudinaryService, userCachingService);
         autoUploadIcon.start();
-//        Optional<String> linkOptional = cloudinaryService.sendIcon(filePath);
-//        if(linkOptional.isPresent()){
-//            IconOfUser iconOfUser = new IconOfUser(linkOptional.get(), owner);
-//            owner.setIcon(iconOfUser);
-//            iconOfUserRepository.save(iconOfUser);
-//            userRepository.save(owner);
-//        }else{
-//            throw new RuntimeException();
-//        }
-
     }
 
     private int getLastImageId(){
@@ -56,5 +50,9 @@ public class IconOfUserService {
 
     private String getExpansion(String fileName){
         return fileName.substring(fileName.indexOf("."), fileName.length());
+    }
+
+    public List<IconOfUser> findAll() {
+        return iconOfUserRepository.findAll();
     }
 }

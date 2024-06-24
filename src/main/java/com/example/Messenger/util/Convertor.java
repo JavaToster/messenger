@@ -48,6 +48,10 @@ public class Convertor {
     private final PhotoMessageRepository photoMessageRepository;
     private final PhotoMessageService photoMessageService;
 
+    public static InfoOfUserDTO convertToInfoOfUser(User user) {
+        return new InfoOfUserDTO(user.getId(), user.getUsername(), user.getName(), user.getLastname(), user.getEmail(), user.getLinkOfIcon());
+    }
+
     public List<ChatDTO> convertToChatDTO(List<Chat> chats, String username){
         List<ChatDTO> chatsDTO = new ArrayList<>();
         for(Chat chat: chats){
