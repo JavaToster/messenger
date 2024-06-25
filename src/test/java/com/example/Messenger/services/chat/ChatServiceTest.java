@@ -41,10 +41,10 @@ class ChatServiceTest {
     void textInnerOtherText() {
         String fullText = "Hello";
         String word = "He";
-        Optional<String> returnedText = chatService.textInnerOtherText(fullText, word);
+        Optional<String> returnedText = chatService.findWordInnerText(fullText, word);
         assertEquals(fullText, returnedText.get());
-        assertEquals(Optional.empty(), chatService.textInnerOtherText("Hello", "kuk"));
-        assertEquals(Optional.empty(), chatService.textInnerOtherText("hi", "sdf"));
-        assertEquals("Huskashdsjfd", chatService.textInnerOtherText("Huskashdsjfd", "kashd").get());
+        assertEquals(Optional.empty(), chatService.findWordInnerText("Hello", "kuk"));
+        assertEquals(Optional.empty(), chatService.findWordInnerText("hi", "sdf"));
+        assertEquals("Huskashdsjfd", chatService.findWordInnerText("Huskashdsjfd", "kashd").get());
     }
 }
