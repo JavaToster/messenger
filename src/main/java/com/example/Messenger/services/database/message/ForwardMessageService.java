@@ -1,9 +1,9 @@
 package com.example.Messenger.services.database.message;
 
-import com.example.Messenger.models.database.chat.Chat;
-import com.example.Messenger.models.database.message.ForwardMessage;
-import com.example.Messenger.models.database.message.MessageWrapper;
-import com.example.Messenger.models.database.message.ImageMessage;
+import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.message.ForwardMessage;
+import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.models.message.ImageMessage;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.message.ForwardMessageRepository;
 import com.example.Messenger.repositories.database.message.PhotoMessageRepository;
@@ -13,7 +13,7 @@ import com.example.Messenger.util.enums.MessageType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.example.Messenger.models.database.chat.Channel;
+import com.example.Messenger.models.chat.Channel;
 
 @Service
 @Transactional(readOnly = true)

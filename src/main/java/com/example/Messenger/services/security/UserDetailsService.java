@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import com.example.Messenger.security.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.user.User;
 
 import java.util.Optional;
 

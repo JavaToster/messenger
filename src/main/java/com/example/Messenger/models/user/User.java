@@ -1,6 +1,6 @@
-package com.example.Messenger.models.database.user;
+package com.example.Messenger.models.user;
 
-import com.example.Messenger.models.database.message.Message;
+import com.example.Messenger.models.message.Message;
 import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.enums.RoleOfUser;
 import com.fasterxml.jackson.annotation.JsonIgnore;

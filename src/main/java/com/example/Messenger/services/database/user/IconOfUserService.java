@@ -1,8 +1,8 @@
 package com.example.Messenger.services.database.user;
 
 import com.example.Messenger.dto.user.InfoOfUserDTO;
-import com.example.Messenger.models.database.user.IconOfUser;
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.user.IconOfUser;
+import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.user.IconOfUserRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.cloudinary.CloudinaryService;

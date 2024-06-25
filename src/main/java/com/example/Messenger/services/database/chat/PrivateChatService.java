@@ -1,9 +1,9 @@
 package com.example.Messenger.services.database.chat;
 
-import com.example.Messenger.models.database.chat.Chat;
-import com.example.Messenger.models.database.chat.PrivateChat;
-import com.example.Messenger.models.database.user.ChatMember;
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.chat.PrivateChat;
+import com.example.Messenger.models.user.ChatMember;
+import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.chat.PrivateChatRepository;
 import com.example.Messenger.repositories.database.user.ChatMemberRepository;
 import com.example.Messenger.util.enums.ChatMemberType;

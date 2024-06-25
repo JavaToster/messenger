@@ -1,10 +1,9 @@
 package com.example.Messenger.services.redis.user;
 
 import com.example.Messenger.dto.user.InfoOfUserDTO;
-import com.example.Messenger.models.database.user.IconOfUser;
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.user.IconOfUser;
+import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.user.UserRepository;
-import com.example.Messenger.repositories.redis.user.UserInfoRedisRepository;
 import com.example.Messenger.util.Convertor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CachePut;

@@ -1,9 +1,9 @@
-package com.example.Messenger.models.database.chat;
+package com.example.Messenger.models.chat;
 
-import com.example.Messenger.models.database.message.ForwardMessage;
-import com.example.Messenger.models.database.message.MessageWrapper;
-import com.example.Messenger.models.database.user.ChatMember;
-import com.example.Messenger.models.database.message.BlockMessage;
+import com.example.Messenger.models.message.ForwardMessage;
+import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.models.user.ChatMember;
+import com.example.Messenger.models.message.BlockMessage;
 import jakarta.persistence.*;
 
 import java.util.List;

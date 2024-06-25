@@ -1,7 +1,7 @@
 package com.example.Messenger.services.database.user;
 
-import com.example.Messenger.models.database.user.Bot;
-import com.example.Messenger.models.database.user.MessengerUser;
+import com.example.Messenger.models.user.Bot;
+import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.repositories.database.user.BotRepository;
 import com.example.Messenger.repositories.database.user.MessengerUserRepository;
 import com.example.Messenger.util.exceptions.bot.BotUsernameIsUsedException;

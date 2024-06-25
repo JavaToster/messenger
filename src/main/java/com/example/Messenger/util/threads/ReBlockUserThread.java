@@ -1,7 +1,7 @@
 package com.example.Messenger.util.threads;
 
 import com.example.Messenger.services.database.user.UserService;
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.user.User;
 
 import java.util.Calendar;
 import java.util.Date;

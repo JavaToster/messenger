@@ -1,6 +1,6 @@
 package com.example.Messenger.services.redis.languageOfApp;
 
-import com.example.Messenger.models.redis.LanguageOfApp;
+import com.example.Messenger.redisModel.model.languageData.LanguageOfApp;
 import com.example.Messenger.repositories.redis.languageOfApp.LanguageOfAppRepository;
 import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.exceptions.LanguageNotSupportedException;

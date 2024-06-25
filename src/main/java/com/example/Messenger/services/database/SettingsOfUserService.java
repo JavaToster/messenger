@@ -2,8 +2,8 @@ package com.example.Messenger.services.database;
 
 import com.example.Messenger.dto.user.RegisterUserDTO;
 import com.example.Messenger.dto.util.TranslateModeDTO;
-import com.example.Messenger.models.database.user.SettingsOfUser;
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.user.SettingsOfUser;
+import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.user.SettingsOfUserRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.util.enums.LanguageType;

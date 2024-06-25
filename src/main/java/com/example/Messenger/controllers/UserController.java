@@ -2,7 +2,7 @@ package com.example.Messenger.controllers;
 
 import com.example.Messenger.dto.ChatDTO;
 import com.example.Messenger.dto.user.InfoOfUserDTO;
-import com.example.Messenger.models.database.user.SettingsOfUser;
+import com.example.Messenger.models.user.SettingsOfUser;
 import com.example.Messenger.services.database.SettingsOfUserService;
 import com.example.Messenger.services.database.chat.ChatService;
 import com.example.Messenger.services.database.user.ComplaintOfUserService;

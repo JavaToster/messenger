@@ -1,6 +1,6 @@
-package com.example.Messenger.models.database.user;
+package com.example.Messenger.models.user;
 
-import com.example.Messenger.models.database.message.ForwardMessage;
+import com.example.Messenger.models.message.ForwardMessage;
 import jakarta.persistence.*;
 
 import java.util.List;

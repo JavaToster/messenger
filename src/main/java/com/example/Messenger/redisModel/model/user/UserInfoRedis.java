@@ -1,6 +1,6 @@
-package com.example.Messenger.models.redis.user;
+package com.example.Messenger.redisModel.model.user;
 
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.user.User;
 import jakarta.persistence.Id;
 import lombok.Data;
 import org.springframework.data.redis.core.RedisHash;

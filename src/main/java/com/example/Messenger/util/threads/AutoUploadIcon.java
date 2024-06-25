@@ -1,7 +1,7 @@
 package com.example.Messenger.util.threads;
 
-import com.example.Messenger.models.database.user.IconOfUser;
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.user.IconOfUser;
+import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.user.IconOfUserRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.cloudinary.CloudinaryService;

@@ -7,7 +7,7 @@ import com.example.Messenger.dto.bot.response.message.InfoByImageMessageDTO;
 import com.example.Messenger.dto.bot.response.message.InfoByTextMessageDTO;
 import com.example.Messenger.dto.bot.response.message.InfoOfMessagesDTO;
 import com.example.Messenger.dto.bot.response.message.SendMessageForBotDTO;
-import com.example.Messenger.models.database.user.Bot;
+import com.example.Messenger.models.user.Bot;
 import com.example.Messenger.services.database.chat.BotChatService;
 import com.example.Messenger.services.database.user.BotRestService;
 import com.example.Messenger.services.database.user.BotService;

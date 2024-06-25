@@ -1,7 +1,7 @@
 package com.example.Messenger.services.database.user;
 
-import com.example.Messenger.models.database.user.ComplaintOfUser;
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.user.ComplaintOfUser;
+import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.user.ComplaintOfUserRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.email.EmailService;

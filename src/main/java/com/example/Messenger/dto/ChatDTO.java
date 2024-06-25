@@ -1,8 +1,8 @@
 package com.example.Messenger.dto;
 
-import com.example.Messenger.models.database.chat.Chat;
-import com.example.Messenger.models.database.message.Message;
-import com.example.Messenger.models.database.message.MessageWrapper;
+import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.message.Message;
+import com.example.Messenger.models.message.MessageWrapper;
 
 public class ChatDTO {
     private int id;

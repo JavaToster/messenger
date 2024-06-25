@@ -1,5 +1,4 @@
-package com.example.Messenger.models.database.user;
-
+package com.example.Messenger.models.user;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
@@ -17,10 +16,10 @@ public class IconOfUser implements Serializable {
     @OneToOne
     @JoinColumn(name = "owner_id")
     @JsonIgnore
-    private User owner;
+    private com.example.Messenger.models.user.User owner;
 
     public IconOfUser(){}
-    public IconOfUser(String link, User owner){
+    public IconOfUser(String link, com.example.Messenger.models.user.User owner){
         this.link = link;
         this.owner = owner;
     }

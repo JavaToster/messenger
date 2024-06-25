@@ -1,7 +1,7 @@
 package com.example.Messenger.services.database.message;
 
-import com.example.Messenger.models.database.message.MessageWrapper;
-import com.example.Messenger.models.database.message.ImageMessage;
+import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.models.message.ImageMessage;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.message.PhotoMessageRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;

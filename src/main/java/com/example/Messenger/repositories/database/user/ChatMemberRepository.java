@@ -1,9 +1,9 @@
 package com.example.Messenger.repositories.database.user;
 
-import com.example.Messenger.models.database.chat.Chat;
-import com.example.Messenger.models.database.user.ChatMember;
-import com.example.Messenger.models.database.user.MessengerUser;
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.user.ChatMember;
+import com.example.Messenger.models.user.MessengerUser;
+import com.example.Messenger.models.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;

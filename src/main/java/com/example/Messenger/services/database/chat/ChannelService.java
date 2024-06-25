@@ -1,10 +1,10 @@
 package com.example.Messenger.services.database.chat;
 
-import com.example.Messenger.models.database.chat.Channel;
-import com.example.Messenger.models.database.chat.Chat;
-import com.example.Messenger.models.database.user.ChatMember;
-import com.example.Messenger.models.database.user.MessengerUser;
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.chat.Channel;
+import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.user.ChatMember;
+import com.example.Messenger.models.user.MessengerUser;
+import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.chat.ChannelRepository;
 import com.example.Messenger.repositories.database.user.ChatMemberRepository;
 import com.example.Messenger.repositories.database.user.MessengerUserRepository;

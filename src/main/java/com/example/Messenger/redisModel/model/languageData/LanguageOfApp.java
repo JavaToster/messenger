@@ -1,4 +1,4 @@
-package com.example.Messenger.models.redis;
+package com.example.Messenger.redisModel.model.languageData;
 
 
 import lombok.Data;

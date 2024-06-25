@@ -1,7 +1,7 @@
 package com.example.Messenger.controllers;
 
-import com.example.Messenger.models.database.user.ComplaintOfUser;
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.user.ComplaintOfUser;
+import com.example.Messenger.models.user.User;
 import com.example.Messenger.services.database.user.ComplaintOfUserService;
 import com.example.Messenger.services.database.user.UserService;
 import lombok.RequiredArgsConstructor;

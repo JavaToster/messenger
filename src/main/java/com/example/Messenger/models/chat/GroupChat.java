@@ -1,4 +1,4 @@
-package com.example.Messenger.models.database.chat;
+package com.example.Messenger.models.chat;
 
 import jakarta.persistence.*;
 

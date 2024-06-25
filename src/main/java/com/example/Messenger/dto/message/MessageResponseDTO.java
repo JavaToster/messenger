@@ -1,7 +1,7 @@
 package com.example.Messenger.dto.message;
 
-import com.example.Messenger.models.database.message.MessageWrapper;
-import com.example.Messenger.models.database.user.MessengerUser;
+import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.util.abstractClasses.UtilSpecification;
 import com.example.Messenger.util.enums.MessageStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;

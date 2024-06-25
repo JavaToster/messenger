@@ -1,7 +1,7 @@
 package com.example.Messenger.controllers;
 
 import com.example.Messenger.dto.user.RegisterUserDTO;
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.user.User;
 import com.example.Messenger.services.database.user.IconOfUserService;
 import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.services.redis.languageOfApp.LanguageOfAppService;

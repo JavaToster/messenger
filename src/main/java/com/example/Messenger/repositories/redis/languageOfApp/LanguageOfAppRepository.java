@@ -1,6 +1,6 @@
 package com.example.Messenger.repositories.redis.languageOfApp;
 
-import com.example.Messenger.models.redis.LanguageOfApp;
+import com.example.Messenger.redisModel.model.languageData.LanguageOfApp;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

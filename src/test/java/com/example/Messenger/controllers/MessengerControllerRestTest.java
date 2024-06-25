@@ -1,7 +1,7 @@
 package com.example.Messenger.controllers;
 
-import com.example.Messenger.models.database.chat.Chat;
-import com.example.Messenger.models.database.user.User;
+import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.user.User;
 import com.example.Messenger.services.database.chat.ChannelService;
 import com.example.Messenger.services.database.chat.ChatService;
 import com.example.Messenger.services.database.chat.GroupChatService;

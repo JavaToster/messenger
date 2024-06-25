@@ -1,7 +1,7 @@
 package com.example.Messenger.services.database.user;
 
-import com.example.Messenger.models.database.chat.Chat;
-import com.example.Messenger.models.database.message.MessageWrapper;
+import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.repositories.database.user.BotRepository;
 import com.example.Messenger.util.Convertor;
 import com.example.Messenger.util.abstractClasses.InfoOfMessage;

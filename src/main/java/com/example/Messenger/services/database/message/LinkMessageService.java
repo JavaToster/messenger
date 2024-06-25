@@ -1,6 +1,6 @@
 package com.example.Messenger.services.database.message;
 
-import com.example.Messenger.models.database.message.LinkMessage;
+import com.example.Messenger.models.message.LinkMessage;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.message.LinkMessageRepository;
 import com.example.Messenger.repositories.database.user.MessengerUserRepository;

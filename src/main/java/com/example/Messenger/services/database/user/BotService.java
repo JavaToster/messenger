@@ -1,11 +1,11 @@
 package com.example.Messenger.services.database.user;
 
-import com.example.Messenger.models.database.chat.BotChat;
-import com.example.Messenger.models.database.chat.Chat;
-import com.example.Messenger.models.database.message.Message;
-import com.example.Messenger.models.database.message.MessageWrapper;
-import com.example.Messenger.models.database.user.Bot;
-import com.example.Messenger.models.database.user.ChatMember;
+import com.example.Messenger.models.chat.BotChat;
+import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.message.Message;
+import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.models.user.Bot;
+import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.repositories.database.chat.BotChatRepository;
 import com.example.Messenger.repositories.database.message.MessageRepository;
 import com.example.Messenger.repositories.database.user.BotRepository;

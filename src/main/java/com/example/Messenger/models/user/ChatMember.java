@@ -1,6 +1,6 @@
-package com.example.Messenger.models.database.user;
+package com.example.Messenger.models.user;
 
-import com.example.Messenger.models.database.chat.Chat;
+import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.util.enums.ChatMemberType;
 import jakarta.persistence.*;
 
