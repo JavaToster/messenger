@@ -1,11 +1,9 @@
-package com.example.Messenger.redisModel.model.languageData;
-
+package com.example.Messenger.redisModel.languageData;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.index.Indexed;
-
 
 @Data
 @RedisHash("languages")
@@ -13,10 +11,8 @@ public class LanguageOfApp {
 
     @Id
     private Integer id;
-
     @Indexed
     private String type;
-
     //for show main window
 
     private String messengerHeader;

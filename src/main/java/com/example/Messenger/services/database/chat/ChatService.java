@@ -5,7 +5,7 @@ import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.models.chat.Channel;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.chat.GroupChat;
-import com.example.Messenger.redisModel.model.languageData.LanguageOfApp;
+import com.example.Messenger.redisModel.languageData.LanguageOfApp;
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.MessengerUser;

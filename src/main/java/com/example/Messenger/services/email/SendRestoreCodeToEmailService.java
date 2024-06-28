@@ -2,6 +2,7 @@ package com.example.Messenger.services.email;
 
 import com.example.Messenger.balancers.RestoreByEmailBalancer;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
+import com.example.Messenger.util.exceptions.redis.RestoreCodeNotFoundException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -34,7 +35,9 @@ public class SendRestoreCodeToEmailService {
                 "Your restore code is - "+checkZeroOfNumber(code)
         );
 
-        restoreEmailBalancer.addEmail(email, code);
+        try {
+            restoreEmailBalancer.addEmail(email, code);
+        }catch (RestoreCodeNotFoundException ignored) {}
     }
 
     public StatusOfEqualsCodes checkCode(String email, int code){
