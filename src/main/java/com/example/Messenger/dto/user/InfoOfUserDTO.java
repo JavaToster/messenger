@@ -80,20 +80,6 @@ public class InfoOfUserDTO implements Serializable {
         this.imagesUrl = imagesUrl;
     }
 
-    public boolean isFirstname(){
-        if(this.firstname != null && !this.firstname.isEmpty()){
-            return true;
-        }
-        return false;
-    }
-
-    public boolean isLastname(){
-        if(this.lastname != null && !this.lastname.isEmpty()){
-            return true;
-        }
-        return false;
-    }
-
     public String getIconUrl() {
         return iconUrl;
     }
@@ -105,6 +91,7 @@ public class InfoOfUserDTO implements Serializable {
     public boolean isIconOfUser(){
         if(iconUrl == null || iconUrl.isEmpty()){
             return false;
-        }return true;
+        }
+        return true;
     }
 }

@@ -1,13 +1,8 @@
 package com.example.Messenger.util.threads;
 
-import com.example.Messenger.models.user.IconOfUser;
 import com.example.Messenger.models.user.User;
-import com.example.Messenger.repositories.database.user.IconOfUserRepository;
-import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.cloudinary.CloudinaryService;
-import com.example.Messenger.services.database.user.IconOfUserService;
-import com.example.Messenger.services.database.user.UserService;
-import com.example.Messenger.services.redis.user.UserCachingService;
+import com.example.Messenger.services.email.redis.user.UserCachingService;
 
 import java.util.Optional;
 

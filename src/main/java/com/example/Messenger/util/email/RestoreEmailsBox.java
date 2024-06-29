@@ -14,13 +14,11 @@ public class RestoreEmailsBox {
     public StatusOfEqualsCodes equalCodes(int code){
         if(this.code == code){
             return StatusOfEqualsCodes.EQUAL;
-        }else{
-            if(this.attempt > 4){
-                this.attempt = 0;
-                return StatusOfEqualsCodes.ATTEMPT_MAX;
-            }
+        }else if(this.attempt <= 4){
             this.attempt += 1;
             return StatusOfEqualsCodes.NOT_EQUAL;
+        }else{
+            return StatusOfEqualsCodes.ATTEMPT_MAX;
         }
     }
 

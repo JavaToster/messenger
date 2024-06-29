@@ -12,6 +12,7 @@ import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.services.database.SettingsOfUserService;
 import com.example.Messenger.services.email.SendRestoreCodeToEmailService;
 import com.example.Messenger.balancers.TranslateBalancer;
+import com.example.Messenger.services.email.redis.user.UserCachingService;
 import com.example.Messenger.util.enums.ChatMemberType;
 import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.enums.RoleOfUser;
@@ -50,6 +51,7 @@ public class UserService implements UserDetailsService {
     private final ComplaintOfUserRepository complaintOfUserRepository;
     private final SettingsOfUserService settingsOfUserService;
     private final IconOfUserService iconOfUserService;
+    private final UserCachingService userCachingService;
 
     @Value("${image.path.user.icons}")
     private String imagePath;
@@ -397,22 +399,5 @@ public class UserService implements UserDetailsService {
         info.setLastTime(getLastOnlineTime(user.getUsername()));
         info.setImagesUrl(getImagesListByInterlocutors(user.getUsername(), myUsername));
         return info;
-    }
-
-    private InfoOfUserDTO convertToUserDTO(User user){
-        return new InfoOfUserDTO(user.getId(), user.getUsername(), user.getName(), user.getLastname(), user.getEmail(), user.getLinkOfIcon());
-    }
-
-    private int getLastImageId(){
-        List<IconOfUser> photos = iconOfUserService.findAll();
-        if(!photos.isEmpty()){
-            return photos.getLast().getId();
-        }else{
-            return 0;
-        }
-    }
-
-    private String getExpansion(String fileName){
-        return fileName.substring(fileName.indexOf("."), fileName.length());
     }
 }

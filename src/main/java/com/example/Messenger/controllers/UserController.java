@@ -2,13 +2,12 @@ package com.example.Messenger.controllers;
 
 import com.example.Messenger.dto.ChatDTO;
 import com.example.Messenger.dto.user.InfoOfUserDTO;
-import com.example.Messenger.models.user.SettingsOfUser;
 import com.example.Messenger.services.database.SettingsOfUserService;
 import com.example.Messenger.services.database.chat.ChatService;
 import com.example.Messenger.services.database.user.ComplaintOfUserService;
 import com.example.Messenger.services.database.user.MessengerUserService;
 import com.example.Messenger.services.database.user.UserService;
-import com.example.Messenger.services.redis.languageOfApp.LanguageOfAppService;
+import com.example.Messenger.services.email.redis.languageOfApp.LanguageOfAppService;
 import com.example.Messenger.util.Convertor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

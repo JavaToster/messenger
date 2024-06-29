@@ -1,17 +1,13 @@
 package com.example.Messenger.services.database.user;
 
-import com.example.Messenger.dto.user.InfoOfUserDTO;
 import com.example.Messenger.models.user.IconOfUser;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.user.IconOfUserRepository;
-import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.cloudinary.CloudinaryService;
-import com.example.Messenger.services.redis.user.UserCachingService;
+import com.example.Messenger.services.email.redis.user.UserCachingService;
 import com.example.Messenger.util.threads.AutoUploadIcon;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,7 +15,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import com.example.Messenger.util.Convertor;
 
 @Service
 @Transactional(readOnly = true)

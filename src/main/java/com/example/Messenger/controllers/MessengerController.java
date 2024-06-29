@@ -20,7 +20,7 @@ import com.example.Messenger.services.database.chat.ChatService;
 import com.example.Messenger.services.database.chat.GroupChatService;
 import com.example.Messenger.services.database.message.BlockMessageService;
 import com.example.Messenger.services.database.message.MessageWrapperService;
-import com.example.Messenger.services.redis.languageOfApp.LanguageOfAppService;
+import com.example.Messenger.services.email.redis.languageOfApp.LanguageOfAppService;
 import com.example.Messenger.services.database.user.BotService;
 import com.example.Messenger.services.database.user.MessengerUserService;
 import com.example.Messenger.services.database.user.UserService;

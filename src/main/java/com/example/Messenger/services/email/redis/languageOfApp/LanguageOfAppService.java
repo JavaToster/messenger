@@ -1,4 +1,4 @@
-package com.example.Messenger.services.redis.languageOfApp;
+package com.example.Messenger.services.email.redis.languageOfApp;
 
 import com.example.Messenger.redisModel.languageData.LanguageOfApp;
 import com.example.Messenger.repositories.redis.languageOfApp.LanguageOfAppRepository;

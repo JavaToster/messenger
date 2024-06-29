@@ -1,4 +1,4 @@
-package com.example.Messenger.dto.message.util;
+package com.example.Messenger.dto.message.messageSpecifications;
 
 import com.example.Messenger.util.abstractClasses.UtilSpecification;
 

@@ -1,4 +1,4 @@
-package com.example.Messenger.services.redis.user;
+package com.example.Messenger.services.email.redis.user;
 
 import com.example.Messenger.dto.user.InfoOfUserDTO;
 import com.example.Messenger.models.user.IconOfUser;
@@ -15,11 +15,6 @@ import org.springframework.stereotype.Service;
 public class UserCachingService {
 
     private final UserRepository userRepository;
-
-    @Cacheable(value = "userInfoByUsername", key = "#username")
-    public InfoOfUserDTO getUser(String username){
-        return Convertor.convertToInfoOfUser(userRepository.findByUsername(username).orElse(null));
-    }
 
     @CachePut(value = "userInfoByUsername", key = "#result.username")
     public InfoOfUserDTO setLinkOfUserIcon(String link, User user){
