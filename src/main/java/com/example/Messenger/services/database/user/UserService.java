@@ -1,5 +1,6 @@
 package com.example.Messenger.services.database.user;
 
+import com.example.Messenger.balancers.BalancerOfFoundChats;
 import com.example.Messenger.dto.user.InfoOfUserDTO;
 import com.example.Messenger.dto.user.RegisterUserDTO;
 import com.example.Messenger.models.chat.Chat;
@@ -51,8 +52,6 @@ public class UserService implements UserDetailsService {
     private final ComplaintOfUserRepository complaintOfUserRepository;
     private final SettingsOfUserService settingsOfUserService;
     private final IconOfUserService iconOfUserService;
-    private final UserCachingService userCachingService;
-
     @Value("${image.path.user.icons}")
     private String imagePath;
 
@@ -399,5 +398,9 @@ public class UserService implements UserDetailsService {
         info.setLastTime(getLastOnlineTime(user.getUsername()));
         info.setImagesUrl(getImagesListByInterlocutors(user.getUsername(), myUsername));
         return info;
+    }
+
+    public User initializeUserById(int id){
+        return getUser(id);
     }
 }

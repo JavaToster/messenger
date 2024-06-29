@@ -197,7 +197,7 @@
 
     <div id="chat-header">
         <div id="chat-partner"> <a th:href="@{/user/{username} (username=${chatTitle}) }" th:text="${chatTitle}"></a></div>
-        <div id="last-online" th:text="${lastOnlineTitle}">Last online at 8:00 PM</div>
+        <div id="last-online" th:text="${chatHeader}">Last online at 8:00 PM</div>
     </div>
     <div class="messagesHere" th:if="${!noMessages}">
         <div id="chat-messages">

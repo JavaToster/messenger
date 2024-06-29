@@ -47,7 +47,7 @@ public class BalancerOfFoundChats {
         mapOfUsersChats.put(userService.findByUsername(username).getId(), foundedChats);
     }
 
-    public boolean chatsIsEmpty(String username) {
+    public boolean checkFoundEmptyChatsOfUser(String username) {
         try {
             List<ChatDTO> chatsByChatName = mapOfUsersChats.get(userService.findByUsername(username).getId()).getChatsOfChatName();
             List<ChatDTO> chatsByMessage = mapOfUsersChats.get(userService.findByUsername(username).getId()).getChatsOfMessagesText();

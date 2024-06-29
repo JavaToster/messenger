@@ -14,6 +14,7 @@ import com.example.Messenger.models.user.Bot;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.security.UserDetails;
+import com.example.Messenger.services.auth.AuthenticationService;
 import com.example.Messenger.services.database.chat.BotChatService;
 import com.example.Messenger.services.database.chat.ChannelService;
 import com.example.Messenger.services.database.chat.ChatService;
@@ -42,6 +43,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -63,6 +66,7 @@ public class MessengerController {
     private final LanguageOfAppService languageOfAppService;
     private final MessageWrapperService messageWrapperService;
     private final CheckComplaintsOfUserThread checkComplaintsOfUserThread;
+    private final AuthenticationService authenticationService;
     @Value("${bot.father.database.id}")
     private int botFatherDatabaseId;
     private final Convertor convertor;
@@ -81,18 +85,12 @@ public class MessengerController {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
         //сортируем чаты по последнему сообщению
-        //то есть если у нас сообщение пришло только что, то этот чат поднимется на вверх
+        //то есть если у нас сообщение пришло только что, то этот чат поднимется на вверх(будет первым в списке)
         List<Chat> sortedChats = chatService.sortChatsByLastMessage(userDetails.getUsername());
 
-        //конвертируем чаты в dto
         List<ChatDTO> chats = convertor.convertToChatDTO(sortedChats, userDetails.getUsername());
-        //изменяем последнюю дату посещения на нынешнюю
-        userService.setLastOnline(userDetails.getUsername());
 
-        //если у человека нет искомых чатов, то мы добавляем его в балансер(является как кэш)
-        if(balancerOfFoundChats.chatsIsEmpty(userDetails.getUsername())){
-            balancerOfFoundChats.addNewUser(userDetails.getUsername());
-        }
+        authenticationService.setUserSpecification(userDetails.getUsername());
 
         model.addAttribute("language", languageOfAppService.getLanguage(userService.getUserLanguageMode(userDetails.getUsername())));
         model.addAttribute("chats", chats);
@@ -110,7 +108,7 @@ public class MessengerController {
 
     //используется для получения сведения какой чат хочет создать пользователь
     @PostMapping("/chats/create/redirect")
-    public String createChat(@ModelAttribute("chat") Chat chat){
+    public String redirectToCreateChatWindow(@ModelAttribute("chat") Chat chat){
         if(chat.getId() == 1){
             return "redirect:/messenger/chats/create";
         }else if(chat.getId() == 2){
@@ -153,10 +151,11 @@ public class MessengerController {
         }
     }
 
-    //для создания приватного чата, внутри сервиса будет опеределено какой чат хочет создать пользователь(по типу 1 аргумента, если Messenger user будет ботом, то создадится чат с ботом, а если человек, то обычный приватный чат)
+    //для создания приватного чата, внутри сервиса будет определено какой чат хочет создать пользователь(по типу 1 аргумента, если Messenger user будет ботом, то создастся чат с ботом, а если человек, то обычный приватный чат)
     @PostMapping("/chats/create-chat-private-or-bot")
     public String createPrivateChat(@ModelAttribute("user") MessengerUser user, @RequestParam("username") String username){
-        user = userService.findById(user.getId());
+        // в ModelAttribute приходит объект только с not empty полем id поэтому стоит его инициализировать
+        user = userService.initializeUserById(user.getId());
         int id = chatService.createPrivateOrBotChat(user, username);
 
         return "redirect:/messenger/chats/"+id;
@@ -165,14 +164,12 @@ public class MessengerController {
     //окно просмотра чата
     @GetMapping("/chats/{id}")
     public String showChat(@CookieValue("username")String username, @PathVariable("id") int chatId, Model model, @RequestParam(value = "type", required = false) String type){
-        //по умолчанию стоит возвращение showChat.html, но во время работы приложения, оно может изменится на channel или bot
-        String returnedView = "/html/chat/showChat";
-
         //если пользователь в этом чате заблокирован, то редирект на главную страницу
         if(userService.isBan(username, chatService.findById(chatId))){
             return "redirect:/messenger";
         }
-
+        //когда окно чата откроется, то все сообщения собеседника пользователя будут изменены на "прочитано"
+        messageWrapperService.messageWasBeRead(chatId, username);
 
         List<MessageWrapper> messages;
         //если во время этого try/catch не вылезли исключения, значит все прошло успешно
@@ -183,67 +180,42 @@ public class MessengerController {
             return "redirect:/messenger";
         }
 
-        //когда окно чата откроется, то все сообщения собеседника пользователя будут изменены на "прочитано"
-        messageWrapperService.messageWasBeRead(chatId, username);
 
         Chat chat = chatService.findById(chatId);
-        //определение заголовка чата
+        /**
+         * определение заголовка чата
+         * второй аргумент username нужен чтобы на его основе выводить определенные данные для пользователя
+         */
         String chatTitle;
-
-        if(chat.getClass().equals(PrivateChat.class)){
-            chatTitle = chatService.getInterlocutor(username, chat).getUsername();
-        }else if(chat.getClass().equals(GroupChat.class)){
-            chatTitle = groupChatService.getGroupName(chatId);
-        }else if(chat.getClass().equals(BotChat.class)){
-            //в этом случае мы изменяем возвращаемую страницу на botChat.html, ведь тут собеседник будет другого типа
-            chatTitle = botChatService.getBotName(chatId);
-            returnedView = "/html/chat/botChat";
-        }else{
-            //опять же проверка на успешное создание чата, также изменение возвращаемой страницы на showChannel, ведь в канале все чуть по другому
-            try {
-                returnedView = "/html/chat/showChannel";
-                chatTitle = channelService.getChannelName(chatId);
-                model.addAttribute("userIsOwner", channelService.isOwner(chatId, username));
-            }catch (ChatNotFoundException e){
-                System.out.println("Chat not found!!!");
-                e.printStackTrace();
-                return "redirect:/messenger";
-            }
-        }
-
-        String lastOnlineTitle;
-        if(chat.getClass() == PrivateChat.class){
-            lastOnlineTitle = userService.getLastOnlineTime(chatService.getInterlocutor(username, chatService.findById(chatId)).getUsername());
-        }else if(chat.getClass() == BotChat.class){
-            //у бота не может быть последнего захода, поэтому просто надпись "bot"
-            lastOnlineTitle = "bot";
-        }else{
-            // когда либо канал либо группа -> подсчитываем количество участников
-            lastOnlineTitle = chatService.countMembers(chatId, languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
+        String chatHeader;
+        String returnedView;
+        try {
+            chatTitle = chatService.getChatTitle(chat, username);
+            returnedView = chatService.getReturnedHtmlFile(chat);
+            chatHeader = chatService.getChatHeader(chat, username);
+        }catch (ChatNotFoundException e){
+            return "redirect:/messenger";
         }
 
         List<DateDayOfMessagesDTO> messagesDateDTO;
-
-        model.addAttribute("chatId", chatId);
-        model.addAttribute("chatTitle", chatTitle);
-        model.addAttribute("userId", userService.findByUsername(username).getId());
-        model.addAttribute("lastOnlineTitle", lastOnlineTitle);
-        model.addAttribute("sendingMessage", new MessageWrapper());
-        model.addAttribute("language", languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
-        model.addAttribute("forwardChats", chatService.getForwardChats(username));
-        model.addAttribute("forwardChat", new ChatDTO());
-        model.addAttribute("isPrivate", chat.getClass()== PrivateChat.class);
-
-
         try {
             /** новый тип dto который предоставляет возможность собирать сообщения в группы
              * то есть, сообщения одного дня будут отделены от другого дня при помощи их даты отправки*/
             messagesDateDTO = convertor.convertToMessageDayDTO(messages, username);
         }catch (NoSuchElementException e){
+            messagesDateDTO = Collections.emptyList();
             model.addAttribute("noMessages", true);
-            return returnedView;
         }
 
+        model.addAttribute("chatId", chatId);
+        model.addAttribute("chatTitle", chatTitle);
+        model.addAttribute("userId", userService.findByUsername(username).getId());
+        model.addAttribute("chatHeader", chatHeader);
+        model.addAttribute("sendingMessage", new MessageWrapper());
+        model.addAttribute("language", languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
+        model.addAttribute("forwardChats", chatService.getForwardChats(username));
+        model.addAttribute("forwardChat", new ChatDTO());
+        model.addAttribute("isPrivate", chat.getClass()== PrivateChat.class);
         model.addAttribute("message", new MessageWrapper());
         model.addAttribute("messageDateDTO", messagesDateDTO);
         model.addAttribute("messageDate", new DateDayOfMessagesDTO());
@@ -390,7 +362,7 @@ public class MessengerController {
     }
 
     @GetMapping("/findChat")
-    public String findChats(@RequestParam("findText") String findText, @CookieValue("username") String username){
+    public String findChats(@RequestParam("findText") String findText, @CookieValue("username") String username) {
         List<ChatDTO> foundChatsByChatName = chatService.findChatsBySearchTextByChatName(findText, username);
         List<ChatDTO> foundChatsByMessage = chatService.findChatsBySearchTextByMessages(findText, username);
         List<FoundUserOfUsername> foundUsers = chatService.findUsersOfUsername(findText, username);

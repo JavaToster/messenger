@@ -2,9 +2,7 @@ package com.example.Messenger.services.database.chat;
 
 import com.example.Messenger.dto.ChatDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
-import com.example.Messenger.models.chat.Channel;
-import com.example.Messenger.models.chat.Chat;
-import com.example.Messenger.models.chat.GroupChat;
+import com.example.Messenger.models.chat.*;
 import com.example.Messenger.redisModel.languageData.LanguageOfApp;
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.ChatMember;
@@ -14,6 +12,7 @@ import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.database.user.MessengerUserService;
 import com.example.Messenger.services.database.user.UserService;
+import com.example.Messenger.services.email.redis.languageOfApp.LanguageOfAppService;
 import com.example.Messenger.util.Convertor;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +34,9 @@ public class ChatService {
     private final MessengerUserService messengerUserService;
     private final PrivateChatService privateChatService;
     private final Convertor convertor;
+    private final GroupChatService groupChatService;
+    private final ChannelService channelService;
+    private final LanguageOfAppService languageOfAppService;
     public Chat findById(int id) {
         return chatRepository.findById(id). orElseThrow(ChatNotFoundException::new);
     }
@@ -160,6 +162,22 @@ public class ChatService {
         return Optional.empty();
     }
 
+    public String getChatTitle(Chat chat, String username) throws ChatNotFoundException{
+        String chatTitle;
+        if(chat.getClass().equals(PrivateChat.class)){
+            chatTitle = getInterlocutor(username, chat).getUsername();
+        }else if(chat.getClass().equals(GroupChat.class)){
+            chatTitle = groupChatService.getGroupName(chat.getId());
+        }else if(chat.getClass().equals(BotChat.class)){
+            //в этом случае мы изменяем возвращаемую страницу на botChat.html, ведь тут собеседник будет другого типа
+            chatTitle = botChatService.getBotName(chat.getId());
+        }else{
+            //опять же проверка на успешное создание чата, также изменение возвращаемой страницы на showChannel, ведь в канале все чуть по другому
+            chatTitle = channelService.getChannelName(chat.getId());
+        }
+        return chatTitle;
+    }
+
     private int getFirstFoundCharacterId(String text, char firstCharacterOfText) {
         return text.indexOf(firstCharacterOfText);
     }
@@ -264,5 +282,41 @@ public class ChatService {
 
     public List<ChatDTO> getForwardChats(String username) {
         return convertor.convertToChatDTO(userService.findChatsByUsername(username), username);
+    }
+
+    public String getReturnedHtmlFile(Chat chat) {
+        String returnedView;
+        if(chat.getClass() == BotChat.class){
+            //в этом случае мы изменяем возвращаемую страницу на botChat.html, ведь тут собеседник будет другого типа
+            returnedView = "/html/chat/botChat";
+        }else if(chat.getClass() == Channel.class){
+            //опять же проверка на успешное создание чата, также изменение возвращаемой страницы на showChannel, ведь в канале все чуть по другому
+            returnedView = "/html/chat/showChannel";
+        }else{
+            returnedView = "/html/chat/showChat";
+        }
+        return returnedView;
+    }
+
+    public boolean isChannel(Chat chat) {
+        return chat.getClass() == Channel.class;
+    }
+
+    public String getChatHeader(Chat chat, String username) throws ChatNotFoundException{
+        String chatHeader;
+        if(chat.getClass() == PrivateChat.class){
+            chatHeader = userService.getLastOnlineTime(getInterlocutor(username, getChat(chat.getId())).getUsername());
+        }else if(chat.getClass() == BotChat.class){
+            //у бота не может быть последнего захода, поэтому просто надпись "bot"
+            chatHeader = "bot";
+        }else{
+            // когда либо канал либо группа -> подсчитываем количество участников
+            chatHeader = countMembers(chat.getId(), languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
+        }
+        return chatHeader;
+    }
+
+    private Chat getChat(int id){
+        return chatRepository.findById(id).orElseThrow(ChatNotFoundException::new);
     }
 }
