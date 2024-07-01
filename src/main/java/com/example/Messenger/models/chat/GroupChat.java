@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "Group_chat")
-public class GroupChat extends Chat{
+public class GroupChat extends Chat {
     @Column(name = "group_name")
     private String groupName;
 
@@ -28,5 +28,15 @@ public class GroupChat extends Chat{
                 "groupName='" + groupName + '\'' +
                 ", members=" + members +
                 '}';
+    }
+
+    @Override
+    public String getChatTitleName() {
+        return this.groupName;
+    }
+
+    @Override
+    public String getChatHeader() {
+        return this.members.size() + " участников";
     }
 }

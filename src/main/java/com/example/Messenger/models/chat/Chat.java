@@ -82,4 +82,12 @@ public class Chat {
         }
         return false;
     }
+
+    public String getChatTitleName(){
+        return "";
+    }
+
+    public String getChatHeader(){
+        return "";
+    }
 }

@@ -31,7 +31,7 @@ public class UserController {
 
     @GetMapping("/profile")
     public String profile(Model model, @CookieValue("username") String username){
-        List<ChatDTO> chats = convertor.convertToChatDTO(userService.findChatsByUsername(username), username);
+        List<ChatDTO> chats = convertor.convertToChatDTO(userService.FIND_CHATS_BY_USERNAME(userService.findByUsername(username)), username);
 
         model.addAttribute("chat", new ChatDTO());
         model.addAttribute("chats", chats);

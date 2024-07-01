@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 
 @Entity
 @Table(name = "Channel")
-public class Channel extends Chat{
+public class Channel extends Chat {
     @Column(name = "Channel_name")
     private String name;
 
@@ -26,5 +26,15 @@ public class Channel extends Chat{
             }
         }
         return null;
+    }
+
+    @Override
+    public String getChatTitleName() {
+        return this.name;
+    }
+
+    @Override
+    public String getChatHeader() {
+        return this.members.size() + " подписчиков";
     }
 }

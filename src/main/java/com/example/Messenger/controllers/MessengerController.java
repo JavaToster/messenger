@@ -1,22 +1,19 @@
 package com.example.Messenger.controllers;
 
 import com.example.Messenger.dto.ChatDTO;
-import com.example.Messenger.dto.chatHead.ChatHeadDTO;
-import com.example.Messenger.dto.chatHead.channel.ChannelMemberDTO;
-import com.example.Messenger.dto.chatHead.group.GroupChatMemberDTO;
+import com.example.Messenger.dto.chat.InfoOfChatDTO;
+import com.example.Messenger.dto.chat.channel.chatHead.ChatHeadDTO;
+import com.example.Messenger.dto.chat.channel.chatHead.channel.ChannelMemberDTO;
+import com.example.Messenger.dto.chat.channel.chatHead.group.GroupChatMemberDTO;
 import com.example.Messenger.dto.message.BlockMessageDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
-import com.example.Messenger.dto.util.DateDayOfMessagesDTO;
 import com.example.Messenger.models.chat.*;
 import com.example.Messenger.models.message.BlockMessage;
-import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.Bot;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.security.UserDetails;
 import com.example.Messenger.services.auth.AuthenticationService;
-import com.example.Messenger.services.database.chat.BotChatService;
-import com.example.Messenger.services.database.chat.ChannelService;
 import com.example.Messenger.services.database.chat.ChatService;
 import com.example.Messenger.services.database.chat.GroupChatService;
 import com.example.Messenger.services.database.message.BlockMessageService;
@@ -31,7 +28,6 @@ import com.example.Messenger.util.chat.UserFoundedChats;
 import com.example.Messenger.util.threads.CheckComplaintsOfUserThread;
 import com.example.Messenger.util.threads.DeleteEmptyChatsThread;
 import com.example.Messenger.util.MessengerMapper;
-import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import com.example.Messenger.util.exceptions.UserNotMemberException;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,10 +39,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Controller
 @RequestMapping({"/messenger", "/messenger/", "/", ""})
@@ -55,11 +48,9 @@ public class MessengerController {
     private final GroupChatService groupChatService;
     private final UserService userService;
     private final ChatService chatService;
-    private final ChannelService channelService;
     private final BlockMessageService blockMessageService;
     private final DeleteEmptyChatsThread deleteEmptyChatsThread;
     private final MessengerMapper messengerMapper;
-    private final BotChatService botChatService;
     private final MessengerUserService messengerUserService;
     private final BotService botService;
     private final BalancerOfFoundChats balancerOfFoundChats;
@@ -163,83 +154,26 @@ public class MessengerController {
 
     //окно просмотра чата
     @GetMapping("/chats/{id}")
-    public String showChat(@CookieValue("username")String username, @PathVariable("id") int chatId, Model model, @RequestParam(value = "type", required = false) String type){
-        //если пользователь в этом чате заблокирован, то редирект на главную страницу
-        if(userService.isBan(username, chatService.findById(chatId))){
+    public String showChat(@CookieValue("username")String username, @PathVariable("id") int chatId, Model model){
+        Chat chat = chatService.findById(chatId);
+        if(userService.isBan(username, chat)){
             return "redirect:/messenger";
         }
         //когда окно чата откроется, то все сообщения собеседника пользователя будут изменены на "прочитано"
         messageWrapperService.messageWasBeRead(chatId, username);
 
-        List<MessageWrapper> messages;
-        //если во время этого try/catch не вылезли исключения, значит все прошло успешно
-        try {
-            messages = messageWrapperService.findByChat(chatId);
-            isMember(username, chatId);
-        }catch (ChatNotFoundException | UserNotMemberException e) {
-            return "redirect:/messenger";
-        }
+        InfoOfChatDTO infoOfChatDTO = convertor.convertToInfoOfChatDTO(chat, username);
 
+        model.addAttribute("infoOfChat", infoOfChatDTO);
 
-        Chat chat = chatService.findById(chatId);
-        /**
-         * определение заголовка чата
-         * второй аргумент username нужен чтобы на его основе выводить определенные данные для пользователя
-         */
-        String chatTitle;
-        String chatHeader;
-        String returnedView;
-        try {
-            chatTitle = chatService.getChatTitle(chat, username);
-            returnedView = chatService.getReturnedHtmlFile(chat);
-            chatHeader = chatService.getChatHeader(chat, username);
-        }catch (ChatNotFoundException e){
-            return "redirect:/messenger";
-        }
-
-        List<DateDayOfMessagesDTO> messagesDateDTO;
-        try {
-            /** новый тип dto который предоставляет возможность собирать сообщения в группы
-             * то есть, сообщения одного дня будут отделены от другого дня при помощи их даты отправки*/
-            messagesDateDTO = convertor.convertToMessageDayDTO(messages, username);
-        }catch (NoSuchElementException e){
-            messagesDateDTO = Collections.emptyList();
-            model.addAttribute("noMessages", true);
-        }
-
-        model.addAttribute("chatId", chatId);
-        model.addAttribute("chatTitle", chatTitle);
-        model.addAttribute("userId", userService.findByUsername(username).getId());
-        model.addAttribute("chatHeader", chatHeader);
-        model.addAttribute("sendingMessage", new MessageWrapper());
-        model.addAttribute("language", languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
-        model.addAttribute("forwardChats", chatService.getForwardChats(username));
-        model.addAttribute("forwardChat", new ChatDTO());
-        model.addAttribute("isPrivate", chat.getClass()== PrivateChat.class);
-        model.addAttribute("message", new MessageWrapper());
-        model.addAttribute("messageDateDTO", messagesDateDTO);
-        model.addAttribute("messageDate", new DateDayOfMessagesDTO());
-        model.addAttribute("noMessages", false);
-
-        return returnedView;
+        return chatService.getReturnedHtmlFile(chat);
     }
 
-    //основной энд поинт чтобы отправить сообщение
     @PostMapping("/chats/{id}/send-message")
-    public String sendMessage(@RequestParam(value = "image") MultipartFile image, @RequestParam("text") String text, @RequestParam("user") int userId, @PathVariable("id") int id){
-        /** if user want to send a photo with text or only photo, we check, if image is empty
-         * if multipart file is present → user want to send an image.
-         * если пользователь хочет отправить фото с текстом или только фото, мы проверяем, если изображение пустое
-         * если изображение имеется → человек хочет отправить изображение
-        */
-        if(!image.isEmpty()){
-            messageWrapperService.sendPhoto(image, id, userId, text);
-            return "redirect:/messenger/chats/"+id;
-        }
+    public String sendMessage(@RequestParam(value = "image") MultipartFile image, @RequestParam("text") String text, @RequestParam("user") int userId, @PathVariable("id") int chatId){
+        messageWrapperService.send(image, chatId, userId, text);
 
-        // if user want to send only text
-        messageWrapperService.sendNotImage(text, id, userId);
-        return "redirect:/messenger/chats/"+id;
+        return "redirect:/messenger/chats/"+chatId;
     }
 
     // энд поинт для проверки блокированных сообщений
@@ -351,8 +285,8 @@ public class MessengerController {
         return "redirect:/messenger";
     }
 
-    private void isMember(String username, int chatId) {
-        List<ChatMember> chatMembers = chatService.findById(chatId).getMembers();
+    private void isMember(String username, Chat chat) {
+        List<ChatMember> chatMembers = chat.getMembers();
         for (ChatMember chatMember : chatMembers) {
             if ((chatMember.getUser()).getUsername().equals(username)) {
                 return;

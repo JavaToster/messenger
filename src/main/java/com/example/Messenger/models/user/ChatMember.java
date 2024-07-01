@@ -75,4 +75,8 @@ public class ChatMember {
     public String getUsernameOfUser(){
         return this.user.getUsername();
     }
+
+    public Class<? extends MessengerUser> getUserClass() {
+        return this.user.getClass();
+    }
 }

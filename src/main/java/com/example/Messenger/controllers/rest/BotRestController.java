@@ -1,12 +1,12 @@
 package com.example.Messenger.controllers.rest;
 
-import com.example.Messenger.dto.bot.response.BotSuccessfulCreatedDTO;
-import com.example.Messenger.dto.bot.response.ErrorResponseDTO;
-import com.example.Messenger.dto.bot.response.InformationOfBotDTO;
-import com.example.Messenger.dto.bot.response.message.InfoByImageMessageDTO;
-import com.example.Messenger.dto.bot.response.message.InfoByTextMessageDTO;
-import com.example.Messenger.dto.bot.response.message.InfoOfMessagesDTO;
-import com.example.Messenger.dto.bot.response.message.SendMessageForBotDTO;
+import com.example.Messenger.dto.rest.bot.response.BotSuccessfulCreatedDTO;
+import com.example.Messenger.dto.rest.bot.response.ErrorResponseDTO;
+import com.example.Messenger.dto.rest.bot.response.InformationOfBotDTO;
+import com.example.Messenger.dto.rest.bot.response.message.InfoByImageMessageDTO;
+import com.example.Messenger.dto.rest.bot.response.message.InfoByTextMessageDTO;
+import com.example.Messenger.dto.rest.bot.response.message.InfoOfMessagesDTO;
+import com.example.Messenger.dto.rest.bot.response.message.SendMessageForBotDTO;
 import com.example.Messenger.models.user.Bot;
 import com.example.Messenger.services.database.chat.BotChatService;
 import com.example.Messenger.services.database.user.BotRestService;

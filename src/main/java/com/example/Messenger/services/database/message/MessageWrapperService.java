@@ -40,9 +40,16 @@ public class MessageWrapperService {
         }
     }
 
+    public void send(MultipartFile image, int chatId, int userId, String text){
+        if(!image.isEmpty()){
+            sendImage(image, chatId, userId, text);
+        }
+        sendNotImage(text, chatId, userId);
+    }
+
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
     public void sendNotImage(String text, int chatId, int userId){
-        if(!(text == null) || text.isEmpty()) {
+        if(!text.isEmpty()) {
             Optional<String> link = isLink(text);
             if(link.isPresent()){
                 linkMessageService.sendLink(text, chatId, userId, link.get());
@@ -53,7 +60,7 @@ public class MessageWrapperService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
-    public void sendPhoto(MultipartFile photo, int chatId, int userId, String underTextPhoto){
+    private void sendImage(MultipartFile photo, int chatId, int userId, String underTextPhoto){
         try {
             photoMessageService.sendMessage(photo, chatId, userId, underTextPhoto);
         }catch (IOException ignored){
@@ -61,12 +68,8 @@ public class MessageWrapperService {
         }
     }
 
-    public List<MessageWrapper> findByChat(int chatId){
-        for(MessageWrapper message: messageWrapperRepository.findByChat(chatRepository.findById(chatId).orElse(null))){
-
-        }
-
-        return sortMessagesById(messageWrapperRepository.findByChat(chatRepository.findById(chatId).orElse(null))).reversed();
+    public List<MessageWrapper> findByChat(Chat chat){
+        return sortMessagesById(messageWrapperRepository.findByChat(chat)).reversed();
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -110,10 +113,10 @@ public class MessageWrapperService {
     public static List<MessageWrapper> sortMessagesById(List<MessageWrapper> messages){
         return messages.stream().sorted(Comparator.comparingInt(MessageWrapper::getId)).toList();
     }
-
     public MessageWrapper findById(int id) {
         return messageWrapperRepository.findById(id).orElse(null);
     }
+
     private Optional<String> isLink(String text){
         String[] splitWords = text.split(" ");
         String link = "";

@@ -15,6 +15,7 @@ import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.services.email.redis.languageOfApp.LanguageOfAppService;
 import com.example.Messenger.util.Convertor;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
+import com.example.Messenger.util.exceptions.UserNotMemberException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -34,9 +35,16 @@ public class ChatService {
     private final MessengerUserService messengerUserService;
     private final PrivateChatService privateChatService;
     private final Convertor convertor;
-    private final GroupChatService groupChatService;
-    private final ChannelService channelService;
     private final LanguageOfAppService languageOfAppService;
+    public static String COUNT_MEMBERS(Chat chat) {
+        int membersCount = chat.getMembers().size();
+        if (chat.getClass() == GroupChat.class) {
+            return membersCount + " участников";
+        } else {
+            return membersCount + " подписчиков";
+        }
+    }
+
     public Chat findById(int id) {
         return chatRepository.findById(id). orElseThrow(ChatNotFoundException::new);
     }
@@ -64,7 +72,7 @@ public class ChatService {
             if(member.getUsername().equals(username)){
                 continue;
             }
-            return member;
+            return chatMember.getUser();
         }
         return null;
     }
@@ -87,10 +95,6 @@ public class ChatService {
         return chats.reversed();
     }
 
-    private String addZero(int time){
-        return time < 10 ? "0"+time : ""+time;
-    }
-
     public List<Chat> findAll() {
         return chatRepository.findAll();
     }
@@ -103,16 +107,6 @@ public class ChatService {
             emptyChats.removeIf(chat -> chat.getClass() == Channel.class);
         }catch (Exception ignored){}
         emptyChats.forEach(chatRepository::delete);
-    }
-
-    public String countMembers(int chatId, LanguageOfApp language) {
-        Chat chat = chatRepository.findById(chatId).orElse(null);
-        int membersCount = chat.getMembers().size();
-        if (chat.getClass() == GroupChat.class) {
-            return language.getType().equals("ru") ? membersCount <5 ? membersCount + " участника" : membersCount + " участников" : membersCount + " " + language.getGroupMembers();
-        } else {
-            return language.getType().equals("ru") ? membersCount<5 ? membersCount + " подписчика" : membersCount + " подписчиков" : membersCount + " " + language.getGroupMembers();
-        }
     }
 
 
@@ -162,20 +156,17 @@ public class ChatService {
         return Optional.empty();
     }
 
-    public String getChatTitle(Chat chat, String username) throws ChatNotFoundException{
-        String chatTitle;
-        if(chat.getClass().equals(PrivateChat.class)){
-            chatTitle = getInterlocutor(username, chat).getUsername();
-        }else if(chat.getClass().equals(GroupChat.class)){
-            chatTitle = groupChatService.getGroupName(chat.getId());
-        }else if(chat.getClass().equals(BotChat.class)){
-            //в этом случае мы изменяем возвращаемую страницу на botChat.html, ведь тут собеседник будет другого типа
-            chatTitle = botChatService.getBotName(chat.getId());
+    public String getInterlocutorOfChannelOrGroupName(Chat chat, String username) throws ChatNotFoundException, UserNotMemberException{
+        if(chat.getClass() == PrivateChat.class){
+            Optional<MessengerUser> userOptional = ((PrivateChat) chat).getInterlocutor(username);
+            if(userOptional.isPresent()){
+                return userOptional.get().getUsername();
+            }else{
+                throw new UserNotMemberException();
+            }
         }else{
-            //опять же проверка на успешное создание чата, также изменение возвращаемой страницы на showChannel, ведь в канале все чуть по другому
-            chatTitle = channelService.getChannelName(chat.getId());
+            return chat.getChatTitleName();
         }
-        return chatTitle;
     }
 
     private int getFirstFoundCharacterId(String text, char firstCharacterOfText) {
@@ -280,8 +271,8 @@ public class ChatService {
         return -1;
     }
 
-    public List<ChatDTO> getForwardChats(String username) {
-        return convertor.convertToChatDTO(userService.findChatsByUsername(username), username);
+    public List<ChatDTO> getWillForwardChats(String username) {
+        return convertor.convertToChatDTO(UserService.FIND_CHATS_BY_USERNAME(getUser(username)), username);
     }
 
     public String getReturnedHtmlFile(Chat chat) {
@@ -298,25 +289,7 @@ public class ChatService {
         return returnedView;
     }
 
-    public boolean isChannel(Chat chat) {
-        return chat.getClass() == Channel.class;
-    }
-
-    public String getChatHeader(Chat chat, String username) throws ChatNotFoundException{
-        String chatHeader;
-        if(chat.getClass() == PrivateChat.class){
-            chatHeader = userService.getLastOnlineTime(getInterlocutor(username, getChat(chat.getId())).getUsername());
-        }else if(chat.getClass() == BotChat.class){
-            //у бота не может быть последнего захода, поэтому просто надпись "bot"
-            chatHeader = "bot";
-        }else{
-            // когда либо канал либо группа -> подсчитываем количество участников
-            chatHeader = countMembers(chat.getId(), languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
-        }
-        return chatHeader;
-    }
-
-    private Chat getChat(int id){
-        return chatRepository.findById(id).orElseThrow(ChatNotFoundException::new);
+    public User getUser(String username){
+        return userRepository.findByUsername(username).orElse(null);
     }
 }

@@ -3,6 +3,7 @@ package com.example.Messenger.services.database.chat;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.chat.PrivateChat;
 import com.example.Messenger.models.user.ChatMember;
+import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.chat.PrivateChatRepository;
 import com.example.Messenger.repositories.database.user.ChatMemberRepository;
@@ -39,6 +40,18 @@ public class PrivateChatService {
         chatMemberRepository.save(chatMember1);
         chatMemberRepository.save(chatMember2);
         return privateChat.getId();
+    }
+
+    public MessengerUser getInterlocutor(Chat chat, String username){
+        List<ChatMember> members = chat.getMembers();
+        for(ChatMember chatMember: members){
+            MessengerUser member = chatMember.getUser();
+            if(member.getUsername().equals(username)){
+                continue;
+            }
+            return member;
+        }
+        return null;
     }
 
     public Chat findById(int id) {

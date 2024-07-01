@@ -1,7 +1,7 @@
 package com.example.Messenger.controllers.rest;
 
-import com.example.Messenger.dto.channel.CreateChannelDTO;
-import com.example.Messenger.dto.group.CreateGroupChatDTO;
+import com.example.Messenger.dto.chat.channel.CreateChannelDTO;
+import com.example.Messenger.dto.chat.group.CreateGroupChatDTO;
 import com.example.Messenger.dto.message.TranslateTextRequestDTO;
 import com.example.Messenger.dto.message.rest.ForwardMessageRequestDTO;
 import com.example.Messenger.dto.message.rest.ForwardMessageResponseDTO;
@@ -21,7 +21,6 @@ import com.example.Messenger.util.exceptions.LanguageModeException;
 import com.example.Messenger.util.exceptions.LengthOfTextException;
 import com.example.Messenger.util.exceptions.UserNotOwnerOfChannelException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

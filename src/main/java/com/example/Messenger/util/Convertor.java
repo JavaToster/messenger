@@ -1,8 +1,9 @@
 package com.example.Messenger.util;
 
 import com.example.Messenger.dto.ChatDTO;
-import com.example.Messenger.dto.bot.response.message.InfoByImageMessageDTO;
-import com.example.Messenger.dto.bot.response.message.InfoByTextMessageDTO;
+import com.example.Messenger.dto.chat.InfoOfChatDTO;
+import com.example.Messenger.dto.rest.bot.response.message.InfoByImageMessageDTO;
+import com.example.Messenger.dto.rest.bot.response.message.InfoByTextMessageDTO;
 import com.example.Messenger.dto.message.BlockMessageDTO;
 import com.example.Messenger.dto.message.MessageResponseDTO;
 import com.example.Messenger.dto.message.rest.ForwardMessageResponseDTO;
@@ -10,7 +11,7 @@ import com.example.Messenger.dto.message.messageSpecifications.ForwardMessageSpe
 import com.example.Messenger.dto.message.messageSpecifications.ImageMessageSpecification;
 import com.example.Messenger.dto.message.messageSpecifications.LinkMessageSpecification;
 import com.example.Messenger.dto.user.InfoOfUserDTO;
-import com.example.Messenger.dto.util.DateDayOfMessagesDTO;
+import com.example.Messenger.dto.util.MessagesByDateDTO;
 import com.example.Messenger.models.chat.*;
 import com.example.Messenger.models.message.*;
 import com.example.Messenger.models.user.Bot;
@@ -25,8 +26,10 @@ import com.example.Messenger.repositories.database.message.PhotoMessageRepositor
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.database.message.MessageWrapperService;
 import com.example.Messenger.services.database.message.PhotoMessageService;
+import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.util.abstractClasses.InfoOfMessage;
 import com.example.Messenger.util.enums.ChatMemberType;
+import com.example.Messenger.util.exceptions.UserNotMemberException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -227,8 +230,8 @@ public class Convertor {
         return messageResponseDTOS;
     }
 
-    public List<DateDayOfMessagesDTO> convertToMessageDayDTO(List<MessageWrapper> messages, String username){
-        return convertToMessagesDTO(messages, username);
+    public List<MessagesByDateDTO> convertToMessageDayDTO(List<MessageWrapper> messages, String username){
+        return convertToMessagesByDateDTO(messages, username);
     }
 
 
@@ -248,8 +251,8 @@ public class Convertor {
     }
 
 
-    public List<DateDayOfMessagesDTO> convertToMessagesDTO(List<MessageWrapper> messages, String username){
-        List<DateDayOfMessagesDTO> returnMessageList = new ArrayList<>();
+    public List<MessagesByDateDTO> convertToMessagesByDateDTO(List<MessageWrapper> messages, String username){
+        List<MessagesByDateDTO> returnMessageList = new ArrayList<>();
         Date beginDate = messages.getLast().getSendingTime();
         Date finishDate = messages.getFirst().getSendingTime();
 
@@ -261,7 +264,7 @@ public class Convertor {
                 continue;
             }
 
-            DateDayOfMessagesDTO dayOfMessages = new DateDayOfMessagesDTO(beginDate, convertToMessageDTO(messagesOfDate, username));
+            MessagesByDateDTO dayOfMessages = new MessagesByDateDTO(beginDate, convertToMessageDTO(messagesOfDate, username));
             returnMessageList.add(dayOfMessages);
 
             messages = deleteAddedMessages(messages, messagesOfDate);
@@ -271,7 +274,7 @@ public class Convertor {
 
         List<MessageWrapper> messagesOfDate = getMessagesOfDate(messages, beginDate);
 
-        DateDayOfMessagesDTO dayOfMessages = new DateDayOfMessagesDTO(beginDate, convertToMessageDTO(messagesOfDate, username));
+        MessagesByDateDTO dayOfMessages = new MessagesByDateDTO(beginDate, convertToMessageDTO(messagesOfDate, username));
         returnMessageList.add(dayOfMessages);
 
         return returnMessageList.reversed();
@@ -397,5 +400,44 @@ public class Convertor {
             response.setForwardedChatName(getInterlocutor(username, forwardMessage.getChat()).getUsername());
         }
         return response;
+    }
+
+    public InfoOfChatDTO convertToInfoOfChatDTO(Chat chat, String username){
+        User user = getUser(username);
+        List<MessagesByDateDTO> messagesByDateDTOS = convertToMessagesByDateDTO(sortMessageById(chat.getMessages()), username);
+        String interlocutorOfGroupOrChannelName = getChatInterlocutorOrGroupOrChannelName(chat, user);
+        String lastTimeOnlineOrMembersCount = getInfoOfLastOnlineTimeOrMembersCount(chat, user);
+        List<ChatDTO> willForwardChats = convertToChatDTO(UserService.FIND_CHATS_BY_USERNAME(user), username);
+        return new InfoOfChatDTO(chat, user, interlocutorOfGroupOrChannelName, lastTimeOnlineOrMembersCount, willForwardChats, messagesByDateDTOS);
+    }
+
+    private List<MessageWrapper> sortMessageById(List<MessageWrapper> messages){
+        return messages.stream().sorted(Comparator.comparingInt(MessageWrapper::getId)).toList();
+    }
+
+    private String getChatInterlocutorOrGroupOrChannelName(Chat chat, User user){
+        if(chat.getClass() == PrivateChat.class){
+            Optional<MessengerUser> interlocutorOptional = ((PrivateChat) chat).getInterlocutor(user.getUsername());
+            if(interlocutorOptional.isPresent()){
+                System.out.println(interlocutorOptional.get().getUsername());
+                return interlocutorOptional.get().getUsername();
+            }else{
+                throw new UserNotMemberException();
+            }
+        }else{
+            return chat.getChatTitleName();
+        }
+    }
+
+    private String getInfoOfLastOnlineTimeOrMembersCount(Chat chat, User user){
+        if(chat.getClass() == PrivateChat.class) {
+            return UserService.getLastOnlineTime(user);
+        }else{
+            return chat.getChatHeader();
+        }
+    }
+
+    private User getUser(String username){
+        return userRepository.findByUsername(username).orElse(null);
     }
 }

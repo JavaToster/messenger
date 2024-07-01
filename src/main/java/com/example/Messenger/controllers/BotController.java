@@ -52,7 +52,7 @@ public class BotController {
             if(text == null || text.isEmpty()){
                 text = "";
             }
-            messageWrapperService.sendPhoto(image, id, userId, text);
+            messageWrapperService.send(image, id, userId, text);
         }
         return "redirect:/messenger/chats/"+id;
     }

@@ -148,8 +148,8 @@
             </form>
           </div>
           <div class="info">
-            <p th:if="${infoOfUser.isFirstname()}" th:text="'firstname: '+${infoOfUser.getFirstname()}">firstname: Kamil</p>
-            <p th:if="${infoOfUser.isLastname()}" th:text="'lastname: '+${infoOfUser.getLastname()}">lastname: Gizatullin</p>
+            <p th:text="'firstname: '+${infoOfUser.getFirstname()}">firstname: Kamil</p>
+            <p th:text="'lastname: '+${infoOfUser.getLastname()}">lastname: Gizatullin</p>
             <p th:text="'email: '+${infoOfUser.getEmail()}">email: kamil.gizatullin.03@gmail.com</p>
           </div>
             <h2 id="images-text">Images</h2>

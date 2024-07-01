@@ -49,7 +49,7 @@ public class InfoOfUserDTO implements Serializable {
     }
 
     public String getFirstname() {
-        return firstname;
+        return this.firstname == null ? "" : this.firstname;
     }
 
     public void setFirstname(String firstname) {
@@ -57,7 +57,7 @@ public class InfoOfUserDTO implements Serializable {
     }
 
     public String getLastname() {
-        return lastname;
+        return this.lastname == null ? "" : this.lastname;
     }
 
     public void setLastname(String lastname) {

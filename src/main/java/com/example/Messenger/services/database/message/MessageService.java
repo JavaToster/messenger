@@ -96,25 +96,6 @@ public class MessageService {
         return false;
     }
 
-    @Transactional
-    public void messageWasBeRead(int chatId, String username) {
-        Chat chat = chatRepository.findById(chatId).orElse(null);
-        if(chat.getClass() == BotChat.class){
-            List<MessageWrapper> messages = chat.getMessages();
-            for(MessageWrapper message: messages){
-                message.setHasBeenRead(MessageStatus.READ);
-                messageWrapperRepository.save(message);
-            }
-            return;
-        }
-        List<MessageWrapper> messages = chatRepository.findById(chatId).orElse(null).getMessages();
-        List<MessageWrapper> messagesOfInterlocutor = getMessagesByUser(messages, chatService.getInterlocutor(username, chatRepository.findById(chatId).orElse(null)).getUsername());
-        for(MessageWrapper message: messagesOfInterlocutor){
-            message.setHasBeenRead(MessageStatus.READ);
-            messageWrapperRepository.save(message);
-        }
-    }
-
     public List<MessageWrapper> getMessagesByUser(List<MessageWrapper> messages, String username){
         List<MessageWrapper> messagesOfUser = new LinkedList<>();
 

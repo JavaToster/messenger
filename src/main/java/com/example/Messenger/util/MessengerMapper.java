@@ -1,13 +1,13 @@
 package com.example.Messenger.util;
 
-import com.example.Messenger.dto.bot.response.message.InfoByTextMessageDTO;
-import com.example.Messenger.dto.chatHead.ChatHeadDTO;
-import com.example.Messenger.dto.chatHead.botChat.BotChatHeadDTO;
-import com.example.Messenger.dto.chatHead.channel.ChannelHeadDTO;
-import com.example.Messenger.dto.chatHead.channel.ChannelMemberDTO;
-import com.example.Messenger.dto.chatHead.group.GroupChatDTO;
-import com.example.Messenger.dto.chatHead.group.GroupChatMemberDTO;
-import com.example.Messenger.dto.chatHead.privateChat.PrivateChatDTO;
+import com.example.Messenger.dto.rest.bot.response.message.InfoByTextMessageDTO;
+import com.example.Messenger.dto.chat.channel.chatHead.ChatHeadDTO;
+import com.example.Messenger.dto.chat.channel.chatHead.botChat.BotChatHeadDTO;
+import com.example.Messenger.dto.chat.channel.chatHead.channel.ChannelHeadDTO;
+import com.example.Messenger.dto.chat.channel.chatHead.channel.ChannelMemberDTO;
+import com.example.Messenger.dto.chat.channel.chatHead.group.GroupChatDTO;
+import com.example.Messenger.dto.chat.channel.chatHead.group.GroupChatMemberDTO;
+import com.example.Messenger.dto.chat.channel.chatHead.privateChat.PrivateChatDTO;
 import com.example.Messenger.models.chat.BotChat;
 import com.example.Messenger.models.chat.Channel;
 import com.example.Messenger.models.chat.Chat;

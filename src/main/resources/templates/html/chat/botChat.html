@@ -147,7 +147,7 @@
 <a href="/messenger" style="font-size: 42px; text-decoration:none; color: black; margin-left: 20px;" th:text="${language.getMessengerHeader()}">Messenger</a>
 <div id="chat-window">
     <div id="chat-header">
-        <div id="chat-partner" th:text="${chatTitle}"> User Name</div>
+        <div id="chat-partner" th:text="${interlocutorOrGroupOrChannelName}"> User Name</div>
         <div id="last-online" th:text="${chatHeader}">Last online at 8:00 PM</div>
     </div>
     <div class="messagesHere">
