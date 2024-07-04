@@ -1,4 +1,4 @@
-package com.example.Messenger.dto.chat.channel.chatHead.channel;
+package com.example.Messenger.dto.chat.chatHead.channel;
 
 import com.example.Messenger.dto.chat.channel.chatHead.ChatHeadDTO;
 import com.example.Messenger.models.user.MessengerUser;
@@ -9,11 +9,12 @@ public class ChannelHeadDTO extends ChatHeadDTO {
     private String description;
     private MessengerUser owner;
     private MessengerUser nextOwner;
-    private List<ChannelMemberDTO> members;
-    private List<ChannelMemberDTO> admins;
+    private List<com.example.Messenger.dto.chat.channel.chatHead.channel.ChannelMemberDTO> members;
 
-    public ChannelHeadDTO(String name, int membersCount, String description, MessengerUser owner, List<ChannelMemberDTO> members,
-                          List<ChannelMemberDTO> admins){
+    private List<com.example.Messenger.dto.chat.channel.chatHead.channel.ChannelMemberDTO> admins;
+
+    public ChannelHeadDTO(String name, int membersCount, String description, MessengerUser owner, List<com.example.Messenger.dto.chat.channel.chatHead.channel.ChannelMemberDTO> members,
+                          List<com.example.Messenger.dto.chat.channel.chatHead.channel.ChannelMemberDTO> admins){
         this.name = name;
         this.description = description;
         this.members = members;
@@ -30,19 +31,19 @@ public class ChannelHeadDTO extends ChatHeadDTO {
         this.description = description;
     }
 
-    public List<ChannelMemberDTO> getMembers() {
+    public List<com.example.Messenger.dto.chat.channel.chatHead.channel.ChannelMemberDTO> getMembers() {
         return members;
     }
 
-    public void setMembers(List<ChannelMemberDTO> member) {
+    public void setMembers(List<com.example.Messenger.dto.chat.channel.chatHead.channel.ChannelMemberDTO> member) {
         this.members = member;
     }
 
-    public List<ChannelMemberDTO> getAdmins() {
+    public List<com.example.Messenger.dto.chat.channel.chatHead.channel.ChannelMemberDTO> getAdmins() {
         return admins;
     }
 
-    public void setAdmins(List<ChannelMemberDTO> admins) {
+    public void setAdmins(List<com.example.Messenger.dto.chat.channel.chatHead.channel.ChannelMemberDTO> admins) {
         this.admins = admins;
     }
 

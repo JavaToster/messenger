@@ -1,8 +1,8 @@
 package com.example.Messenger.dto.message.messageSpecifications;
 
-import com.example.Messenger.util.abstractClasses.UtilSpecification;
+import com.example.Messenger.util.abstractClasses.MessageSpecification;
 
-public class ImageMessageSpecification extends UtilSpecification {
+public class ImageMessageSpecification extends MessageSpecification {
     private String textUnderImage;
 
     public ImageMessageSpecification(String textUnderImage) {

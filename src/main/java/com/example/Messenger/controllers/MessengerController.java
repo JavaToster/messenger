@@ -2,9 +2,7 @@ package com.example.Messenger.controllers;
 
 import com.example.Messenger.dto.ChatDTO;
 import com.example.Messenger.dto.chat.InfoOfChatDTO;
-import com.example.Messenger.dto.chat.channel.chatHead.ChatHeadDTO;
-import com.example.Messenger.dto.chat.channel.chatHead.channel.ChannelMemberDTO;
-import com.example.Messenger.dto.chat.channel.chatHead.group.GroupChatMemberDTO;
+
 import com.example.Messenger.dto.message.BlockMessageDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.models.chat.*;
@@ -27,7 +25,6 @@ import com.example.Messenger.balancers.BalancerOfFoundChats;
 import com.example.Messenger.util.chat.UserFoundedChats;
 import com.example.Messenger.util.threads.CheckComplaintsOfUserThread;
 import com.example.Messenger.util.threads.DeleteEmptyChatsThread;
-import com.example.Messenger.util.MessengerMapper;
 import com.example.Messenger.util.exceptions.UserNotMemberException;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
@@ -50,7 +47,6 @@ public class MessengerController {
     private final ChatService chatService;
     private final BlockMessageService blockMessageService;
     private final DeleteEmptyChatsThread deleteEmptyChatsThread;
-    private final MessengerMapper messengerMapper;
     private final MessengerUserService messengerUserService;
     private final BotService botService;
     private final BalancerOfFoundChats balancerOfFoundChats;
@@ -212,45 +208,40 @@ public class MessengerController {
         return "redirect:/messenger/chats/"+id+"/block-messages";
     }
 
-    @GetMapping({"/chats/{id}/show", "/chats/{id}/show/"})
-    public String showChatHeader(@CookieValue("username") String username, @PathVariable("id") int chatId, Model model){
-
-        if(chatService.findById(chatId).getClass() == GroupChat.class) {
-            if (!groupChatService.getGroupOwner(chatId).equals(username)) {
-                return "redirect:/messenger/chats/" + chatId;
-            }
-        }
-//        }else if(chatService.findById(chatId).getClass() == Channel.class){
-//            if(!channelService.getChannelOwner(chatId).equals(username)){
-//                return "redirect:/messenger/chats/"+chatId;
+//    @GetMapping({"/chats/{id}/show", "/chats/{id}/show/"})
+//    public String showChatHeader(@CookieValue("username") String username, @PathVariable("id") int chatId, Model model){
+//
+//        if(chatService.findById(chatId).getClass() == GroupChat.class) {
+//            if (!groupChatService.getGroupOwner(chatId).equals(username)) {
+//                return "redirect:/messenger/chats/" + chatId;
 //            }
 //        }
-        model.addAttribute("chat", chatService.findById(chatId));
-
-        //remake check chat type -> channel, group, private
-        ChatHeadDTO chatHeadDTOList;
-        Chat foundChat = chatService.findById(chatId);
-        if(foundChat.getClass() == PrivateChat.class){
-            chatHeadDTOList = messengerMapper.map(foundChat, username);
-            model.addAttribute("chatHead", chatHeadDTOList);
-            return "/html/chat/privateChatHead";
-        }else if(foundChat.getClass() == GroupChat.class){
-            model.addAttribute("channelMember", new GroupChatMemberDTO());
-            chatHeadDTOList = messengerMapper.map(foundChat);
-            model.addAttribute("chatHead", chatHeadDTOList);
-            return "/html/chat/groupChatHead";
-        }else if(foundChat.getClass() == Channel.class){
-            model.addAttribute("channelMember", new ChannelMemberDTO());
-            model.addAttribute("channelAdmin", new ChannelMemberDTO());
-            chatHeadDTOList = messengerMapper.map(foundChat);
-            model.addAttribute("chatHead", chatHeadDTOList);
-            return "/html/chat/channelChatHead";
-        }else{
-            chatHeadDTOList = messengerMapper.map(foundChat);
-            model.addAttribute("chatHead", chatHeadDTOList);
-            return "/html/chat/botChatHead";
-        }
-    }
+//        Chat chat = chatService.findById(chatId);
+//        model.addAttribute("chat", chat);
+//
+//        //remake check chat type -> channel, group, private
+//        ChatHeadDTO chatHeadDTOList = convertor.convertToChatHeadDTO(chat, username);
+//        if(chat.getClass() == PrivateChat.class){
+//            chatHeadDTOList = messengerMapper.map(chat, username);
+//            model.addAttribute("chatHead", chatHeadDTOList);
+//            return "/html/chat/privateChatHead";
+//        }else if(foundChat.getClass() == GroupChat.class){
+//            model.addAttribute("channelMember", new GroupChatMemberDTO());
+//            chatHeadDTOList = messengerMapper.map(foundChat);
+//            model.addAttribute("chatHead", chatHeadDTOList);
+//            return "/html/chat/groupChatHead";
+//        }else if(foundChat.getClass() == Channel.class){
+//            model.addAttribute("channelMember", new ChannelMemberDTO());
+//            model.addAttribute("channelAdmin", new ChannelMemberDTO());
+//            chatHeadDTOList = messengerMapper.map(foundChat);
+//            model.addAttribute("chatHead", chatHeadDTOList);
+//            return "/html/chat/channelChatHead";
+//        }else{
+//            chatHeadDTOList = messengerMapper.map(foundChat);
+//            model.addAttribute("chatHead", chatHeadDTOList);
+//            return "/html/chat/botChatHead";
+//        }
+//    }
 
     @PostMapping("/chats/{id}/show/block-user")
     public String blockUser(@RequestParam("user_id") int id, @PathVariable("id") int chatId){

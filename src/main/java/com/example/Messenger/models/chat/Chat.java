@@ -6,6 +6,7 @@ import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.message.BlockMessage;
 import jakarta.persistence.*;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Entity
@@ -16,7 +17,7 @@ public class Chat {
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected int id;
-    @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "chat")
     protected List<MessageWrapper> messages;
     @OneToMany(mappedBy = "chat", cascade = CascadeType.REMOVE)
     protected List<ChatMember> members;
@@ -24,14 +25,6 @@ public class Chat {
     protected List<BlockMessage> blockMessages;
     @OneToMany(mappedBy = "fromChat")
     protected List<ForwardMessage> forwardMessages;
-
-    public List<ForwardMessage> getForwardMessages() {
-        return forwardMessages;
-    }
-
-    public void setForwardMessages(List<ForwardMessage> forwardMessages) {
-        this.forwardMessages = forwardMessages;
-    }
 
     public int getId() {
         return id;
@@ -89,5 +82,17 @@ public class Chat {
 
     public String getChatHeader(){
         return "";
+    }
+
+    public com.example.Messenger.dto.chat.channel.chatHead.ChatHeadDTO getChatHeadDTO() {
+        return null;
+    }
+
+    public MessageWrapper getLastMessage(){
+        return this.messages.stream().sorted(Comparator.comparingInt(MessageWrapper::getId)).toList().getLast();
+    }
+
+    public boolean messagesIsEmpty(){
+        return this.messages == null || this.messages.isEmpty();
     }
 }

@@ -2,7 +2,7 @@ package com.example.Messenger.dto.message;
 
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.MessengerUser;
-import com.example.Messenger.util.abstractClasses.UtilSpecification;
+import com.example.Messenger.util.abstractClasses.MessageSpecification;
 import com.example.Messenger.util.enums.MessageStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -17,14 +17,15 @@ public class MessageResponseDTO {
     @JsonIgnore
     private boolean userIsOwner;
     //use only message with type of image
-    private UtilSpecification specification;
+    private MessageSpecification specification;
 
 
-    public MessageResponseDTO(MessageWrapper message, MessengerUser owner) {
+    public MessageResponseDTO(MessageWrapper message) {
         this.id = message.getId();
         this.message = message;
-        this.owner = owner;
+        this.owner = message.getOwner();
         this.type = message.typeToString();
+        this.date = message.getMessageSendingTime();
         if(message.getHasBeenRead() == MessageStatus.READ){
             this.read = true;
             return;
@@ -88,11 +89,11 @@ public class MessageResponseDTO {
         this.id = id;
     }
 
-    public UtilSpecification getSpecification() {
+    public MessageSpecification getSpecification() {
         return specification;
     }
 
-    public void setSpecification(UtilSpecification specification) {
+    public void setSpecification(MessageSpecification specification) {
         this.specification = specification;
     }
 }

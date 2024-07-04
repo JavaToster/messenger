@@ -44,4 +44,9 @@ public class ImageMessage extends MessageWrapper{
     public void setExpansion(String expansion) {
         this.expansion = expansion;
     }
+
+    @Override
+    public String getMessageSendingTime() {
+        return "image";
+    }
 }

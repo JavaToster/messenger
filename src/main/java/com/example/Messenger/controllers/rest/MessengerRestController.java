@@ -59,7 +59,7 @@ public class MessengerRestController {
 
     @PostMapping("/create-channel")
     public ResponseEntity<Map<String, Integer>> createChannel(@RequestBody CreateChannelDTO channelDTO){
-        List<User> subscribers = convertor.convertToUser(channelDTO.getChannelSubscribes());
+        List<User> subscribers = convertor.convertToUserByUsername(channelDTO.getChannelSubscribes());
 
         int chatId = channelService.createNewChannel(subscribers, userService.findByUsername(channelDTO.getChannelOwner()), channelDTO.getChannelName());
 

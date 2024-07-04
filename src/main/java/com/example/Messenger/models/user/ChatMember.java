@@ -79,4 +79,8 @@ public class ChatMember {
     public Class<? extends MessengerUser> getUserClass() {
         return this.user.getClass();
     }
+
+    public boolean isOwner() {
+        return this.memberType == ChatMemberType.OWNER;
+    }
 }

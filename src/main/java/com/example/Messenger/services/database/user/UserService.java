@@ -65,48 +65,6 @@ public class UserService implements UserDetailsService {
         response.addCookie(cookie);
     }
 
-    public static String getLastOnlineTime(User user){
-        Calendar calendarOfUser = Calendar.getInstance();
-        Calendar calendarNow = Calendar.getInstance();
-
-        Date dateOfUser = user.getLastOnline();
-        Date dateNow = new Date();
-
-        calendarOfUser.setTime(dateOfUser);
-        calendarNow.setTime(dateNow);
-
-        if(dateOfUser == null){
-            return "Был(а) недавно";
-        }
-
-        int yearNow = calendarNow.get(Calendar.YEAR);
-        int monthNow = calendarNow.get(Calendar.MONTH);
-        int dayNow = calendarNow.get(Calendar.DAY_OF_MONTH);
-        int yearOfUser = calendarOfUser.get(Calendar.YEAR);
-        int monthOfUser = calendarOfUser.get(Calendar.MONTH);
-        int dayOfUser = calendarOfUser.get(Calendar.DAY_OF_MONTH);
-
-        if(yearNow == yearOfUser && monthNow == monthOfUser && dayNow == dayOfUser && dateNow.getHours() == dateOfUser.getHours() && dateNow.getMinutes() == dateOfUser.getMinutes()){
-            return "в cети";
-        }
-
-        if(yearNow > yearOfUser){
-            return "Был(а) в сети "+(yearNow-yearOfUser)+" "+getNameOfYear(yearNow-yearOfUser)+" назад";
-        }else{
-            if(monthNow > monthOfUser){
-                return "Был(а) в сети "+(monthNow - monthOfUser)+" "+getNameOfMonth(monthNow-monthOfUser)+" назад";
-            } else if (dayNow > dayOfUser) {
-                if(dayNow-dayOfUser == 1) {
-                    return "Был(а) в сети вчера";
-                }else{
-                    return "Был(а) в сети "+(dayNow-dayOfUser)+" "+getNameOfDay(dayNow-dayOfUser)+" назад";
-                }
-            }else{
-                return "Был(а) в сети в "+addZeroToTime(dateOfUser.getHours())+":"+addZeroToTime(dateOfUser.getMinutes());
-            }
-        }
-    }
-
     public static List<Chat> FIND_CHATS_BY_USERNAME(User user) {
         List<Chat> userChats = new ArrayList<>();
 
@@ -171,7 +129,7 @@ public class UserService implements UserDetailsService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void setLastOnline(String name) {
         User user = userRepository.findByUsername(name).orElse(null);
-        user.setLastOnline(new Date());
+        user.setLastOnlineTime(new Date());
         userRepository.save(user);
     }
 
@@ -188,7 +146,7 @@ public class UserService implements UserDetailsService {
         Calendar calendarOfUser = Calendar.getInstance();
         Calendar calendarNow = Calendar.getInstance();
 
-        Date dateOfUser = userRepository.findByUsername(username).orElse(null).getLastOnline();
+        Date dateOfUser = userRepository.findByUsername(username).orElse(null).getLastOnlineTime();
         Date dateNow = new Date();
 
         calendarOfUser.setTime(dateOfUser);
@@ -425,7 +383,7 @@ public class UserService implements UserDetailsService {
 
     private InfoOfUserDTO convertToUserDTO(User user, String myUsername) {
         InfoOfUserDTO info = new InfoOfUserDTO(user.getId(), user.getUsername(), user.getName(), user.getLastname(), user.getEmail(), user.getLinkOfIcon());
-        info.setLastTime(getLastOnlineTime(user.getUsername()));
+        info.setLastTime(user.getLastOnlineTimeForChatHeader());
         info.setImagesUrl(getImagesListByInterlocutors(user.getUsername(), myUsername));
         return info;
     }

@@ -1,8 +1,8 @@
 package com.example.Messenger.dto.message.messageSpecifications;
 
-import com.example.Messenger.util.abstractClasses.UtilSpecification;
+import com.example.Messenger.util.abstractClasses.MessageSpecification;
 
-public class ForwardMessageSpecification extends UtilSpecification {
+public class ForwardMessageSpecification extends MessageSpecification {
     private String forwardMessageType;
     private String ownerFrom;
 

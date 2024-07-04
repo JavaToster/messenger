@@ -76,4 +76,12 @@ public class ForwardMessage extends MessageWrapper{
     public void setFromOwner(MessengerUser fromOwner) {
         this.fromOwner = fromOwner;
     }
+
+    @Override
+    public String getMessageSendingTime() {
+        if (this.forwardMessageType == MessageType.IMAGE) {
+            return "image";
+        }
+        return this.content;
+    }
 }

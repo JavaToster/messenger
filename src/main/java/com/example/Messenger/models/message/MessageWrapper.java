@@ -115,4 +115,16 @@ public class MessageWrapper {
                 ", hasBeenRead=" + hasBeenRead +
                 '}';
     }
+
+    public String getMessageSendingTime() {
+        return this.content;
+    }
+
+    public String getMessageContent(){
+        return addZeroToTime(this.sendingTime.getHours())+":"+addZeroToTime(this.sendingTime.getMinutes());
+    }
+
+    private String addZeroToTime(int time){
+        return time < 10 ? "0"+time : String.valueOf(time);
+    }
 }

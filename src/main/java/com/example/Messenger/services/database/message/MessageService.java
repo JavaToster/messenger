@@ -1,6 +1,5 @@
 package com.example.Messenger.services.database.message;
 
-import com.example.Messenger.models.chat.BotChat;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.message.BlockMessage;
 import com.example.Messenger.models.message.Message;
@@ -13,7 +12,6 @@ import com.example.Messenger.repositories.database.message.MessageRepository;
 import com.example.Messenger.repositories.database.message.MessageWrapperRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.database.chat.ChatService;
-import com.example.Messenger.util.enums.MessageStatus;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -55,7 +53,7 @@ public class MessageService {
         User messageOwner = userRepository.findById(userId).orElse(null);
         Chat chat = chatRepository.findById(chatId).orElse(null);
 
-        messageOwner.setLastOnline(new Date());
+        messageOwner.setLastOnlineTime(new Date());
 
         messageRepository.save(new Message(newMessage.getContent(), messageOwner, chat));
         userRepository.save(messageOwner);
@@ -66,7 +64,7 @@ public class MessageService {
         User messageOwner = userRepository.findById(userId).orElse(null);
         Chat chat = chatRepository.findById(chatId).orElse(null);
 
-        messageOwner.setLastOnline(new Date());
+        messageOwner.setLastOnlineTime(new Date());
 
         messageRepository.save(new Message(message, messageOwner, chat));
         userRepository.save(messageOwner);

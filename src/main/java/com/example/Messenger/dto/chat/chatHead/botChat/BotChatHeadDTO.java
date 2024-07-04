@@ -1,4 +1,4 @@
-package com.example.Messenger.dto.chat.channel.chatHead.botChat;
+package com.example.Messenger.dto.chat.chatHead.botChat;
 
 import com.example.Messenger.dto.chat.channel.chatHead.ChatHeadDTO;
 

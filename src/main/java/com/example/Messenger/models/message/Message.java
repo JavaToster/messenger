@@ -10,7 +10,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "Message")
-public class Message extends MessageWrapper{
+public class Message extends MessageWrapper {
 
 
     public Message(){}

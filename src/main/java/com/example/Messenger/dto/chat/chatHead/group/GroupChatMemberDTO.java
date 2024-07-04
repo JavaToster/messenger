@@ -1,4 +1,4 @@
-package com.example.Messenger.dto.chat.channel.chatHead.group;
+package com.example.Messenger.dto.chat.chatHead.group;
 
 import com.example.Messenger.util.enums.ChatMemberType;
 

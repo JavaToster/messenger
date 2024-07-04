@@ -18,6 +18,4 @@ public class PrivateChat extends Chat {
         }
         return Optional.empty();
     }
-
-
 }

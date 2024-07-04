@@ -33,6 +33,10 @@ public class MessageWrapperService {
     private final JdbcTemplate jdbcTemplate;
     private final LinkMessageService linkMessageService;
 
+    public static List<MessageWrapper> SORT_MESSAGES_BY_ID(List<MessageWrapper> messages){
+        return messages.stream().sorted(Comparator.comparingInt(MessageWrapper::getId)).toList();
+    }
+
     @Transactional
     public void sendTextMessage(MessageWrapper message, int chatId, int userId){
         if(!(message.getContent() == null) || message.getContent().isEmpty()) {
@@ -69,7 +73,7 @@ public class MessageWrapperService {
     }
 
     public List<MessageWrapper> findByChat(Chat chat){
-        return sortMessagesById(messageWrapperRepository.findByChat(chat)).reversed();
+        return SORT_MESSAGES_BY_ID(messageWrapperRepository.findByChat(chat)).reversed();
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -108,10 +112,6 @@ public class MessageWrapperService {
                 return rs.getInt("id");
             }
         });
-    }
-
-    public static List<MessageWrapper> sortMessagesById(List<MessageWrapper> messages){
-        return messages.stream().sorted(Comparator.comparingInt(MessageWrapper::getId)).toList();
     }
     public MessageWrapper findById(int id) {
         return messageWrapperRepository.findById(id).orElse(null);
