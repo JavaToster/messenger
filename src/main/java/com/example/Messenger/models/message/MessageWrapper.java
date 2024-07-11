@@ -117,11 +117,11 @@ public class MessageWrapper {
     }
 
     public String getMessageSendingTime() {
-        return this.content;
+        return addZeroToTime(this.sendingTime.getHours())+":"+addZeroToTime(this.sendingTime.getMinutes());
     }
 
     public String getMessageContent(){
-        return addZeroToTime(this.sendingTime.getHours())+":"+addZeroToTime(this.sendingTime.getMinutes());
+        return this.content;
     }
 
     private String addZeroToTime(int time){

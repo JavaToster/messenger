@@ -10,12 +10,4 @@ import java.util.Optional;
 @Entity
 @Table(name = "Private_chat")
 public class PrivateChat extends Chat {
-    public Optional<MessengerUser> getInterlocutor(String username) {
-        for (ChatMember member : this.members) {
-            if (!member.getUsernameOfUser().equals(username)) {
-                return Optional.of(member.getUser());
-            }
-        }
-        return Optional.empty();
-    }
 }

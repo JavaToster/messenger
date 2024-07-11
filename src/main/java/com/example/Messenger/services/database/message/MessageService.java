@@ -69,39 +69,4 @@ public class MessageService {
         messageRepository.save(new Message(message, messageOwner, chat));
         userRepository.save(messageOwner);
     }
-
-    private String addZeroToTime(int time){
-        return time<10? "0"+time : time+"";
-    }
-
-    public boolean checkMessageIsBanned(MessageWrapper message, int chatId) {
-        List<BlockMessage> blockedMessages = blockMessageRepository.findByChat(chatRepository.findById(chatId).orElse(null));
-        for(BlockMessage blockMessage: blockedMessages){
-            if(blockMessage.getText().equalsIgnoreCase(message.getContent().toLowerCase())){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean checkMessageIsBanned(String text, int chatId){
-        List<BlockMessage> blockedMessages = blockMessageRepository.findByChat(chatRepository.findById(chatId).orElse(null));
-        for(BlockMessage blockMessage: blockedMessages){
-            if(blockMessage.getText().equalsIgnoreCase(text.toLowerCase())){
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public List<MessageWrapper> getMessagesByUser(List<MessageWrapper> messages, String username){
-        List<MessageWrapper> messagesOfUser = new LinkedList<>();
-
-        for(MessageWrapper message: messages){
-            if(message.getOwner().equals(username)){
-                messagesOfUser.add(message);
-            }
-        }
-        return messagesOfUser;
-    }
 }

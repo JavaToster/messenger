@@ -40,9 +40,6 @@ public class User extends MessengerUser implements Serializable {
     private Date lastOnlineTime;
     @Enumerated(value = EnumType.STRING)
     @JsonIgnore
-    private LanguageType lang;
-    @Enumerated(value = EnumType.STRING)
-    @JsonIgnore
     private RoleOfUser role;
     @OneToMany(mappedBy = "owner")
     @JsonIgnore
@@ -61,7 +58,6 @@ public class User extends MessengerUser implements Serializable {
         this.username = username;
         this.password = password;
         this.phone = phone;
-        this.lang = LanguageType.valueOf(lang);
         this.email = email;
         this.role = RoleOfUser.ROLE_USER;
         this.lastOnlineTime = new Date();
@@ -73,7 +69,6 @@ public class User extends MessengerUser implements Serializable {
         this.username = registerDTO.getUsername();
         this.password = registerDTO.getPassword();
         this.phone = registerDTO.getPhone();
-        this.lang = LanguageType.valueOf(registerDTO.getLang());
         this.email = registerDTO.getEmail();
         this.role = RoleOfUser.ROLE_USER;
         this.lastOnlineTime = new Date();

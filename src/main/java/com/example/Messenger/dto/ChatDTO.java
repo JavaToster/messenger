@@ -15,9 +15,6 @@ public class ChatDTO {
     private String lastMessageSendTime;
     private boolean bannedChat;
 
-    public ChatDTO(int id){
-        this.id = id;
-    }
     public ChatDTO(){}
     public ChatDTO(Chat chat) {
         this.id = chat.getId();
@@ -29,7 +26,7 @@ public class ChatDTO {
             return;
         }
         MessageWrapper lastMessageByChat = chat.getLastMessage();
-        this.lastMessageText = lastMessageByChat.getMessageSendingTime();
-        this.lastMessageSendTime = lastMessageByChat.getMessageContent();
+        this.lastMessageText = lastMessageByChat.getContent();
+        this.lastMessageSendTime = lastMessageByChat.getMessageSendingTime();
     }
 }

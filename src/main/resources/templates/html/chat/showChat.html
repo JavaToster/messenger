@@ -206,7 +206,7 @@
                 <div class="message" th:each="message: ${messagesByDate.getMessages()}">
                     <div class="interlocutor-message" th:if="${!message.isUserIsOwner()}">
                         <div class="text-message" th:if="${message.getType() == 'text'}">
-                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${infoOfChat.isPrivateChat()}">Toster1</div>
+                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${infoOfChat.getChatType().equals('PrivateChat')}">Toster1</div>
                             <div class="text" th:text="${message.getMessage().getContent()}"> some text ept</div>
                             <div class="buttons-div" style="display: flex;">
                                 <div class="forward-div">
@@ -221,7 +221,7 @@
                             <div class="time" th:text="${message.getDate()}">9:06 PM</div>
                         </div>
                         <div class="message-photo" th:if="${message.getType() == 'image'}" >
-                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.isPrivateChat()}">Toster</div>
+                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.getChatType().equals('PrivateChat')}">Toster</div>
                             <div style="background-color: #f5f5f5; width: auto;">
                                 <img th:src="${message.getMessage().getContent()}">
                                 <div th:if="${message.isUserIsOwner()}" style="margin-left: 5px;">
@@ -238,7 +238,7 @@
                             <div class="time" th:text="${message.getDate()}">9:06 PM</div>
                         </div>
                         <div class="message-photo" th:if="${message.getType() == 'forward'}" >
-                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.isPrivateChat()">Toster</div>
+                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.getChatType().equals('PrivateChat')}">Toster</div>
                             <div style="margin-top: 5px; margin-bottom: 5px;">forward message</div>
                             <div th:text="'from' + ${message.getSpecification().getOwnerFrom()}"></div>
                             <div th:if="${message.getSpecification().getForwardMessageType() == 'image'}" style="background-color: #f5f5f5; width: auto;">
@@ -259,7 +259,7 @@
                             <div class="time" th:text="${message.getDate()}">9:06 PM</div>
                         </div>
                         <div class="text-message" th:if="${message.getType() == 'link'}">
-                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.isPrivateChat()}">Toster1</div>
+                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.getChatType().equals('PrivateChat')}">Toster1</div>
                             <div class="text">
                                 <a class="link-text" th:text="${message.getMessage().getContent()}" th:href="${message.getSpecification().getLink()}">https://www.youtube.com/watch?v=WL5XBs_ha3g</a>
                             </div>

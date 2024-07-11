@@ -78,8 +78,8 @@ public class ForwardMessage extends MessageWrapper{
     }
 
     @Override
-    public String getMessageSendingTime() {
-        if (this.forwardMessageType == MessageType.IMAGE) {
+    public String getMessageContent() {
+        if(this.forwardMessageType == MessageType.IMAGE){
             return "image";
         }
         return this.content;

@@ -1,5 +1,7 @@
 package com.example.Messenger.services.database.message;
 
+import com.example.Messenger.DAO.chat.ChatDAO;
+import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.models.chat.BotChat;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.message.MessageWrapper;
@@ -29,9 +31,10 @@ public class MessageWrapperService {
     private final MessageService messageService;
     private final PhotoMessageService photoMessageService;
     private final ChatRepository chatRepository;
-    private final ChatService chatService;
     private final JdbcTemplate jdbcTemplate;
     private final LinkMessageService linkMessageService;
+    private final MessengerUserDAO messengerUserDAO;
+    private final BlockMessageService blockMessageService;
 
     public static List<MessageWrapper> SORT_MESSAGES_BY_ID(List<MessageWrapper> messages){
         return messages.stream().sorted(Comparator.comparingInt(MessageWrapper::getId)).toList();
@@ -44,6 +47,7 @@ public class MessageWrapperService {
         }
     }
 
+    @Transactional
     public void send(MultipartFile image, int chatId, int userId, String text){
         if(!image.isEmpty()){
             sendImage(image, chatId, userId, text);
@@ -53,6 +57,10 @@ public class MessageWrapperService {
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
     public void sendNotImage(String text, int chatId, int userId){
+        if(blockMessageService.contentIsBlocked(text, chatId)){
+           return;
+        }
+
         if(!text.isEmpty()) {
             Optional<String> link = isLink(text);
             if(link.isPresent()){
@@ -87,7 +95,7 @@ public class MessageWrapperService {
             return;
         }
         List<MessageWrapper> messages = chat.getMessages();
-        List<MessageWrapper> messagesOfInterlocutor = getMessagesOfInterlocutor(messages, chatService.getInterlocutor(username, chat).getUsername());
+        List<MessageWrapper> messagesOfInterlocutor = getMessagesOfInterlocutor(messages, messengerUserDAO.getInterlocutorFromChat(chat, username).getUsername());
         for(MessageWrapper message: messagesOfInterlocutor){
             message.setHasBeenRead(MessageStatus.READ);
             messageWrapperRepository.save(message);

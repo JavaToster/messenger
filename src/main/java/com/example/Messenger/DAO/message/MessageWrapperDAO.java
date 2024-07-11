@@ -10,6 +10,7 @@ import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.util.abstractClasses.MessageSpecification;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -22,8 +23,10 @@ public class MessageWrapperDAO {
         }else if(message.getClass() == ForwardMessage.class){
             ForwardMessage forwardMessage = (ForwardMessage) message;
             return new ForwardMessageSpecification(forwardMessage.getForwardMessageType(), forwardMessage.getFromOwner().getUsername(), forwardMessage.getTextUnderMessage());
-        }else {
+        }else if(message.getClass() == LinkMessage.class){
             return new LinkMessageSpecification(((LinkMessage) message).getLink());
+        }else{
+            return MessageSpecification.emptySpecification();
         }
     }
 
@@ -32,6 +35,7 @@ public class MessageWrapperDAO {
     }
 
     public List<MessageWrapper> sortMessagesById(List<MessageWrapper> messages){
-        return messages.stream().sorted(Comparator.comparingInt(MessageWrapper::getId)).toList();
+
+        return new ArrayList<>(messages.stream().sorted(Comparator.comparingInt(MessageWrapper::getId)).toList());
     }
 }

@@ -1,21 +1,20 @@
 package com.example.Messenger.services.database.chat;
 
+import com.example.Messenger.DAO.chat.ChatDAO;
 import com.example.Messenger.dto.ChatDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.models.chat.*;
-import com.example.Messenger.redisModel.languageData.LanguageOfApp;
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
+import com.example.Messenger.repositories.database.user.MessengerUserRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
-import com.example.Messenger.services.database.user.MessengerUserService;
 import com.example.Messenger.services.database.user.UserService;
-import com.example.Messenger.services.email.redis.languageOfApp.LanguageOfAppService;
 import com.example.Messenger.util.Convertor;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
-import com.example.Messenger.util.exceptions.UserNotMemberException;
+import com.example.Messenger.util.exceptions.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -32,67 +31,22 @@ public class ChatService {
     private final UserRepository userRepository;
     private final UserService userService;
     private final BotChatService botChatService;
-    private final MessengerUserService messengerUserService;
+    private final MessengerUserRepository messengerUserRepository;
     private final PrivateChatService privateChatService;
     private final Convertor convertor;
-    private final LanguageOfAppService languageOfAppService;
-    public static String COUNT_MEMBERS(Chat chat) {
-        int membersCount = chat.getMembers().size();
-        if (chat.getClass() == GroupChat.class) {
-            return membersCount + " участников";
-        } else {
-            return membersCount + " подписчиков";
-        }
-    }
+    private final ChatDAO chatDAO;
 
     public Chat findById(int id) {
-        return chatRepository.findById(id). orElseThrow(ChatNotFoundException::new);
-    }
-
-    public List<Chat> findByMemberUsername(String username) {
-        List<Chat> chats = new ArrayList<>();
-        userRepository.findByUsername(username).orElse(null).getMembers().forEach(chatMember -> chats.add(chatMember.getChat()));
-        return chats;
+        return chatRepository.findById(id).orElseThrow(ChatNotFoundException::new);
     }
 
     public List<Chat> findByUsername(String username){
-        List<ChatMember> chatMembers = userRepository.findByUsername(username).orElse(null).getMembers();
-        List<Chat> chats = new ArrayList<>();
+        List<ChatMember> chatMembers = userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new).getMembers();
+        List<Chat> chats = new LinkedList<>();
 
-        for(ChatMember chatMember: chatMembers){
-            chats.add(chatMember.getChat());
-        }
+        chatMembers.forEach(member -> chats.add(member.getChat()));
+
         return chats;
-    }
-
-    public MessengerUser getInterlocutor(String username, Chat chat){
-        List<ChatMember> members = chat.getMembers();
-        for(ChatMember chatMember: members){
-            MessengerUser member = chatMember.getUser();
-            if(member.getUsername().equals(username)){
-                continue;
-            }
-            return chatMember.getUser();
-        }
-        return null;
-    }
-
-    public List<Chat> sortChatsByLastMessage(String username){
-        List<ChatMember> chatMembers = userRepository.findByUsername(username).orElse(null).getMembers();
-        List<Chat> chats = new ArrayList<>();
-        try{
-            chatMembers.forEach(chatMember -> chats.add(chatMember.getChat()));
-
-            for(int i = 0; i<chats.size()-1; i++){
-                Chat chat = chats.get(i);
-                if (chat.getMessages().getLast().getSendingTime().getTime() > chats.get(i + 1).getMessages().getLast().getSendingTime().getTime()) {
-                    Collections.swap(chats, i, i + 1);
-                }
-        }
-        }catch (NoSuchElementException ignored ){}
-        catch (NullPointerException ignored){}
-
-        return chats.reversed();
     }
 
     public List<Chat> findAll() {
@@ -112,61 +66,57 @@ public class ChatService {
 
 
     @Transactional
-    public int createPrivateOrBotChat(MessengerUser user, String username) {
-        MessengerUser messengerUser = messengerUserService.findById(user.getId());
-        if(messengerUser.getClass() == User.class){
-//            User user1 = userService.findById(user.getId());
-            User user1 = (User) user;
-            int id = isPrivateChat(user1, userService.findByUsername(username));
-            if(id == -1)
-                id = privateChatService.createNewChat(userService.findById(user.getId()), userService.findByUsername(username));
-            return id;
+    public int createPrivateOrBotChat(int userOrBotId, String userUsername) {
+        MessengerUser interlocutorIsUserOrBot = messengerUserRepository.findById(userOrBotId).orElseThrow(UserNotFoundException::new);
+        User interlocutorIsUser = (User) messengerUserRepository.findByUsername(userUsername).orElseThrow(UserNotFoundException::new);
+        if(interlocutorIsUserOrBot instanceof User){
+            int idOfChat = chatDAO.hasPrivateChat((User) interlocutorIsUserOrBot, interlocutorIsUser);
+            if(idOfChat == -1)
+                idOfChat = privateChatService.createNewChat((User) interlocutorIsUserOrBot, interlocutorIsUser);
+            return idOfChat;
         }else{
-            return botChatService.createNewChat(userService.findByUsername(username), user);
+            return botChatService.createNewChat(interlocutorIsUser, interlocutorIsUserOrBot);
+        }
+    }
+
+    @Transactional
+    public int createPrivateOrBotChat(String usernameOfUserOrBot, String userUsername) {
+        MessengerUser interlocutorIsUserOrBot = messengerUserRepository.findByUsername(usernameOfUserOrBot).orElseThrow(UserNotFoundException::new);
+        User interlocutorIsUser = (User) messengerUserRepository.findByUsername(userUsername).orElseThrow(UserNotFoundException::new);
+        if (interlocutorIsUserOrBot.getClass() == User.class) {
+            int idOfChat = chatDAO.hasPrivateChat((User) interlocutorIsUserOrBot, interlocutorIsUser);
+            if (idOfChat == -1)
+                idOfChat = privateChatService.createNewChat((User) interlocutorIsUserOrBot, interlocutorIsUser);
+            return idOfChat;
+        } else {
+            return botChatService.createNewChat(interlocutorIsUser, interlocutorIsUserOrBot);
         }
     }
 
     public List<ChatDTO> findChatsBySearchTextByChatName(String findText, String usernameOfUser) {
-        return sortedChatsBySearchedText(convertor.convertToChatDTO(sortChatsByLastMessage(usernameOfUser), usernameOfUser), findText);
+        return sortedChatsBySearchedText(convertor.convertToChatDTO(chatDAO.sortChatsByLastMessage(usernameOfUser), usernameOfUser), findText);
     }
 
-    private List<ChatDTO> sortedChatsBySearchedText(List<ChatDTO> chatDTOS, String findText) {
-
-        List<ChatDTO> willReturnChats = new LinkedList<>();
+    private List<ChatDTO> sortedChatsBySearchedText(List<ChatDTO> chatDTOS, String textForFind) {
+        List<ChatDTO> foundChatsByChatNameByTextForFind = new LinkedList<>();
 
         for(int i = 0; i<chatDTOS.size(); i++){
             ChatDTO chat = chatDTOS.get(i);
-            if(findWordInnerText(chat.getChatTitle(), findText).isPresent()){
-                willReturnChats.add(chat);
+            if(findWordInnerText(chat.getChatTitle(), textForFind).isPresent()){
+                foundChatsByChatNameByTextForFind.add(chat);
             }
         }
 
-        return willReturnChats;
+        return foundChatsByChatNameByTextForFind;
     }
 
-    /** метод для определения того, есть ли какое либо слово внутри текста*/
-    /** возвращает Optional <полный текст> в случае обнаружения слова в тексте*/
-    /** возвращает Optional.empty() если слова нет в тексте*/
     public Optional<String> findWordInnerText(String fullText, String word){
         if(fullText.length() >= word.length()){
-            if (fullText.toLowerCase().equals(word.toLowerCase()) || checkWordInnerText(fullText, word)) {
+            if (checkWordInnerText(fullText, word)) {
                 return Optional.of(fullText);
             }
         }
         return Optional.empty();
-    }
-
-    public String getInterlocutorOfChannelOrGroupName(Chat chat, String username) throws ChatNotFoundException, UserNotMemberException{
-        if(chat.getClass() == PrivateChat.class){
-            Optional<MessengerUser> userOptional = ((PrivateChat) chat).getInterlocutor(username);
-            if(userOptional.isPresent()){
-                return userOptional.get().getUsername();
-            }else{
-                throw new UserNotMemberException();
-            }
-        }else{
-            return chat.getChatTitleName();
-        }
     }
 
     private int getFirstFoundCharacterId(String text, char firstCharacterOfText) {
@@ -183,11 +133,13 @@ public class ChatService {
 
     private boolean checkWordInnerText(String text, String word){
         text = text.toLowerCase();
+        if(text.equals(word.toLowerCase())){
+            return true;
+        }
         char firstCharacterOfText = word.toLowerCase().charAt(0);
         while(text.length()>=word.length()){
             int indexOfFirstFoundChar = getFirstFoundCharacterId(text, firstCharacterOfText);
 
-            /**если возвращает -1 значит такого символа нет в тексте -> этого слова тоже нет в тексте*/
             if(indexOfFirstFoundChar == -1){
                 return false;
             }
@@ -211,82 +163,48 @@ public class ChatService {
         return false;
     }
 
-    public List<ChatDTO> findChatsBySearchTextByMessages(String text, String username){
-        List<Chat> chats = sortChatsByLastMessage(username);
-        List<ChatDTO> willReturnedChats = new LinkedList<>();
+    public List<ChatDTO> findChatsBySearchTextInnerMessages(String text, String username){
+        List<Chat> chats = chatDAO.sortChatsByLastMessage(username);
+        List<ChatDTO> foundChatsByFoundMessagesInnerChatBySearchText = new LinkedList<>();
         for(Chat chat: chats){
-            Optional<ChatDTO> chatDTO = textInMessageText(chat, text, username);
+            Optional<ChatDTO> chatDTO = checkTextInMessagesText(chat, text, username);
             if(chatDTO.isEmpty()){
                 continue;
             }
-            willReturnedChats.add(chatDTO.get());
+            foundChatsByFoundMessagesInnerChatBySearchText.add(chatDTO.get());
         }
-        return willReturnedChats;
+        return foundChatsByFoundMessagesInnerChatBySearchText;
     }
 
-    public List<FoundUserOfUsername> findUsersOfUsername(String text, String username){
+    public List<FoundUserOfUsername> findUsersOfUsernameForFindBySearchText(String searchText, String username){
         List<User> users = userService.findWithout(username);
-        List<FoundUserOfUsername> willReturnList = new LinkedList<>();
+        List<FoundUserOfUsername> foundUserBySearchText = new LinkedList<>();
         for(User user: users){
-            if(findWordInnerText(user.getUsername(), text).isPresent()){
-                willReturnList.add(new FoundUserOfUsername(user));
+            if(findWordInnerText(user.getUsername(), searchText).isPresent()){
+                foundUserBySearchText.add(new FoundUserOfUsername(user));
             }
         }
 
-        System.out.println(willReturnList);
-
-        return willReturnList;
+        return foundUserBySearchText;
     }
 
-    private Optional<ChatDTO> textInMessageText(Chat chat, String text, String usernameOfUser){
+    private Optional<ChatDTO> checkTextInMessagesText(Chat chat, String searchText, String usernameOfUser){
         List<MessageWrapper> messages = chat.getMessages();
-        for(int i = 0; i<100; i++){
-            if(i == messages.size()){
-                break;
+        int maxMessagesCheckLimit = 100;
+        int count = 0;
+        for(MessageWrapper message: messages){
+            if(count > maxMessagesCheckLimit){
+                return Optional.empty();
             }
-            Optional<String> returnedWord = findWordInnerText(messages.get(i).getContent(), text);
+            Optional<String> returnedWord = findWordInnerText(message.getContent(), searchText);
             if(returnedWord.isPresent()){
                 ChatDTO chatDTO = convertor.convertToChatDTO(chat, usernameOfUser);
-                if(chatDTO == null){
-                    return Optional.empty();
-                }
                 chatDTO.setLastMessageText(returnedWord.get());
                 return Optional.of(chatDTO);
             }
+            count++;
         }
         return Optional.empty();
-    }
-
-    private int isPrivateChat(User member1, User member2){
-        List<Chat> chatsOfUser = ChatMember.getChatsOfUser(member1);
-        for(Chat chat: chatsOfUser){
-            List<ChatMember> membersOfSecondUser = member2.getMembers();
-            for(ChatMember m: membersOfSecondUser){
-                if(m.getChat().equals(chat)){
-                    return chat.getId();
-                }
-            }
-        }
-
-        return -1;
-    }
-
-    public List<ChatDTO> getWillForwardChats(String username) {
-        return convertor.convertToChatDTO(UserService.FIND_CHATS_BY_USERNAME(getUser(username)), username);
-    }
-
-    public String getReturnedHtmlFile(Chat chat) {
-        String returnedView;
-        if(chat.getClass() == BotChat.class){
-            //в этом случае мы изменяем возвращаемую страницу на botChat.html, ведь тут собеседник будет другого типа
-            returnedView = "/html/chat/botChat";
-        }else if(chat.getClass() == Channel.class){
-            //опять же проверка на успешное создание чата, также изменение возвращаемой страницы на showChannel, ведь в канале все чуть по другому
-            returnedView = "/html/chat/showChannel";
-        }else{
-            returnedView = "/html/chat/showChat";
-        }
-        return returnedView;
     }
 
     public User getUser(String username){

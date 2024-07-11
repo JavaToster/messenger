@@ -3,7 +3,9 @@ package com.example.Messenger.util;
 import com.example.Messenger.DAO.chat.ChatDAO;
 import com.example.Messenger.DAO.message.MessageWrapperDAO;
 import com.example.Messenger.DAO.user.MessengerUserDAO;
+import com.example.Messenger.balancers.BalancerOfFoundChats;
 import com.example.Messenger.dto.ChatDTO;
+import com.example.Messenger.dto.MainWindowInfoDTO;
 import com.example.Messenger.dto.chat.InfoOfChatDTO;
 import com.example.Messenger.dto.chat.chatHead.privateChat.PrivateChatDTO;
 import com.example.Messenger.dto.rest.bot.response.message.InfoByImageMessageDTO;
@@ -23,8 +25,11 @@ import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.database.message.PhotoMessageService;
 import com.example.Messenger.services.database.user.UserService;
+import com.example.Messenger.services.email.redis.languageOfApp.LanguageOfAppService;
 import com.example.Messenger.util.abstractClasses.InfoOfMessage;
 import com.example.Messenger.util.enums.ChatMemberType;
+import com.example.Messenger.util.exceptions.ChatNotFoundException;
+import com.example.Messenger.util.exceptions.UserNotFoundException;
 import com.example.Messenger.util.exceptions.UserNotMemberException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,13 +44,14 @@ import java.util.*;
 @RequiredArgsConstructor
 public class Convertor {
 
-    private final BotChatRepository botChatRepository;
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
     private final PhotoMessageService photoMessageService;
     private final MessageWrapperDAO messageWrapperDAO;
     private final MessengerUserDAO messengerUserDAO;
     private final ChatDAO chatDAO;
+    private final LanguageOfAppService languageOfAppService;
+    private final BalancerOfFoundChats balancerOfFoundChats;
 
     public static InfoOfUserDTO convertToInfoOfUser(User user) {
         return new InfoOfUserDTO(user.getId(), user.getUsername(), user.getName(), user.getLastname(), user.getEmail(), user.getLinkOfIcon());
@@ -108,7 +114,10 @@ public class Convertor {
 
 
     public List<MessagesByDateDTO> convertToMessagesByDateDTO(List<MessageWrapper> allMessagesInChat, String username){
-        List<MessagesByDateDTO> returnMessageList = new ArrayList<>();
+        if(allMessagesInChat.isEmpty()){
+            return null;
+        }
+        List<MessagesByDateDTO> returnMessageList = new LinkedList<>();
         Date beginDate = allMessagesInChat.getLast().getSendingTime();
         Date finishDate = allMessagesInChat.getFirst().getSendingTime();
 
@@ -133,7 +142,7 @@ public class Convertor {
         MessagesByDateDTO dayOfMessages = new MessagesByDateDTO(beginDate, convertToMessageDTO(messagesOfDate, username));
         returnMessageList.add(dayOfMessages);
 
-        return returnMessageList.reversed();
+        return returnMessageList;
     }
 
     /** приватные методы для public методов */
@@ -149,11 +158,19 @@ public class Convertor {
     }
 
     private BlockMessageDTO convertToBlockMessageDTO(BlockMessage blockMessage, String username){
-        BlockMessageDTO blockMessageDTO = new BlockMessageDTO();
-        blockMessageDTO.setId(blockMessageDTO.getId());
-        blockMessageDTO.setText(blockMessageDTO.getText());
-        blockMessageDTO.setChatTitle(chatDAO.getChatTitle(blockMessage.getChat(), username));
-        return blockMessageDTO;
+        Chat chatOfBlockMessage = blockMessage.getChat();
+        String chatTitle;
+        if(chatOfBlockMessage.getClass() == PrivateChat.class){
+            chatTitle = messengerUserDAO.getInterlocutorFromChat(chatOfBlockMessage, username).getUsername();
+        }else{
+            chatTitle = chatOfBlockMessage.getChatTitleName();
+        }
+        return BlockMessageDTO.builder()
+                .id(blockMessage.getId())
+                .content(blockMessage.getContent())
+                .chat(blockMessage.getChat())
+                .chatTitle(chatTitle)
+                .build();
     }
 
     private InfoOfMessage convertToInfoOfMessageByBotDTO(MessageWrapper message){
@@ -171,6 +188,9 @@ public class Convertor {
 
     private boolean equalsTwoDate(Date date1, Date date2){
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM");
+
+        System.out.println(simpleDateFormat.format(date1));
+        System.out.println(simpleDateFormat.format(date2));
 
         return simpleDateFormat.format(date1).equals(simpleDateFormat.format(date2));
     }
@@ -194,7 +214,17 @@ public class Convertor {
     }
 
     private List<MessageWrapper> deleteMessageByDateFromAllMessages(List<MessageWrapper> allMessages, List<MessageWrapper> addedMessages) {
-        addedMessages.forEach(allMessages::remove);
+        if(allMessages.isEmpty()){
+            return Collections.emptyList();
+        }
+
+        System.out.println(allMessages.size());
+        System.out.println(addedMessages.size());
+
+        for(MessageWrapper message: addedMessages){
+            System.out.println(message.getContent());
+            allMessages.remove(message);
+        }
 
         return allMessages;
     }
@@ -205,13 +235,24 @@ public class Convertor {
         return response;
     }
 
-    public InfoOfChatDTO convertToInfoOfChatDTO(Chat chat, String username){
+    public InfoOfChatDTO convertToInfoOfChatDTO(int chatId, String username){
         User user = getUser(username);
+        Chat chat = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new);
         List<MessagesByDateDTO> messagesByDateDTOS = convertToMessagesByDateDTO(messageWrapperDAO.sortMessagesById(chat.getMessages()), username);
         String interlocutorOfGroupOrChannelName = chatDAO.getChatTitle(chat, username);
         String lastTimeOnlineOrMembersCount = getInfoOfLastOnlineTimeOrMembersCount(chat, user);
         List<ChatDTO> willForwardChats = convertToChatDTO(UserService.FIND_CHATS_BY_USERNAME(user), username);
-        return new InfoOfChatDTO(chat, user, interlocutorOfGroupOrChannelName, lastTimeOnlineOrMembersCount, willForwardChats, messagesByDateDTOS);
+        boolean userIsOwner = chatDAO.userIsOwner(chat, username);
+        return InfoOfChatDTO.builder()
+                .chatId(chat.getId())
+                .user(user)
+                .interlocutorOrGroupOrChannelName(interlocutorOfGroupOrChannelName)
+                .lastOnlineTimeOrMembersCount(lastTimeOnlineOrMembersCount)
+                .willForwardChats(willForwardChats)
+                .messagesByDateDTO(messagesByDateDTOS)
+                .chatType(chat.getClass().getSimpleName())
+                .userIsOwner(userIsOwner)
+                .build();
     }
 
     private String getInfoOfLastOnlineTimeOrMembersCount(Chat chat, User user){
@@ -220,6 +261,20 @@ public class Convertor {
         }else{
             return chat.getChatHeader();
         }
+    }
+
+    public MainWindowInfoDTO convertToMainInfoDTO(String username){
+        List<Chat> sortedChats = chatDAO.sortChatsByLastMessage(username);
+        List<ChatDTO> chatDTOList = convertToChatDTO(sortedChats, username);
+        Map<String, List<ChatDTO>> mapOfFoundChatBySearchText = balancerOfFoundChats.userFoundedChats(username);
+
+        return MainWindowInfoDTO.builder()
+                .language(languageOfAppService.getLanguage(userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new).getSettingsOfUser().getLang()))
+                .chats(chatDTOList)
+                .foundedChatsOfChatName(mapOfFoundChatBySearchText.get("ChatName"))
+                .foundedChatsOfMessage(mapOfFoundChatBySearchText.get("MessageText"))
+                .foundUsers(balancerOfFoundChats.foundUsers(username))
+                .build();
     }
 
     private User getUser(String username){

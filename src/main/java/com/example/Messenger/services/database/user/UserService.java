@@ -1,5 +1,6 @@
 package com.example.Messenger.services.database.user;
 
+import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.dto.user.InfoOfUserDTO;
 import com.example.Messenger.dto.user.RegisterUserDTO;
 import com.example.Messenger.models.chat.Chat;
@@ -16,6 +17,8 @@ import com.example.Messenger.util.enums.ChatMemberType;
 import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.enums.RoleOfUser;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
+import com.example.Messenger.util.exceptions.ChatNotFoundException;
+import com.example.Messenger.util.exceptions.UserNotFoundException;
 import com.example.Messenger.util.threads.DeleteRestoreCodeThread;
 import com.example.Messenger.util.threads.ReBlockUserThread;
 import jakarta.servlet.http.Cookie;
@@ -50,6 +53,7 @@ public class UserService implements UserDetailsService {
     private final ComplaintOfUserRepository complaintOfUserRepository;
     private final SettingsOfUserService settingsOfUserService;
     private final IconOfUserService iconOfUserService;
+    private final MessengerUserDAO messengerUserDAO;
     @Value("${image.path.user.icons}")
     private String imagePath;
 
@@ -184,8 +188,8 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public boolean isBan(String username, Chat chat){
-        List<ChatMember> banMembers = chatRepository.findById(chat.getId()).orElse(null).getMembers();
+    public boolean isBan(String username, int chatId){
+        List<ChatMember> banMembers = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new).getMembers();
         for(ChatMember chatMember: banMembers){
             if(chatMember.getUser().equals(username) && chatMember.getMemberType() == ChatMemberType.BLOCK){
                 return true;
@@ -210,7 +214,7 @@ public class UserService implements UserDetailsService {
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void block(int id, int chatId) {
-        ChatMember chatMember = chatMemberRepository.findByUserAndChat(userRepository.findById(id).orElse(null), chatRepository.findById(chatId).orElse(null)).orElse(null);
+        ChatMember chatMember = chatMemberRepository.findByUserAndChat(userRepository.findById(id).orElseThrow(UserNotFoundException::new), chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new)).orElse(null);
         chatMember.setMemberType(ChatMemberType.BLOCK);
         chatMemberRepository.save(chatMember);
     }
@@ -383,7 +387,7 @@ public class UserService implements UserDetailsService {
 
     private InfoOfUserDTO convertToUserDTO(User user, String myUsername) {
         InfoOfUserDTO info = new InfoOfUserDTO(user.getId(), user.getUsername(), user.getName(), user.getLastname(), user.getEmail(), user.getLinkOfIcon());
-        info.setLastTime(user.getLastOnlineTimeForChatHeader());
+        info.setLastTime(messengerUserDAO.getLastOnlineTimeAsString(user));
         info.setImagesUrl(getImagesListByInterlocutors(user.getUsername(), myUsername));
         return info;
     }
