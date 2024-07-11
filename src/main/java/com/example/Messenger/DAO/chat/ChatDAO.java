@@ -1,13 +1,12 @@
 package com.example.Messenger.DAO.chat;
 
 import com.example.Messenger.DAO.user.MessengerUserDAO;
-import com.example.Messenger.models.chat.BotChat;
-import com.example.Messenger.models.chat.Channel;
-import com.example.Messenger.models.chat.Chat;
-import com.example.Messenger.models.chat.PrivateChat;
+import com.example.Messenger.models.chat.*;
 import com.example.Messenger.models.user.ChatMember;
+import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
+import com.example.Messenger.repositories.database.user.MessengerUserRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.util.enums.ChatMemberType;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
@@ -24,6 +23,7 @@ public class ChatDAO{
     private final MessengerUserDAO messengerUserDAO;
     private final UserRepository userRepository;
     private final ChatRepository chatRepository;
+    private final MessengerUserRepository messengerUserRepository;
 
     public String getChatTitle(Chat chat, String username) {
         if (chat.getClass() == PrivateChat.class) {
@@ -101,6 +101,17 @@ public class ChatDAO{
         }else{
             return "/html/chat/showChat";
         }
+    }
+
+    public Optional<Chat> findChatByMemberUsername(String username){
+        User user = (User) messengerUserRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+        List<ChatMember> chatMembers = user.getMembers();
+        for(ChatMember member: chatMembers){
+            if(member.getChat().getMembers().contains(member)){
+                return Optional.of(member.getChat());
+            }
+        }
+        return Optional.empty();
     }
 }
 

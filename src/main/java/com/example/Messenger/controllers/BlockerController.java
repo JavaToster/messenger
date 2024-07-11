@@ -26,7 +26,7 @@ public class BlockerController {
     }
 
     @GetMapping("/blocker/complaint-users/{username}")
-    public String showAComplaintOfUserWindow(Model model, @PathVariable("username") String username){
+    public String showAComplaintOfUser(Model model, @PathVariable("username") String username){
         model.addAttribute("user", userService.findByUsername(username));
         model.addAttribute("complaints", complaintOfUserService.findByUser(username));
         model.addAttribute("complaint", new ComplaintOfUser());
@@ -35,7 +35,7 @@ public class BlockerController {
     }
 
     @GetMapping("/blocker/complaint-users/{username}/{id}")
-    public String showADescriptionOfComplaint(Model model, @PathVariable("username") String username, @PathVariable("id") int complaintIdByUser){
+    public String showADescriptionOfComplaintByUser(Model model, @PathVariable("id") int complaintIdByUser){
         model.addAttribute("complaint", complaintOfUserService.findComplaintById(complaintIdByUser));
 
         return "/html/forAdmins/blocker/showDescriptionOfComplaint";
