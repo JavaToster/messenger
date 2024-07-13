@@ -1,8 +1,6 @@
 package com.example.Messenger.dto.chat;
 
-import com.example.Messenger.dto.ChatDTO;
 import com.example.Messenger.dto.util.MessagesByDateDTO;
-import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.user.User;
 import lombok.Builder;
 import lombok.Data;

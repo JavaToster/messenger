@@ -1,7 +1,7 @@
 package com.example.Messenger.services.database.chat;
 
 import com.example.Messenger.DAO.chat.ChatDAO;
-import com.example.Messenger.dto.ChatDTO;
+import com.example.Messenger.dto.chat.ChatDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.models.chat.*;
 import com.example.Messenger.models.message.MessageWrapper;

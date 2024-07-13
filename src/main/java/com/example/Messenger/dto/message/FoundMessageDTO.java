@@ -1,6 +1,6 @@
 package com.example.Messenger.dto.message;
 
-import com.example.Messenger.dto.ChatDTO;
+import com.example.Messenger.dto.chat.ChatDTO;
 
 public class FoundMessageDTO extends ChatDTO {
     private String beforeFoundWord;

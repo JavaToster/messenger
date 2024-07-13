@@ -5,6 +5,7 @@ import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.util.enums.MessageStatus;
 import com.example.Messenger.util.enums.MessageType;
 import jakarta.persistence.*;
+import lombok.Builder;
 
 import java.util.Date;
 

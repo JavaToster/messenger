@@ -1,4 +1,4 @@
-package com.example.Messenger.dto;
+package com.example.Messenger.dto.chat;
 
 import com.example.Messenger.models.chat.Channel;
 import com.example.Messenger.models.chat.Chat;

@@ -1,5 +1,6 @@
 package com.example.Messenger.dto;
 
+import com.example.Messenger.dto.chat.ChatDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.redisModel.languageData.LanguageOfApp;
@@ -8,7 +9,6 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Map;
 
 @Data
 @Builder
