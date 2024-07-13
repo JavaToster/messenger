@@ -24,8 +24,13 @@ public class Message extends MessageWrapper {
         this.type = MessageType.TEXT;
     }
 
-    public Message setMessageText(String content) {
-        this.content = content;
-        return this;
+    public Message(Chat chat, MessengerUser owner){
+        this.chat = chat;
+        this.owner = owner;
+        this.sendingTime = new Date();
+        this.hasBeenRead = MessageStatus.NOT_READ;
+        this.type = MessageType.TEXT;
+        chat.getMessages().add(this);
+        owner.getMessages().add(this);
     }
 }

@@ -1,6 +1,6 @@
 package com.example.Messenger.balancers;
 
-import com.example.Messenger.dto.ChatDTO;
+import com.example.Messenger.dto.chat.ChatDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.services.database.user.UserService;

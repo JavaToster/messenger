@@ -4,10 +4,9 @@ import com.example.Messenger.DAO.chat.ChatDAO;
 import com.example.Messenger.DAO.message.MessageWrapperDAO;
 import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.balancers.BalancerOfFoundChats;
-import com.example.Messenger.dto.ChatDTO;
+import com.example.Messenger.dto.chat.ChatDTO;
 import com.example.Messenger.dto.MainWindowInfoDTO;
 import com.example.Messenger.dto.chat.InfoOfChatDTO;
-import com.example.Messenger.dto.chat.chatHead.privateChat.PrivateChatDTO;
 import com.example.Messenger.dto.rest.bot.response.message.InfoByImageMessageDTO;
 import com.example.Messenger.dto.rest.bot.response.message.InfoByTextMessageDTO;
 import com.example.Messenger.dto.message.BlockMessageDTO;
@@ -18,9 +17,7 @@ import com.example.Messenger.dto.util.MessagesByDateDTO;
 import com.example.Messenger.models.chat.*;
 import com.example.Messenger.models.message.*;
 import com.example.Messenger.models.user.ChatMember;
-import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.models.user.User;
-import com.example.Messenger.repositories.database.chat.BotChatRepository;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.database.message.PhotoMessageService;
@@ -30,7 +27,6 @@ import com.example.Messenger.util.abstractClasses.InfoOfMessage;
 import com.example.Messenger.util.enums.ChatMemberType;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import com.example.Messenger.util.exceptions.UserNotFoundException;
-import com.example.Messenger.util.exceptions.UserNotMemberException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -238,20 +234,15 @@ public class Convertor {
     public InfoOfChatDTO convertToInfoOfChatDTO(int chatId, String username){
         User user = getUser(username);
         Chat chat = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new);
-        List<MessagesByDateDTO> messagesByDateDTOS = convertToMessagesByDateDTO(messageWrapperDAO.sortMessagesById(chat.getMessages()), username);
-        String interlocutorOfGroupOrChannelName = chatDAO.getChatTitle(chat, username);
-        String lastTimeOnlineOrMembersCount = getInfoOfLastOnlineTimeOrMembersCount(chat, user);
-        List<ChatDTO> willForwardChats = convertToChatDTO(UserService.FIND_CHATS_BY_USERNAME(user), username);
-        boolean userIsOwner = chatDAO.userIsOwner(chat, username);
         return InfoOfChatDTO.builder()
                 .chatId(chat.getId())
                 .user(user)
-                .interlocutorOrGroupOrChannelName(interlocutorOfGroupOrChannelName)
-                .lastOnlineTimeOrMembersCount(lastTimeOnlineOrMembersCount)
-                .willForwardChats(willForwardChats)
-                .messagesByDateDTO(messagesByDateDTOS)
+                .interlocutorOrGroupOrChannelName(chatDAO.getChatTitle(chat, username))
+                .lastOnlineTimeOrMembersCount(getInfoOfLastOnlineTimeOrMembersCount(chat, user))
+                .willForwardChats(convertToChatDTO(UserService.FIND_CHATS_BY_USERNAME(user), username))
+                .messagesByDateDTO(convertToMessagesByDateDTO(messageWrapperDAO.sortMessagesById(chat.getMessages()), username))
                 .chatType(chat.getClass().getSimpleName())
-                .userIsOwner(userIsOwner)
+                .userIsOwner(chatDAO.userIsOwner(chat, username))
                 .build();
     }
 

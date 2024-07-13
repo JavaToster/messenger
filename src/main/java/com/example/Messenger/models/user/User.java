@@ -28,12 +28,6 @@ public class User extends MessengerUser implements Serializable {
     private String password;
     @Column(name = "email")
     private String email;
-    @OneToMany(mappedBy = "user")
-    @JsonIgnore
-    private List<ChatMember> members;
-    @OneToMany(mappedBy = "owner")
-    @JsonIgnore
-    private List<Message> messages;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "lastOnline")
     @JsonIgnore

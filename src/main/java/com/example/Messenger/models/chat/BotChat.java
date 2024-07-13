@@ -33,11 +33,6 @@ public class BotChat extends Chat{
         return "bot";
     }
 
-    @Override
-    public ChatHeadDTO getChatHeadDTO() {
-        return new BotChatHeadDTO(getBotFromMembers().getUsername(), "");
-    }
-
     private MessengerUser getBotFromMembers(){
         for(ChatMember chatMember: this.members){
             if(chatMember.getUserClass() == Bot.class){

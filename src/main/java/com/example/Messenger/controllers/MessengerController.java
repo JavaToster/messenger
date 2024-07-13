@@ -1,15 +1,13 @@
 package com.example.Messenger.controllers;
 
 import com.example.Messenger.DAO.chat.ChatDAO;
-import com.example.Messenger.dto.ChatDTO;
-import com.example.Messenger.dto.chat.InfoOfChatDTO;
+import com.example.Messenger.dto.chat.ChatDTO;
 
 import com.example.Messenger.dto.message.BlockMessageDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.models.chat.*;
 import com.example.Messenger.models.message.BlockMessage;
 import com.example.Messenger.models.user.Bot;
-import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.security.UserDetails;
 import com.example.Messenger.services.auth.AuthenticationService;
@@ -22,10 +20,8 @@ import com.example.Messenger.services.database.user.MessengerUserService;
 import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.util.Convertor;
 import com.example.Messenger.balancers.BalancerOfFoundChats;
-import com.example.Messenger.util.chat.UserFoundedChats;
 import com.example.Messenger.util.threads.CheckComplaintsOfUserThread;
 import com.example.Messenger.util.threads.DeleteEmptyChatsThread;
-import com.example.Messenger.util.exceptions.UserNotMemberException;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -49,13 +45,10 @@ public class MessengerController {
     private final MessengerUserService messengerUserService;
     private final BotService botService;
     private final BalancerOfFoundChats balancerOfFoundChats;
-    private final LanguageOfAppService languageOfAppService;
     private final MessageWrapperService messageWrapperService;
     private final CheckComplaintsOfUserThread checkComplaintsOfUserThread;
     private final AuthenticationService authenticationService;
     private final ChatDAO chatDAO;
-    @Value("${bot.father.database.id}")
-    private int botFatherDatabaseId;
     private final Convertor convertor;
 
     /** main window

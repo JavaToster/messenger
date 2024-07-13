@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface BotRepository extends JpaRepository<Bot, Integer> {
     Optional<Bot> findByToken(String token);
+
+    Optional<Bot> findByUsername(String username);
 }
