@@ -11,6 +11,7 @@ import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.user.MessengerUserRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
+import com.example.Messenger.services.database.user.MessengerUserService;
 import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.util.Convertor;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
@@ -21,6 +22,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @Transactional(readOnly = true)
@@ -29,7 +32,7 @@ public class ChatService {
 
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
-    private final UserService userService;
+    private final MessengerUserService messengerUserService;
     private final BotChatService botChatService;
     private final MessengerUserRepository messengerUserRepository;
     private final PrivateChatService privateChatService;
@@ -49,10 +52,6 @@ public class ChatService {
         return chats;
     }
 
-    public List<Chat> findAll() {
-        return chatRepository.findAll();
-    }
-
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteEmptyChats(){
         List<Chat> emptyChats = chatRepository.findAll();
@@ -62,8 +61,6 @@ public class ChatService {
         }catch (Exception ignored){}
         emptyChats.forEach(chatRepository::delete);
     }
-
-
 
     @Transactional
     public int createPrivateOrBotChat(int userOrBotId, String userUsername) {
@@ -119,48 +116,8 @@ public class ChatService {
         return Optional.empty();
     }
 
-    private int getFirstFoundCharacterId(String text, char firstCharacterOfText) {
-        return text.indexOf(firstCharacterOfText);
-    }
-
-    private String cutTextToWord(String text, int indexOfFirstFoundChar, int willEqualTextLength){
-        try {
-            return text.substring(indexOfFirstFoundChar - 1, indexOfFirstFoundChar + willEqualTextLength - 1);
-        }catch (StringIndexOutOfBoundsException e){
-            return text.substring(indexOfFirstFoundChar, indexOfFirstFoundChar+willEqualTextLength);
-        }
-    }
-
     private boolean checkWordInnerText(String text, String word){
-        text = text.toLowerCase();
-        if(text.equals(word.toLowerCase())){
-            return true;
-        }
-        char firstCharacterOfText = word.toLowerCase().charAt(0);
-        while(text.length()>=word.length()){
-            int indexOfFirstFoundChar = getFirstFoundCharacterId(text, firstCharacterOfText);
-
-            if(indexOfFirstFoundChar == -1){
-                return false;
-            }
-
-            text = text.substring(indexOfFirstFoundChar);
-
-            indexOfFirstFoundChar = getFirstFoundCharacterId(text, firstCharacterOfText);
-
-            if(text.length() < word.length()){
-                return false;
-            }
-
-            String substringText = cutTextToWord(text, indexOfFirstFoundChar, word.length());
-
-            if(substringText.equals(word.toLowerCase())){
-                return true;
-            }
-
-            text = text.substring(indexOfFirstFoundChar+word.length());
-        }
-        return false;
+        return Pattern.compile(word.toLowerCase()).matcher(text.toLowerCase()).find();
     }
 
     public List<ChatDTO> findChatsBySearchTextInnerMessages(String text, String username){
@@ -177,9 +134,9 @@ public class ChatService {
     }
 
     public List<FoundUserOfUsername> findUsersOfUsernameForFindBySearchText(String searchText, String username){
-        List<User> users = userService.findWithout(username);
+        List<MessengerUser> users = messengerUserService.findWithout(username);
         List<FoundUserOfUsername> foundUserBySearchText = new LinkedList<>();
-        for(User user: users){
+        for(MessengerUser user: users){
             if(findWordInnerText(user.getUsername(), searchText).isPresent()){
                 foundUserBySearchText.add(new FoundUserOfUsername(user));
             }

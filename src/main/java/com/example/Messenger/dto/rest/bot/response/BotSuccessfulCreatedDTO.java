@@ -3,8 +3,8 @@ package com.example.Messenger.dto.rest.bot.response;
 public class BotSuccessfulCreatedDTO extends BotResponseDTO{
     private String bot_token;
 
-    public BotSuccessfulCreatedDTO(int status, String bot_token) {
-        this.status = status;
+    public BotSuccessfulCreatedDTO(String bot_token) {
+        this.status = 200;
         this.bot_token = bot_token;
     }
 

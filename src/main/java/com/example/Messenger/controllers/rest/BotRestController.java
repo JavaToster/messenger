@@ -14,6 +14,7 @@ import com.example.Messenger.services.database.user.BotService;
 import com.example.Messenger.util.abstractClasses.InfoOfMessage;
 import com.example.Messenger.util.exceptions.bot.BotNotFoundException;
 import com.example.Messenger.util.exceptions.bot.BotUsernameIsUsedException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,22 +24,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/bot-rest")
+@RequiredArgsConstructor
 public class BotRestController {
-
-    private final BotService botService;
-    private final BotChatService botChatService;
-    private final BotRestService botRestService;
-
-    @Autowired
-    public BotRestController(BotService botService, BotChatService botChatService, BotRestService botRestService) {
-        this.botService = botService;
-        this.botChatService = botChatService;
-        this.botRestService = botRestService;
-    }
+    private final BotService botService;private final BotRestService botRestService;
 
     @GetMapping("/create")
     public ResponseEntity<BotSuccessfulCreatedDTO> createNewBot(@RequestParam("name") String name){
-        return new ResponseEntity<>(new BotSuccessfulCreatedDTO(200, name), HttpStatus.OK);
+        return new ResponseEntity<>(new BotSuccessfulCreatedDTO(name), HttpStatus.OK);
     }
 
     @GetMapping("/{botToken}/getMe")
