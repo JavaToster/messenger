@@ -3,6 +3,7 @@ package com.example.Messenger.controllers;
 import com.example.Messenger.DAO.chat.ChatDAO;
 import com.example.Messenger.dto.chat.ChatDTO;
 
+import com.example.Messenger.dto.chat.InfoOfChatDTO;
 import com.example.Messenger.dto.message.BlockMessageDTO;
 import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.models.chat.*;
@@ -110,22 +111,23 @@ public class MessengerController {
     }
 
     @GetMapping("/chats/{id}")
-    public String showChat(@CookieValue("username")String username, @PathVariable("id") int chatId, Model model){
+    public String showChat(@CookieValue("username")String username, @PathVariable("id") int chatId, Model model, @RequestParam(value = "container_id", required = false) Long containerId){
         if(userService.isBan(username, chatId)){
             return "redirect:/messenger";
         }
         messageWrapperService.messageWasBeRead(chatId, username);
 
-        model.addAttribute("infoOfChat", convertor.convertToInfoOfChatDTO(chatId, username));
+        InfoOfChatDTO info = convertor.convertToInfoOfChatDTO(chatId, username, containerId);
+        model.addAttribute("infoOfChat", info);
 
         return chatDAO.getReturnedHtmlFile(chatId);
     }
 
     @PostMapping("/chats/{id}/send-message")
     public String sendMessage(@RequestParam(value = "image") MultipartFile image, @RequestParam("text") String text, @RequestParam("user") int userId, @PathVariable("id") int chatId){
-        messageWrapperService.send(image, chatId, userId, text);
+        long containerId = messageWrapperService.send(image, chatId, userId, text);
 
-        return "redirect:/messenger/chats/"+chatId;
+        return "redirect:/messenger/chats/"+chatId+"?container_id="+containerId;
     }
 
     @GetMapping("/chats/{id}/block-messages")

@@ -38,7 +38,6 @@ public class MessengerRestController {
     private final GroupChatService groupChatService;
     private final UserService userService;
     private final ChannelService channelService;
-    private final TranslateBalancer loadBalancer;
     private final Convertor convertor;
     private final ForwardMessageService forwardMessageService;
     private final SettingsOfUserService settingsOfUserService;

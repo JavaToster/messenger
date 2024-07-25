@@ -2,6 +2,7 @@ package com.example.Messenger.models.chat;
 
 import com.example.Messenger.models.message.ForwardMessage;
 import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.models.message.ContainerOfMessages;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.message.BlockMessage;
 import jakarta.persistence.*;
@@ -27,6 +28,8 @@ public class Chat {
     protected List<BlockMessage> blockMessages;
     @OneToMany(mappedBy = "fromChat")
     protected List<ForwardMessage> forwardMessages;
+    @OneToMany(mappedBy = "chat")
+    protected List<ContainerOfMessages> containerOfMessages;
 
     @Override
     public String toString() {

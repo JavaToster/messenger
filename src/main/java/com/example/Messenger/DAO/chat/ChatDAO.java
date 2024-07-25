@@ -13,11 +13,13 @@ import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import com.example.Messenger.util.exceptions.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 @Component
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ChatDAO{
 
     private final MessengerUserDAO messengerUserDAO;
@@ -36,8 +38,8 @@ public class ChatDAO{
     public boolean userIsOwner(Chat chat, String username) {
         List<ChatMember> members = chat.getMembers();
         for(ChatMember member: members){
-            if(member.getMemberType() == ChatMemberType.OWNER){
-                return member.getUsernameOfUser().equals(username);
+            if(member.isOwner() && member.getUsernameOfUser().equals(username)) {
+                return true;
             }
         }
         return false;
@@ -113,5 +115,10 @@ public class ChatDAO{
         }
         return Optional.empty();
     }
+
+    public Chat findById(int id){
+        return chatRepository.findById(id).orElseThrow(ChatNotFoundException::new);
+    }
+
 }
 

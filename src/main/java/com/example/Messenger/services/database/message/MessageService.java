@@ -1,7 +1,6 @@
 package com.example.Messenger.services.database.message;
 
 import com.example.Messenger.models.chat.Chat;
-import com.example.Messenger.models.message.BlockMessage;
 import com.example.Messenger.models.message.Message;
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.MessengerUser;
@@ -13,6 +12,7 @@ import com.example.Messenger.repositories.database.message.MessageWrapperReposit
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.database.chat.ChatService;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
+import com.example.Messenger.util.exceptions.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,24 +49,11 @@ public class MessageService {
     }
 
     @Transactional
-    public void sendMessage(int chatId, int userId, Message newMessage)  {
-        User messageOwner = userRepository.findById(userId).orElse(null);
-        Chat chat = chatRepository.findById(chatId).orElse(null);
+    public MessageWrapper sendTextMessage(int chatId, int userId, String textOfMessage){
+        User ownerOfMessage = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        Chat chatOfMessage = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new);
 
-        messageOwner.setLastOnlineTime(new Date());
-
-        messageRepository.save(new Message(newMessage.getContent(), messageOwner, chat));
-        userRepository.save(messageOwner);
-    }
-
-    @Transactional
-    public void sendMessage(int chatId, int userId, String message){
-        User messageOwner = userRepository.findById(userId).orElse(null);
-        Chat chat = chatRepository.findById(chatId).orElse(null);
-
-        messageOwner.setLastOnlineTime(new Date());
-
-        messageRepository.save(new Message(message, messageOwner, chat));
-        userRepository.save(messageOwner);
+        Message newMessage = new Message(textOfMessage, ownerOfMessage, chatOfMessage);
+        return newMessage;
     }
 }

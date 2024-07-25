@@ -24,7 +24,7 @@ public class MessageResponseDTO {
         this.id = message.getId();
         this.message = message;
         this.owner = message.getOwner();
-        this.type = message.typeToString();
+        this.type = message.getType().name().toLowerCase();
         this.date = message.getMessageSendingTime();
         if(message.getHasBeenRead() == MessageStatus.READ){
             this.read = true;

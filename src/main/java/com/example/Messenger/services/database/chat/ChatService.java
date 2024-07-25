@@ -66,7 +66,7 @@ public class ChatService {
     public int createPrivateOrBotChat(int userOrBotId, String userUsername) {
         MessengerUser interlocutorIsUserOrBot = messengerUserRepository.findById(userOrBotId).orElseThrow(UserNotFoundException::new);
         User interlocutorIsUser = (User) messengerUserRepository.findByUsername(userUsername).orElseThrow(UserNotFoundException::new);
-        if(interlocutorIsUserOrBot instanceof User){
+        if(interlocutorIsUserOrBot.getClass() == User.class){
             int idOfChat = chatDAO.hasPrivateChat((User) interlocutorIsUserOrBot, interlocutorIsUser);
             if(idOfChat == -1)
                 idOfChat = privateChatService.createNewChat((User) interlocutorIsUserOrBot, interlocutorIsUser);
@@ -147,24 +147,20 @@ public class ChatService {
 
     private Optional<ChatDTO> checkTextInMessagesText(Chat chat, String searchText, String usernameOfUser){
         List<MessageWrapper> messages = chat.getMessages();
-        int maxMessagesCheckLimit = 100;
+        int maxMessagesLimit = 100;
         int count = 0;
         for(MessageWrapper message: messages){
-            if(count > maxMessagesCheckLimit){
+            if(count > maxMessagesLimit){
                 return Optional.empty();
             }
-            Optional<String> returnedWord = findWordInnerText(message.getContent(), searchText);
-            if(returnedWord.isPresent()){
+            Optional<String> returnedWordOptional = findWordInnerText(message.getContent(), searchText);
+            if(returnedWordOptional.isPresent()){
                 ChatDTO chatDTO = convertor.convertToChatDTO(chat, usernameOfUser);
-                chatDTO.setLastMessageText(returnedWord.get());
+                chatDTO.setLastMessageText(returnedWordOptional.get());
                 return Optional.of(chatDTO);
             }
             count++;
         }
         return Optional.empty();
-    }
-
-    public User getUser(String username){
-        return userRepository.findByUsername(username).orElse(null);
     }
 }

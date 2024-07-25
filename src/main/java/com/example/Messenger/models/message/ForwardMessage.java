@@ -6,11 +6,12 @@ import com.example.Messenger.util.enums.MessageStatus;
 import com.example.Messenger.util.enums.MessageType;
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity
 @Table(name = "Forward_message")
-public class ForwardMessage extends MessageWrapper{
+public class ForwardMessage extends MessageWrapper implements Serializable {
     @ManyToOne
     @JoinColumn(name = "from_chat_id", referencedColumnName = "id")
     private Chat fromChat;
@@ -76,8 +77,6 @@ public class ForwardMessage extends MessageWrapper{
     public void setFromOwner(MessengerUser fromOwner) {
         this.fromOwner = fromOwner;
     }
-
-    @Override
     public String getMessageContent() {
         if(this.forwardMessageType == MessageType.IMAGE){
             return "image";

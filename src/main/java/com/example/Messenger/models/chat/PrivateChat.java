@@ -5,9 +5,10 @@ import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.models.user.User;
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 @Entity
 @Table(name = "Private_chat")
-public class PrivateChat extends Chat {
+public class PrivateChat extends Chat implements Serializable {
 }

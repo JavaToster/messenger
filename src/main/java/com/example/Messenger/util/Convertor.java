@@ -1,12 +1,14 @@
 package com.example.Messenger.util;
 
 import com.example.Messenger.DAO.chat.ChatDAO;
+import com.example.Messenger.DAO.message.ContainerOfMessagesDAO;
 import com.example.Messenger.DAO.message.MessageWrapperDAO;
 import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.balancers.BalancerOfFoundChats;
 import com.example.Messenger.dto.chat.ChatDTO;
 import com.example.Messenger.dto.MainWindowInfoDTO;
 import com.example.Messenger.dto.chat.InfoOfChatDTO;
+import com.example.Messenger.dto.message.ContainerOfMessagesDTO;
 import com.example.Messenger.dto.rest.bot.response.message.InfoByImageMessageDTO;
 import com.example.Messenger.dto.rest.bot.response.message.InfoByTextMessageDTO;
 import com.example.Messenger.dto.message.BlockMessageDTO;
@@ -19,7 +21,9 @@ import com.example.Messenger.models.message.*;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
+import com.example.Messenger.repositories.database.message.ContainerOfMessagesRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
+import com.example.Messenger.services.database.message.ContainerOfMessagesService;
 import com.example.Messenger.services.database.message.PhotoMessageService;
 import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.services.email.redis.languageOfApp.LanguageOfAppService;
@@ -28,6 +32,8 @@ import com.example.Messenger.util.enums.ChatMemberType;
 import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import com.example.Messenger.util.exceptions.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +54,7 @@ public class Convertor {
     private final ChatDAO chatDAO;
     private final LanguageOfAppService languageOfAppService;
     private final BalancerOfFoundChats balancerOfFoundChats;
+    private final ContainerOfMessagesService containerOfMessagesService;
 
     public static InfoOfUserDTO convertToInfoOfUser(User user) {
         return new InfoOfUserDTO(user.getId(), user.getUsername(), user.getName(), user.getLastname(), user.getEmail(), user.getLinkOfIcon());
@@ -214,9 +221,6 @@ public class Convertor {
             return Collections.emptyList();
         }
 
-        System.out.println(allMessages.size());
-        System.out.println(addedMessages.size());
-
         for(MessageWrapper message: addedMessages){
             System.out.println(message.getContent());
             allMessages.remove(message);
@@ -231,16 +235,19 @@ public class Convertor {
         return response;
     }
 
-    public InfoOfChatDTO convertToInfoOfChatDTO(int chatId, String username){
+    public InfoOfChatDTO convertToInfoOfChatDTO(int chatId, String username, Long containerId){
         User user = getUser(username);
         Chat chat = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new);
+
+        containerId = validateAContainerId(chat, containerId);
+
         return InfoOfChatDTO.builder()
                 .chatId(chat.getId())
                 .user(user)
                 .interlocutorOrGroupOrChannelName(chatDAO.getChatTitle(chat, username))
                 .lastOnlineTimeOrMembersCount(getInfoOfLastOnlineTimeOrMembersCount(chat, user))
                 .willForwardChats(convertToChatDTO(UserService.FIND_CHATS_BY_USERNAME(user), username))
-                .messagesByDateDTO(convertToMessagesByDateDTO(messageWrapperDAO.sortMessagesById(chat.getMessages()), username))
+                .containerOfMessagesDTO(convertToContainerOfMessagesDTO(containerOfMessagesService.getContainerByIdInChat(chat, containerId), username))
                 .chatType(chat.getClass().getSimpleName())
                 .userIsOwner(chatDAO.userIsOwner(chat, username))
                 .build();
@@ -269,6 +276,18 @@ public class Convertor {
     }
 
     private User getUser(String username){
-        return userRepository.findByUsername(username).orElse(null);
+        return userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+    }
+
+    public ContainerOfMessagesDTO convertToContainerOfMessagesDTO(ContainerOfMessages container, String username){
+        Hibernate.initialize(container.getMessages());
+        return new ContainerOfMessagesDTO(convertToMessageDTO(container.getMessages(), username));
+    }
+
+    private long validateAContainerId(Chat chat, Long containerId) {
+        if(containerId == null){
+            containerId = chat.getContainerOfMessages().getLast().getIdInChat();
+        }
+        return containerId;
     }
 }

@@ -199,11 +199,9 @@
         <div id="chat-partner"> <a th:href="@{/user/{username} (username=${infoOfChat.getUser().getUsername()}) }" th:text="${infoOfChat.getInterlocutorOrGroupOrChannelName()}"></a></div>
         <div id="last-online" th:text="${infoOfChat.getLastOnlineTimeOrMembersCount()}">Last online at 8:00 PM</div>
     </div>
-    <div class="messagesHere" th:if="${!infoOfChat.isHasMessages()}">
+    <div class="messagesHere">
         <div id="chat-messages">
-            <div th:each="messagesByDate: ${infoOfChat.getMessagesByDateDTO()}">
-                <p th:text="${messagesByDate.getDate()}" style="margin-left: 210px;"></p>
-                <div class="message" th:each="message: ${messagesByDate.getMessages()}">
+            <div class="message" th:each="message: ${infoOfChat.getContainerOfMessagesDTO().getMessages()}">
                     <div class="interlocutor-message" th:if="${!message.isUserIsOwner()}">
                         <div class="text-message" th:if="${message.getType() == 'text'}">
                             <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${infoOfChat.getChatType().equals('PrivateChat')}">Toster1</div>
@@ -360,8 +358,8 @@
                             <div class="time" th:text="${message.getDate()}">9:06 PM</div>
                         </div>
                     </div>
-                </div>
             </div>
+<!--            </div>-->
         </div>
     </div>
     <form id="chat-form" th:method="POST" th:action="@{/messenger/chats/{id}/send-message?user={user_id} (id=${infoOfChat.getChatId()}, user_id=${infoOfChat.getUser().getId()})}" enctype="multipart/form-data">

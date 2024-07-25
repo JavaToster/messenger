@@ -6,11 +6,12 @@ import com.example.Messenger.util.enums.MessageStatus;
 import com.example.Messenger.util.enums.MessageType;
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity
 @Table(name = "Photo_message")
-public class ImageMessage extends MessageWrapper{
+public class ImageMessage extends MessageWrapper implements Serializable {
     @Column(name = "text_under_photo")
     private String textUnderPhoto;
     @Column(name = "expansion")
