@@ -1,0 +1,45 @@
+#Database
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.datasource.url=jdbc:****
+spring.datasource.username=****
+spring.datasource.password=****
+
+#Hibernate
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.properties.hibernate.show_sql=true
+
+#For Http methods PUT, PATCH, DELETE
+spring.mvc.hidden.method.filter.enabled=true
+
+#For html views
+spring.thymeleaf.prefix=classpath:/templates/
+
+
+#For uploading files from html
+spring.servlet.multipart.enabled=true
+spring.servlet.multipart.max-file-size=10MB
+spring.web.resources.cache.cachecontrol.max-age=0
+spring.resources.static-locations=classpath:/static/images
+
+#For encode the messages
+encodeType = AES
+key = 12345key12345key
+
+#For translate messages
+translate.message.url=****
+
+#For bots
+bot.father.database.id=****
+
+#For cloudinary
+cloudinary.cloud.name=****
+cloudinary.api_key=****
+cloudinary.api_secret=****
+
+#For email
+spring.mail.username=****
+spring.mail.password=****
+spring.mail.properties.mail.smtp.auth=****
+spring.mail.properties.mail.smtp.starttls.enable=****
+spring.mail.host=****
+spring.mail.port=****

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <style>
+    h3{
+      color: white;
+    }
+
+    p{
+      color: white;
+    }
+
+    a{
+     color: white;
+    }
+
+    body{
+      background-color: #161617;
+    }
+
+    .main{
+      margin-left: 600px;
+      margin-top: 200px;
+      background-color: #38383b;
+      width: 600px;
+      border: 2px solid #c8c8db;
+      border-radius: 10px;
+    }
+
+    .channelHeader{
+      width: 600px;
+      margin-top: 0px;
+    }
+
+    #channelName{
+      margin-top: 0px;
+      margin-left: 15px;
+      margin-bottom: 0px;
+    }
+
+    #subscribersCount{
+      margin-top: -15px;
+      margin-left: 35px;
+      font-size: 14px;
+    }
+
+    .description{
+      margin-bottom: 0px;
+      color: white;
+      word-wrap: break-word;
+      margin-left: 15px;
+      width: 400px;
+    }
+
+    .channelMembers{
+      background-color: #49494f;
+      margin-left: 15px;
+      width: 400px;
+    }
+
+    .subscribers{
+      border: 2px solid #c8c8db;
+      border-radius: 5px;
+      margin-top: 5px;
+    }
+
+    .admins{
+      border: 2px solid #c8c8db;
+      margin-top: 1px;
+      border-radius: 5px;
+    }
+
+    .subscriber{
+      margin: 0px;
+    }
+
+    .member-text{
+      font-size: 18px;
+      text-decoration: none;
+      margin: 0px;
+      margin-left: 10px;
+      width: 100px;
+    }
+    .submit-button{
+      margin-left: 8px;
+      margin-top: -20px;
+      background-color: #73738b;
+      color: #ff6f4b;
+    }
+  </style>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+  <div class="main">
+    <div style="margin-left: 60px; background-color: #49494f; width: 460px;">
+      <div class="channelHeader" >
+        <h3 id="channelName" th:text="${chatHead.getName()}">ChannelName</h3>
+        <br>
+        <p id="subscribersCount" th:text="${chatHead.getUnderName()}">21 subscribers</p>
+        <br>
+      </div>
+      <div class="description" th:text="${chatHead.getDescription()}">
+        SomeTextDescriptionrgnleuthgiuheurthguehugthuehothgjrnuhugelfdfffffffffffffffffffffffffffffffffffffffffffffffffffffff
+      </div>
+      <br>
+      <div class="channelMembers">
+        <h3 style="margin: 2px;">Это вы</h3>
+        <div class="subscribers">
+          <p class="member-text" th:text="${chatHead.getOwner().getUsername()}"></p>
+        </div>
+        <h3 style="margin: 2px;">Совладелец</h3>
+        <div class="subscribers">
+          <p class="member-text" th:text="${chatHead.getNextOwner().getUsername()}"></p>
+          <form method="post" th:action="@{/messenger/chats/{id}/show/reset-next-owner}">
+            <input type="submit" value="Снять с должности" class="submit-button" style="color: #ff6f4b;">
+            <input type="hidden" th:value="${chatHead.getNextOwner().getId()}" name="user_id">
+          </form>
+        </div>
+        <h3 style="margin: 2px;">Участники</h3>
+        <div th:if="${!chatHead.getMembers().isEmpty()}">
+          <div class="subscribers">
+            <div class="subscriber" th:each="channelMember: ${chatHead.getMembers()}">
+              <p class="member-text" th:text="${channelMember.getUsername()}">username</p>
+              <div>
+                <form th:if="${!channelMember.isBlock()}" method="post" th:action="@{/messenger/chats/{id}/show/block-user (id=${chat.getId()})}">
+                  <input type="submit" value="Забанить" class="submit-button" style="color: #ff6f4b;">
+                  <input type="hidden" th:value=${channelMember.getId()} name="user_id">
+                </form>
+                <form th:if="${!channelMember.isAdmin()}" method="post" th:action="@{/messenger/chats/{id}/show/set-admin (id=${chat.getId()})}">
+                  <input type="submit" value="Назначить админом" class="submit-button" style="color: #4ce951;">
+                  <input type="hidden" th:value=${channelMember.getId()} name="user_id">
+                </form>
+                <form>
+                  <input type="submit" value="Сделать совладельцем" class="submit-button" style="color: #4ce951;">
+                  <input type="hidden" th:value="${channelMember.getId()}" name="user_id">
+                </form>
+              </div>
+              <div>
+              <form th:if="${channelMember.isBlock()}" method="post" th:action="@{/messenger/chats/{id}/show/unblock-user (id=${chat.getId()})}">
+                <input type="submit" value="Разбанить" class="submit-button" style="color: #4ce951;">
+                <input type="hidden" th:value=${channelMember.getId()} name="user_id">
+              </form>
+              <form th:if="${channelMember.isAdmin()}" method="post" th:action="@{/messenger/chats/{id}/show/reset-admin (id=${chat.getId()})}">
+                <input type="submit" value="Снять админство" class="submit-button" style="color: #ff6f4b;">
+                <input type="hidden" th:value="${channelMember.getId()}" name="user_id">
+              </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div th:if="${chatHead.getMembers().isEmpty()}" style="color: white; border: 2px solid #c8c8db; border-radius: 5px;"> Тут пока никого нет</div>
+        <h3 style="margin: 2px;">Админы</h3>
+        <div class="admins">
+          <div th:if="${!chatHead.getAdmins().isEmpty()}">
+            <div class="admin" th:each="channelAdmin: ${chatHead.getAdmins()}">
+              <p th:text="${channelAdmin.getUsername()}" style="margin-left: 10px; margin-top: 2px; margin-bottom: 2px;">Toster</p>
+              <div style="margin: 2px;">
+                <form method="post" th:action="@{/messenger/chats/{id}/show/reset-admin (id=${chat.getId()})}">
+                  <input type="submit" value="Снять с админа" class="submit-button" style="color: #ff6f4b;">
+                  <input type="hidden" th:value="${channelAdmin.getId()}" name="user_id">
+                </form>
+              </div>
+            </div>
+          </div>
+          <div th:if="${chatHead.getAdmins().isEmpty()}" style="color: white;"> Тут пока никого нет</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

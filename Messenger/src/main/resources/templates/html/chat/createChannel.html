@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Создать канал</title>
+</head>
+<body>
+<div id="myForm">
+    <div th:each="person: ${users}">
+        <input type="checkbox" th:value="${person.getUsername()}" />
+        <label th:text="${person.getUsername()}"></label>
+    </div>
+    <div>
+        <input type="text" id="channelName" placeholder="Имя канала">
+    </div>
+    <input type="submit"  id="submit" value="Добавить">
+</div>
+</body>
+<script>
+    var form = document.getElementById('myForm');
+    var channelName = document.getElementById('channelName');
+    var submitButton = document.getElementById('submit');
+
+
+submitButton.addEventListener('click', () => {
+  const checkedCheckboxes = form.querySelectorAll('input[type="checkbox"]:checked');
+  var checkedValues = Array.from(checkedCheckboxes).map(checkbox => checkbox.value);
+
+
+  const data = {
+  channelSubscribes: checkedValues,
+  channelName: channelName.value,
+  channelOwner: getCookie('username')
+  };
+
+  const jsonString = JSON.stringify(data);
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/rest/messenger/create-channel');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+        const responseObject = JSON.parse(xhr.responseText);
+        window.open('/messenger/chats/'+responseObject.chatId, '_self');
+    } else {
+      const response = JSON.parse(xhr.responseText);
+      alert(response.errorMessage);
+    }
+  };
+
+  xhr.onerror = function() {
+    console.error('Request failed');
+  };
+
+  xhr.send(JSON.stringify(data));
+});
+
+    function getCookie(name) {
+  let matches = document.cookie.match(new RegExp(
+    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+  ));
+  return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+</script>
+</html>

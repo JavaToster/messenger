@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>#chat-window {
+    margin-left: 650px;
+    margin-top: 120px;
+    width: 600px;
+    height: 600px;
+    border: 1px solid #ccc;
+    box-shadow: 2px 2px 5px #ccc;
+    display: flex;
+    flex-direction: column;
+}
+
+#chat-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ccc;
+  width: calc(100% - 1em);
+}
+
+#chat-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 25px;
+  margin-top: 10px;
+}
+
+.sender {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.text {
+  padding: 5px;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+}
+
+.time {
+  font-size: 10px;
+  color: #888;
+  margin-top: 5px;
+}
+
+#chat-form {
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #ccc;
+}
+
+#chat-input {
+  flex: 1;
+  padding: 5px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+}
+
+#chat-submit {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.read{
+    font-size: 10px;
+    margin-left: 270px;
+    margin-top: -20px;
+    margin-bottom: 5px;
+    color: black;
+}
+.read-double{
+    font-size: 10px;
+    margin-left: 270px;
+    margin-top: -40px;
+    margin-bottom: 5px;
+    color: black;
+}
+        .noMessagesHere{
+            margin-left: 125px;
+            margin-top: 150px;
+            margin-bottom: 205px;
+        }
+
+        .messagesHere{
+        margin-bottom: 0px;
+        overflow-y: auto;
+        height: 500px;
+        }
+        button{
+            font-size: 9px;
+            width: 60px;
+            height: 20px;
+        }
+
+        .translate-div{
+            margin-left: -20px;
+            margin-top: -30px;
+            margin-bottom: 20px;
+        }
+        #chat-form-image{
+            width: 300px;
+            margin-bottom: 10px;
+        }
+        #send-image{
+            position: absolute;
+            top: 796px;
+            margin-left: 52px;
+            margin-top: -25px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .message-photo{
+            width: 300px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+        }
+        .message-photo img{
+            width: 220px;
+            background-color: #f5f5f5;
+        }
+        .text-message{
+            margin-bottom: 5px;
+            width: 300px;
+        }
+        #send-image-input{
+            width: 20px;
+            margin-top: 3px;
+            margin-left: 2px;
+        }
+        .forward-btn{
+            width: 20px;
+            height: 20px;
+        }
+        .forward-icon{
+            margin: -10px;
+            margin-top: -10px;
+            width: 20px;
+            height: 20px;
+        }
+        .forward-div{
+            margin-left: 380px;
+            margin-right: -16px;
+        }
+        .forward-select{
+            margin-left: 250px;
+        }
+        .buttons-div{
+            margin-left: -150px;
+        }
+        .my-message{
+            margin-left: 270px;
+        }
+        .read-container{
+            margin-top: 20px;
+        }
+        .link-text{
+            color: black;
+        }
+        .text{
+            width: 270px;
+        }
+        .text-under-image{
+            margin-top: -20px;
+        }
+        .message-img-div{
+            width: 20px;
+            border-radius: 10px;
+        }
+        .message-img-div img{
+            border: 2px solid #007bff;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+<a href="/messenger" style="font-size: 42px; text-decoration:none; color: black; margin-left: 20px;">Messenger</a>
+<div id="chat-window">
+
+    <div id="chat-header">
+        <div id="chat-partner"> <a th:href="@{/user/{username} (username=${infoOfChat.getUser().getUsername()}) }" th:text="${infoOfChat.getInterlocutorOrGroupOrChannelName()}"></a></div>
+        <div id="last-online" th:text="${infoOfChat.getLastOnlineTimeOrMembersCount()}">Last online at 8:00 PM</div>
+    </div>
+    <div class="messagesHere" th:if="${!infoOfChat.isHasMessages()}">
+        <div id="chat-messages">
+            <div th:each="messagesByDate: ${infoOfChat.getMessagesByDateDTO()}">
+                <p th:text="${messagesByDate.getDate()}" style="margin-left: 210px;"></p>
+                <div class="message" th:each="message: ${messagesByDate.getMessages()}">
+                    <div class="interlocutor-message" th:if="${!message.isUserIsOwner()}">
+                        <div class="text-message" th:if="${message.getType() == 'text'}">
+                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${infoOfChat.isPrivateChat()}">Toster1</div>
+                            <div class="text" th:text="${message.getMessage().getContent()}"> some text ept</div>
+                            <div class="buttons-div" style="display: flex;">
+                                <div class="forward-div">
+                                    <button class="forward-btn" th:attr="onclick=|forward(${message.getId()}, ${infoOfChat.getUser().getId()}, ${infoOfChat.getChatId()})|">
+                                        <img src="https://cdn.onlinewebfonts.com/svg/img_511846.png" class="forward-icon">
+                                    </button>
+                                </div>
+                                <div class="translate-div" style="margin-top: -50px;">
+                                    <button th:attr="onclick=|send('${message.getMessage().getContent()}', '${infoOfChat.getUser().getId()}')|">Перевод</button>
+                                </div>
+                            </div>
+                            <div class="time" th:text="${message.getDate()}">9:06 PM</div>
+                        </div>
+                        <div class="message-photo" th:if="${message.getType() == 'image'}" >
+                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.isPrivateChat()}">Toster</div>
+                            <div style="background-color: #f5f5f5; width: auto;">
+                                <img th:src="${message.getMessage().getContent()}">
+                                <div th:if="${message.isUserIsOwner()}" style="margin-left: 5px;">
+                                    <div class="read-double" style="margin-top: -10px; margin-bottom: 0px;" th:if="${message.isRead()}">✓✓</div>
+                                    <div class="read" style="margin-top: -14px; margin-bottom: -30px;" th:if="${!message.isRead()}">✓</div>
+                                </div>
+                                <p class="text-under-image" th:text="${message.getSpecification().getTextUnderImage()}">text under image</p>
+                            </div>
+                            <div class="forward-div" style="margin-left: 230px;">
+                                <button class="forward-btn" th:attr="onclick=|forward(${message.getId()}, ${infoOfChat.getUser().getId()}, ${infoOfChat.getChatId()})|">
+                                    <img src="https://cdn.onlinewebfonts.com/svg/img_511846.png" class="forward-icon" style="width: 20px;">
+                                </button>
+                            </div>
+                            <div class="time" th:text="${message.getDate()}">9:06 PM</div>
+                        </div>
+                        <div class="message-photo" th:if="${message.getType() == 'forward'}" >
+                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.isPrivateChat()">Toster</div>
+                            <div style="margin-top: 5px; margin-bottom: 5px;">forward message</div>
+                            <div th:text="'from' + ${message.getSpecification().getOwnerFrom()}"></div>
+                            <div th:if="${message.getSpecification().getForwardMessageType() == 'image'}" style="background-color: #f5f5f5; width: auto;">
+                                <img th:src="${message.getMessage().getContent()}">
+                                <div th:if="${message.isUserIsOwner()}" style="margin-left: 5px;">
+                                    <div class="read-double"  th:if="${message.isRead()}">✓✓</div>
+                                    <div class="read" th:if="${!message.isRead()}">✓</div>
+                                </div>
+                                <p class="text-under-image" th:text="${message.getSpecification().getTextUnderImage()}">text under image</p>
+                            </div>
+                            <div th:if="${message.getSpecification().getForwardMessageType() == 'text'}" style="background-color: #f5f5f5; width: auto;">
+                                <div class="text" th:text="${message.getMessage().getContent()}">I'm doing well, thank you!</div>
+                                <div th:if="${message.isUserIsOwner()}" style="margin-left: 5px;">
+                                    <div class="read-double" th:if="${message.isRead()}">✓✓</div>
+                                    <div class="read" th:if="${!message.isRead()}">✓</div>
+                                </div>
+                            </div>
+                            <div class="time" th:text="${message.getDate()}">9:06 PM</div>
+                        </div>
+                        <div class="text-message" th:if="${message.getType() == 'link'}">
+                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.isPrivateChat()}">Toster1</div>
+                            <div class="text">
+                                <a class="link-text" th:text="${message.getMessage().getContent()}" th:href="${message.getSpecification().getLink()}">https://www.youtube.com/watch?v=WL5XBs_ha3g</a>
+                            </div>
+                            <div class="buttons-div" style="display: flex;">
+                                <div class="forward-div">
+                                    <button class="forward-btn" th:attr="onclick=|forward(${message.getId()}, ${infoOfChat.getUser().getId()}, ${infoOfChat.getChatId()})|">
+                                        <img src="https://cdn.onlinewebfonts.com/svg/img_511846.png" class="forward-icon">
+                                    </button>
+                                </div>
+                                <div class="translate-div" style="margin-top: -50px;">
+                                    <button th:attr="onclick=|send('${message.getMessage().getContent()}', '${infoOfChat.getUser().getId()}')|">Перевод</button>
+                                </div>
+                            </div>
+                            <div style="margin-top: -20px; margin-left: 5px;" class="read-container">
+                                <div class="read-double" th:if="${message.isRead()}">✓✓</div>
+                                <div class="read" th:if="${!message.isRead()}">✓</div>
+                            </div>
+                            <div class="time" th:text="${message.getDate()}">9:06 PM</div>
+                        </div>
+                    </div>
+                    <div class="my-message" th:if="${message.isUserIsOwner()}">
+                        <div class="text-message" th:if="${message.getType() == 'text'}">
+<!--                            <div class="sender" th:text="${message.getOwner().getUsername()}">Toster1</div>-->
+                            <div class="text" th:text="${message.getMessage().getContent()}"> some text ept</div>
+                            <div class="buttons-div" style="display: flex;">
+                                <div class="forward-div">
+                                    <button class="forward-btn" th:attr="onclick=|forward(${message.getId()}, ${infoOfChat.getUser().getId()}, ${infoOfChat.getChatId()})|">
+                                        <img src="https://cdn.onlinewebfonts.com/svg/img_511846.png" class="forward-icon">
+                                    </button>
+                                </div>
+                                <div class="translate-div" style="margin-top: -50px;">
+                                    <button th:attr="onclick=|send('${message.getMessage().getContent()}', '${infoOfChat.getUser().getId()}')|">Перевод</button>
+                                </div>
+                            </div>
+                            <div th:if="${message.isUserIsOwner()}" style="margin-top: -20px; margin-left: 5px;" class="read-container">
+                                <div class="read-double" th:if="${message.isRead()}">✓✓</div>
+                                <div class="read" th:if="${!message.isRead()}">✓</div>
+                            </div>
+                            <div class="time" th:text="${message.getDate()}">9:06 PM</div>
+                        </div>
+                        <div class="message-photo" th:if="${message.getType() == 'image'}" >
+<!--                            <div class="sender" th:text="${message.getOwner().getUsername()}">Toster</div>-->
+                            <div class="message-img-div"style="background-color: #f5f5f5; width: auto;">
+                                <img th:src="${message.getMessage().getContent()}">
+                                <div th:if="${message.isUserIsOwner()}" class="read-container" style="margin-left: 13px;">
+                                    <div class="read-double" th:if="${message.isRead()}">✓✓</div>
+                                    <div class="read" th:if="${!message.isRead()}">✓</div>
+                                </div>
+                                <p class="text-under-image" th:text="${message.getSpecification().getTextUnderImage()}">text under image</p>
+                            </div>
+                            <div class="forward-div">
+                                <button class="forward-btn" th:attr="onclick=|forward(${message.getId()}, ${infoOfChat.getUser().getId()}, ${infoOfChat.getChatId()})|" style="margin-left: -140px;">
+                                    <img src="https://cdn.onlinewebfonts.com/svg/img_511846.png" class="forward-icon" style="width: 20px; border: 2px solid black; border-radius: 10px;">
+                                </button>
+                            </div>
+                            <div class="time" th:text="${message.getDate()}">9:06 PM</div>
+                        </div>
+                        <div class="message-photo" th:if="${message.getType() == 'forward'}" >
+<!--                            <div class="sender" th:text="${message.getOwner().getUsername()}">Toster</div>-->
+                            <div style="margin-top: 5px; margin-bottom: 5px;">forward message</div>
+                            <div th:text="'from' + ${message.getSpecification().getOwnerFrom()}"></div>
+                            <div class="message-img-div"  th:if="${message.getSpecification().getForwardMessageType() == 'image'}" style="background-color: #f5f5f5; width: auto;">
+                                <img th:src="${message.getMessage().getContent()}">
+                                <div th:if="${message.isUserIsOwner()}" style="margin-left: 5px;" class="read-container">
+                                    <div class="read" th:if="${message.isRead()}">✓✓</div>
+                                    <div class="read" th:if="${!message.isRead()}">✓</div>
+                                </div>
+                                <p class="text-under-image" th:text="${message.getSpecification().getTextUnderImage()}">text under image</p>
+                            </div>
+                            <div th:if="${message.getSpecification().getForwardMessageType() == 'text'}" style="background-color: #f5f5f5; width: auto;">
+                                <div class="text" th:text="${message.getMessage().getContent()}">I'm doing well, thank you!</div>
+                                <div th:if="${message.isUserIsOwner()}" style="margin-left: 5px;" class="read-container">
+                                    <div class="read-double" th:if="${message.isRead()}">✓✓</div>
+                                    <div class="read" th:if="${!message.isRead()}">✓</div>
+                                </div>
+                            </div>
+                            <div class="time" th:text="${message.getDate()}">9:06 PM</div>
+                        </div>
+                        <div class="text-message" th:if="${message.getType() == 'link'}">
+<!--                            <div class="sender" th:text="${message.getOwner().getUsername()}">Toster1</div>-->
+                            <div class="text">
+                                <a class="link-text" th:text="${message.getMessage().getContent()}" th:href="${message.getSpecification().getLink()}">https://www.youtube.com/watch?v=WL5XBs_ha3g</a>
+                            </div>
+                            <div class="buttons-div" style="display: flex;">
+                                <div class="forward-div">
+                                    <button class="forward-btn" th:attr="onclick=|forward(${message.getId()}, ${infoOfChat.getUser().getId()}, ${infoOfChat.getChatId()})|">
+                                        <img src="https://cdn.onlinewebfonts.com/svg/img_511846.png" class="forward-icon">
+                                    </button>
+                                </div>
+                                <div class="translate-div" style="margin-top: -50px;">
+                                    <button th:attr="onclick=|send('${message.getMessage().getContent()}', '${infoOfChat.getUser().getId()}')|">Перевод</button>
+                                </div>
+                            </div>
+                            <div style="margin-top: -20px; margin-left: 5px;" class="read-container">
+                                <div class="read-double" th:if="${message.isRead()}">✓✓</div>
+                                <div class="read" th:if="${!message.isRead()}">✓</div>
+                            </div>
+                            <div class="time" th:text="${message.getDate()}">9:06 PM</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <form id="chat-form" th:method="POST" th:action="@{/messenger/chats/{id}/send-message?user={user_id} (id=${infoOfChat.getChatId()}, user_id=${infoOfChat.getUser().getId()})}" enctype="multipart/form-data">
+        <input id="chat-input" name="text" type="text" placeholder="Введите сообщение..."/>
+        <input type="file" name="image" id="send-image-input" accept="image/jpeg, image/png, .jpg, .jpeg, .png">
+        <input id="chat-submit" type="submit"/>
+    </form>
+    <div class="forward-select">
+        <select id="forward-select-chat">
+            <option th:each="willForwardChat: ${infoOfChat.getWillForwardChats()}" th:value="${willForwardChat.getId()}" th:text="${willForwardChat.getChatTitle()}">forward chat</option>
+        </select>
+    </div>
+</div>
+<script>
+    function send(text, userId){
+        const data = {
+           text: text,
+           userId: parseInt(userId)
+        };
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/rest/messenger/translate');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+            const responseObject = JSON.parse(xhr.responseText);
+            alert(responseObject.translateText);
+        } else {
+           const response = JSON.parse(xhr.responseText);
+           alert(response.errorMessage);
+        }
+        };
+
+        xhr.onerror = function() {
+            console.error('Request failed');
+        };
+
+        xhr.send(JSON.stringify(data));
+    }
+    function forward(messageId, userId, nowChatId){
+        const select = document.querySelector("#forward-select-chat");
+        const selectValue = select.value;
+
+        const data = {
+           toChatId: selectValue,
+           forwardMessageId: messageId,
+           ownerId: userId,
+           fromChatId: nowChatId
+        };
+
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', '/rest/messenger/forward');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const responseObject = JSON.parse(xhr.responseText);
+                alert(responseObject.forwardedChatName);
+            } else {
+                const response = JSON.parse(xhr.responseText);
+                alert(response.errorMessage);
+            }
+        };
+
+        xhr.onerror = function() {
+            console.error('Request failed');
+        };
+
+        xhr.send(JSON.stringify(data));
+    }
+</script>
+</body>
+</html>

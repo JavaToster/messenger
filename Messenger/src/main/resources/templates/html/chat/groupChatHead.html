@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        h3{
+          color: white;
+        }
+
+        p{
+          color: white;
+        }
+
+        a{
+         color: white;
+        }
+
+        body{
+          background-color: #161617;
+        }
+
+        .main{
+          margin-left: 600px;
+          margin-top: 200px;
+          background-color: #38383b;
+          width: 600px;
+          border: 2px solid #c8c8db;
+          border-radius: 10px;
+        }
+
+        .channelHeader{
+          width: 600px;
+          margin-top: 0px;
+        }
+
+        #channelName{
+          margin-top: 0px;
+          margin-left: 15px;
+          margin-bottom: 0px;
+        }
+
+        #subscribersCount{
+          margin-top: -15px;
+          margin-left: 35px;
+          font-size: 14px;
+        }
+
+        .description{
+          margin-bottom: 0px;
+          color: white;
+          word-wrap: break-word;
+          margin-left: 15px;
+          width: 400px;
+        }
+
+        .channelMembers{
+          background-color: #49494f;
+          margin-left: 15px;
+          width: 400px;
+        }
+
+        .subscribers{
+          border: 2px solid #c8c8db;
+          border-radius: 5px;
+          margin-top: 5px;
+        }
+
+        .admins{
+          border: 2px solid #c8c8db;
+          margin-top: 1px;
+          border-radius: 5px;
+        }
+
+        .subscriber{
+          margin: 0px;
+        }
+
+        .member-text{
+          font-size: 18px;
+          text-decoration: none;
+          margin: 0px;
+          margin-left: 10px;
+          width: 100px;
+        }
+        .submit-button{
+          margin-left: 8px;
+          margin-top: -20px;
+          background-color: #73738b;
+          color: #ff6f4b;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div class="main">
+    <div style="margin-left: 60px; background-color: #49494f; width: 460px;">
+        <div class="channelHeader" >
+            <h3 id="channelName" th:text="${chatHead.getName()}">ChannelName</h3>
+            <br>
+            <p id="subscribersCount" th:text="${chatHead.getUnderName()}">21 subscribers</p>
+            <br>
+        </div>
+        <div class="description" th:text="${chatHead.getDescription()}">
+            SomeTextDescriptionrgnleuthgiuheurthguehugthuehothgjrnuhugelfdfffffffffffffffffffffffffffffffffffffffffffffffffffffff
+        </div>
+        <br>
+        <div class="channelMembers">
+            <h3 style="margin: 2px;">Участники</h3>
+            <div class="subscribers">
+                <div class="subscriber" th:each="channelMember: ${chatHead.getMembers()}">
+                    <p class="member-text" th:text="${channelMember.getUsername()}" href="https://ya.ru">username</p>
+                    <button style="sumbit-button" th:text="${channelMember.getMemberType()}"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

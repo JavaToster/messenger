@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            width: 300px;
+            padding: 16px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 75px auto;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            margin-top: 250px;
+        }
+        .container h2 {
+            margin-top: 0;
+            margin-left: 80px;
+        }
+        .container p {
+            margin-bottom: 16px;
+        }
+        .container input[type="text"], .container input[type="password"], .container input[type="email"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+        .container input[type="submit"] {
+            width: 100%;
+            padding: 8px;
+            background-color: #27c61e;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .container a.register-button{
+            background-color: #ff0e0e;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 20px;
+            width: 95%;
+            padding: 8px;
+        }
+
+        .container input[type="submit"]:hover{
+            background-color: #45a049;
+        }
+
+        .container a.register-button:hover{
+            background-color: #ba1e1e;
+        }
+
+        .container a.register-button {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            margin-top: 16px;
+        }
+        .container input[type="tel"], .container input[type="file"]{
+            width: 290px;
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            margin-bottom: 16px;
+            font-size: 20px;
+        }
+        .container label{
+            font-size: 20px;
+        }
+        .container select{
+            font-size: 16px;
+            margin-bottom: 16px;
+            margin-left: 16px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2 style="">Registration</h2>
+    <form name="f" method="post" action="/auth/register" th:object="${register_user}" enctype="multipart/form-data">
+        <input type="text" name="firstName" placeholder="Enter your first name" th:field="*{firstname}">
+        <input type="text" name="lastName" placeholder="Enter your last name" th:field="*{lastname}">
+        <input type="text" name="username" placeholder="Enter your username" th:field="*{username}">
+        <input type="password" name="password" placeholder="Enter your password" th:field="*{password}">
+        <input type="email" name="email" placeholder="Enter your email" th:field="*{email}">
+        <input type="tel" name="phone" placeholder="Enter your phone number" th:field="*{phone}">
+        <label for="lang">Select language:</label>
+        <select id="lang" name="language" th:field="*{lang}">
+            <option value="ENGLISH">English</option>
+            <option value="RUSSIAN">Русский</option>
+            <option value="GERMAN">Deutsch</option>
+            <option value="CHINESE">中文</option>
+            <option value="ITALIAN">Italiano</option>
+        </select>
+        <label for="icon">enter icon</label>
+        <input type="file" th:field="*{icon}" id="icon">
+        <input type="submit" value="Register">
+        <a href="/auth/login" class="register-button">Login</a>
+    </form>
+    <div th:if="${error}" style="color: red; margin-left: 40px; margin-top: 10px; font-size: 18px;">Username or email is exist</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Create group chat</title>
+</head>
+<body>
+<div id="myForm">
+    <div th:each="person: ${users}">
+        <input type="checkbox" th:value="${person.getUsername()}" />
+        <label th:text="${person.getUsername()}">Coding</label>
+    </div>
+    <div>
+        <label for="groupName">Введите имя группы</label>
+        <input type="text" id="groupName">
+    </div>
+    <input type="submit"  id="submit" value="Добавить">
+</div>
+</body>
+<script>
+    const form = document.getElementById('myForm');
+    var groupNameText = document.getElementById('groupName');
+    const submitButton = document.getElementById('submit');
+
+
+submitButton.addEventListener('click', () => {
+  const checkedCheckboxes = form.querySelectorAll('input[type="checkbox"]:checked');
+  var checkedValues = Array.from(checkedCheckboxes).map(checkbox => checkbox.value);
+
+
+  const data = {
+  addedUsers: checkedValues,
+  groupName: groupNameText.value,
+  groupOwner: getCookie('username')
+  };
+
+  const jsonString = JSON.stringify(data);
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/rest/messenger/create-group-chat');
+  xhr.setRequestHeader('Content-Type', 'application/json');
+
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+        const responseObject = JSON.parse(xhr.responseText);
+        window.open('/messenger/chats/'+responseObject.chatId, '_self');
+    } else {
+        const response = JSON.parse(xhr.responseText);
+        alert(response.errorMessage);
+    }
+  };
+
+  xhr.onerror = function() {
+    console.error('Request failed');
+  };
+
+  xhr.send(JSON.stringify(data));
+});
+
+    function getCookie(name) {
+  let matches = document.cookie.match(new RegExp(
+    "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+  ));
+  return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+</script>
+</html>
