@@ -1,11 +1,13 @@
 package com.example.Messenger.services.database.message;
 
 import com.example.Messenger.DAO.chat.ChatDAO;
+import com.example.Messenger.DAO.message.ContainerOfMessagesDAO;
 import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.models.chat.BotChat;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.message.ContainerOfMessages;
 import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.message.MessageWrapperRepository;
 import com.example.Messenger.util.enums.MessageStatus;
@@ -32,7 +34,7 @@ public class MessageWrapperService {
     private final MessageService messageService;
     private final PhotoMessageService photoMessageService;
     private final ChatDAO chatDAO;
-    private final JdbcTemplate jdbcTemplate;
+    private final ContainerOfMessagesDAO containerOfMessagesDAO;
     private final LinkMessageService linkMessageService;
     private final MessengerUserDAO messengerUserDAO;
     private final BlockMessageService blockMessageService;
@@ -52,7 +54,7 @@ public class MessageWrapperService {
             MessageWrapper messageWrapper = willSendMessageOptional.get();
             ContainerOfMessages container = containerOfMessagesService.addMessageToContainer(chat, messageWrapper);
             messageWrapperRepository.save(messageWrapper);
-            containerOfMessagesService.save(container);
+            containerOfMessagesDAO.save(container);
             return container.getIdInChat();
         }
         return chat.getContainerOfMessages().getLast().getIdInChat();

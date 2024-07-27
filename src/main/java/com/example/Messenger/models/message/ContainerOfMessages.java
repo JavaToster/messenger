@@ -1,9 +1,7 @@
 package com.example.Messenger.models.message;
 
-import com.example.Messenger.dto.message.MessageResponseDTO;
 import com.example.Messenger.models.chat.Chat;
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -33,7 +31,7 @@ public class ContainerOfMessages implements Serializable {
         this.chat = chat;
     }
 
-    public boolean equalsById(long idInChat){
+    public boolean equalsByIdInChat(long idInChat){
         return this.idInChat == idInChat;
     }
 

@@ -1,5 +1,6 @@
 package com.example.Messenger.DAO.message;
 
+import com.example.Messenger.dto.message.ContainerOfMessagesDTO;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.message.ContainerOfMessages;
 import com.example.Messenger.repositories.database.message.ContainerOfMessagesRepository;
@@ -7,8 +8,10 @@ import com.example.Messenger.util.exceptions.ContainerOfMessagesNotFoundExceptio
 import com.example.Messenger.util.exceptions.MessagesBoxNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
-import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -45,5 +48,15 @@ public class ContainerOfMessagesDAO {
         ContainerOfMessages container = containerOfMessagesRepository.findById(id).orElseThrow(ContainerOfMessagesNotFoundException::new);
         Hibernate.initialize(container.getMessages());
         return container;
+    }
+
+    public ContainerOfMessages getIdByIdInChat(Chat chat, Long containerIdInChat) {
+        List<ContainerOfMessages> containers = chat.getContainerOfMessages();
+        for(ContainerOfMessages container: containers){
+            if(container.equalsByIdInChat(containerIdInChat)){
+               return container;
+            }
+        }
+        return null;
     }
 }

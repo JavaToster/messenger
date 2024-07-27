@@ -4,6 +4,9 @@ import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.models.user.User;
+import com.example.Messenger.repositories.database.user.MessengerUserRepository;
+import com.example.Messenger.util.exceptions.UserNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Calendar;
@@ -11,7 +14,11 @@ import java.util.Date;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class MessengerUserDAO {
+
+    private final MessengerUserRepository messengerUserRepository;
+
     public MessengerUser getInterlocutorFromChat(Chat chat, String username){
         List<ChatMember> members = chat.getMembers();
         for(ChatMember member: members){
@@ -94,5 +101,9 @@ public class MessengerUserDAO {
             return true;
         }
         return false;
+    }
+
+    public MessengerUser findById(int userId) {
+        return messengerUserRepository.findById(userId).orElseThrow(UserNotFoundException::new);
     }
 }

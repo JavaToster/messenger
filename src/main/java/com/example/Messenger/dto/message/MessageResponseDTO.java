@@ -6,7 +6,9 @@ import com.example.Messenger.util.abstractClasses.MessageSpecification;
 import com.example.Messenger.util.enums.MessageStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class MessageResponseDTO {
+import java.io.Serializable;
+
+public class MessageResponseDTO implements Serializable {
     private int id;
     private MessageWrapper message;
     private String date;
