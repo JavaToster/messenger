@@ -27,7 +27,6 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final LanguageOfAppService languageOfAppService;
     private final UserStatusBalancer statusBalancer;
-    private final IconOfUserService iconOfUserService;
 
     /** the login page
      * страница аутентификации*/
@@ -56,11 +55,11 @@ public class AuthController {
             return "redirect:/auth/register?error";
         }
 
+        System.out.println(registerUser.getEmail());
+
         registerUser.setPassword(passwordEncoder.encode(registerUser.getPassword()));
         try {
             User user = userService.register(registerUser);
-        }catch (RuntimeException e){
-            return "redirect:/auth/register";
         }catch (IOException e){
             return "redirect:/auth/register";
         }
