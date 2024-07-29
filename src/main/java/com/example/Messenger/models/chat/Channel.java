@@ -1,7 +1,10 @@
 package com.example.Messenger.models.chat;
 
+import com.example.Messenger.dto.chat.channel.chatHead.ChatHeadDTO;
+import com.example.Messenger.dto.chat.chatHead.channel.ChannelHeadDTO;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.MessengerUser;
+import com.example.Messenger.models.user.User;
 import com.example.Messenger.util.enums.ChatMemberType;
 import jakarta.persistence.*;
 

@@ -97,14 +97,14 @@
 <body>
 <div class="header">
     <h1 style="margin-bottom: 10px;">TosterW Messenger</h1>
-    <a style="font-size:17px; text-decoration: none; color: black; margin-bottom: 10px;" href="/user/profile" th:text="${language.getProfile()}">Profile</a>
+    <a style="font-size:17px; text-decoration: none; color: black; margin-bottom: 10px;" href="/user/profile">Profile</a>
     <form method="post" action="/auth/logout" style="margin-top: 10px;">
-        <input type="submit" th:value="${language.getLogout()}">
+        <input type="submit">
     </form>
 </div>
 
 <div class="container">
-    <div class="chat" th:each="chat: ${chats}">
+    <div class="chat" th:each="chat: ${infoOfMainWindow.getChats()}">
         <a th:if="${!chat.isBannedChat()}"th:href="@{/messenger/chats/{id} (id=${chat.getId()})}" style="text-decoration:none; color:black; font-size: font-size: 1.1875rem;" th:text="${chat.getChatTitle()}">Interlocutor 1 <span class="date">01/01/2022</span></a>
         <a th:if="${chat.isBannedChat()}" th:href="@{/messenger/chats/{id} (id=${chat.getId()})}" style="text-decoration:none; color:black; font-size: font-size: 1.1875rem; color: red;" th:text="${chat.getChatTitle()}">Interlocutor 1 <span class="date">01/01/2022</span></a>
 
@@ -116,42 +116,38 @@
 <div class="chat-bottom-header">
     <div style="width: 600px;">
         <div class="chat-block" id="chat-block-1">
-            <h2 th:text="${language.getFindChat()}">Найти чат</h2>
-            <p th:text="${language.getFindChatDescription()}">Тут вы можете найти чат введя какое либо слово</p>
+            <h2>Найти чат</h2>
+            <p>Тут вы можете найти чат введя какое либо слово</p>
             <form th:method="GET" th:action="@{/messenger/findChat}">
                 <input type="text" style="border: 1px solid black; border-radius: 8px; width: 250px;" name="findText">
-                <input type="submit" th:value="${language.getFindChatButton()}" style=" border: none; border-radius: 10px; background-color: #007bff; color: white; font-size: 14px;">
+                <input type="submit" style=" border: none; border-radius: 10px; background-color: #007bff; color: white; font-size: 14px;">
             </form>
         </div>
-        <div th:each="foundedChat: ${foundedChatsOfChatName}" class="foundedChats" style="margin-top: 5px; background-color: #e0e0e0; border-radius: 5px;">
+        <div th:each="foundedChat: ${infoOfMainWindow.getFoundedChatsOfChatName()}" class="foundedChats" style="margin-top: 5px; background-color: #e0e0e0; border-radius: 5px;">
             <a th:href="@{/messenger/chats/{id} (id=${foundedChat.getId()})}" style="margin-left: 10px; margin-top: 10px; text-decoration: none; color: black; margin-bottom: 5px;" th:text="${foundedChat.getChatTitle()}">Chat name</a>
             <p style="margin-bottom: 1px; margin-left: 10px; margin-top: 5px;" th:text="${foundedChat.getLastMessageText()}">Last message</p>
             <time style="font-size: 0.8em;color: #888; margin-left: 10px; margin-top: 0px;" th:text="${foundedChat.getLastMessageSendTime()}">12:00 PM</time>
         </div>
-        <hr th:if="${!foundedChatsOfChatName.isEmpty()}">
-        <div th:each="foundedChat1: ${foundedChatsOfMessage}" class="foundedChats" style="margin-top: 5px; background-color: #e0e0e0; border-radius: 5px;">
+        <hr th:if="${!infoOfMainWindow.getFoundedChatsOfChatName().isEmpty()}">
+        <div th:each="foundedChat1: ${infoOfMainWindow.getFoundedChatsOfMessage()}" class="foundedChats" style="margin-top: 5px; background-color: #e0e0e0; border-radius: 5px;">
             <a th:href="@{/messenger/chats/{id} (id=${foundedChat1.getId()})}" style="margin-left: 10px; margin-top: 10px; text-decoration: none; color: black; margin-bottom: 5px;" th:text="${foundedChat1.getChatTitle()}">Chat name</a>
             <p style="color: blue; margin-bottom: 1px; margin-left: 10px; margin-top: 5px;" th:text="${foundedChat1.getLastMessageText()}">Last message</p>
             <time style="font-size: 0.8em;color: #888; margin-left: 10px; margin-top: 0px;" th:text="${foundedChat1.getLastMessageSendTime()}">12:00 PM</time>
         </div>
-        <hr th:if="${!foundedChatsOfMessage.isEmpty()}">
-        <div th:each="foundUser: ${foundUsers}" class="foundedChats" style="margin-top: 5px; background-color: #e0e0e0; border-radius: 5px;">
+        <hr th:if="${!infoOfMainWindow.getFoundedChatsOfMessage().isEmpty()}">
+        <div th:each="foundUser: ${infoOfMainWindow.getFoundUsers()}" class="foundedChats" style="margin-top: 5px; background-color: #e0e0e0; border-radius: 5px;">
             <a th:href="@{/user/{username} (username=${foundUser.getUsername()})}" style="margin-left: 10px; margin-top: 10px; text-decoration: none; color: #d93737; margin-bottom: 5px;" th:text="${foundUser.getUsername()}">User name</a>
         </div>
     </div>
-<!--    <div class="chat-block" id="chat-block-2">-->
-<!--        <h2>Заблокированные пользователи</h2>-->
-<!--        <p>Тут вы можете посмотреть своих заблокированных пользователей</p>-->
-<!--    </div>-->
 </div>
 <div class="create-chat">
     <form th:method="POST" th:action="@{/messenger/chats/create/redirect}" th:object="${chat}">
         <select th:field="*{id}">
-            <option value="1" th:text="${language.getCreatePrivateChat()}">Приватный чат</option>
-            <option value="2" th:text="${language.getCreateGroup()}">Группу</option>
-            <option value="3" th:text="${language.getCreateChannel()}">Канал</option>
+            <option value="1">Приватный чат</option>
+            <option value="2">Группу</option>
+            <option value="3">Канал</option>
         </select>
-        <input type="submit" th:value="${language.getCreateChatButton()}">
+        <input type="submit">
     </form>
 </div>
 </body>

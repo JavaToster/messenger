@@ -1,6 +1,7 @@
 package com.example.Messenger.services.database.chat;
 
 import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.message.ContainerOfMessages;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.chat.GroupChat;
 import com.example.Messenger.models.user.User;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -40,6 +42,7 @@ public class GroupChatService {
 
         List<ChatMember> chatMembers = new ArrayList<>();;
         GroupChat groupChat = new GroupChat(name);
+        ContainerOfMessages container = new ContainerOfMessages(1, groupChat);
         for(User member: members){
             ChatMember chatMember = new ChatMember();
             chatMember.setChat(groupChat);
@@ -51,26 +54,10 @@ public class GroupChatService {
 
         ChatMember chatMember = new ChatMember(owner, groupChat, ChatMemberType.OWNER);
         chatMembers.add(chatMember);
+        groupChat.setContainerOfMessages(List.of(container));
 
         chatMemberRepository.save(chatMember);
         return groupChatRepository.save(groupChat).getId();
-    }
-
-    public String getGroupName(int chatId){
-        return groupChatRepository.findById(chatId).orElse(null).getGroupName();
-    }
-    public String getGroupName(Chat chat){
-        return groupChatRepository.findById(chat.getId()).orElse(null).getGroupName();
-    }
-    public User getGroupOwner(int chatId){
-        Chat chat = groupChatRepository.findById(chatId).orElse(null);
-        List<ChatMember> members = chat.getMembers();
-        for(ChatMember member: members){
-            if(member.getMemberType() == ChatMemberType.OWNER){
-                return (User)member.getUser();
-            }
-        }
-        return null;
     }
 
     private int groupIsPresent(List<User> members, String groupName, User owner){

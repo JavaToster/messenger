@@ -1,9 +1,11 @@
 package com.example.Messenger.models.user;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.io.Serializable;
 
+@Data
 @Entity
 @Table(name = "Icon_of_user")
 public class IconOfUser implements Serializable {
@@ -21,30 +23,6 @@ public class IconOfUser implements Serializable {
     public IconOfUser(){}
     public IconOfUser(String link, com.example.Messenger.models.user.User owner){
         this.link = link;
-        this.owner = owner;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getLink() {
-        return link;
-    }
-
-    public void setLink(String link) {
-        this.link = link;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
         this.owner = owner;
     }
 }

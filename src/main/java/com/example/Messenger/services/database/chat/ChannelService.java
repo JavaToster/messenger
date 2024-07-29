@@ -2,6 +2,7 @@ package com.example.Messenger.services.database.chat;
 
 import com.example.Messenger.models.chat.Channel;
 import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.message.ContainerOfMessages;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.models.user.User;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -44,6 +46,7 @@ public class ChannelService {
         Channel channel = new Channel();
         List<ChatMember> chatMembers = new ArrayList<>();
         chatMembers.add(new ChatMember(channelOwner, channel, ChatMemberType.OWNER));
+        ContainerOfMessages container = new ContainerOfMessages(1, channel);
         for(User subscriber: subscribers){
             ChatMember chatMember =  new ChatMember(subscriber, channel, ChatMemberType.SUBSCRIBER);
             chatMembers.add(chatMember);
@@ -51,6 +54,7 @@ public class ChannelService {
         chatMembers.forEach(chatMemberRepository::save);
         channel.setMembers(chatMembers);
         channel.setName(channelName);
+        channel.setContainerOfMessages(List.of(container));
         return channelRepository.save(channel).getId();
     }
 

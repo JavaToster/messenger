@@ -1,5 +1,7 @@
 package com.example.Messenger.models.chat;
 
+import com.example.Messenger.dto.chat.channel.chatHead.ChatHeadDTO;
+import com.example.Messenger.dto.chat.chatHead.botChat.BotChatHeadDTO;
 import com.example.Messenger.models.user.Bot;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.MessengerUser;
@@ -29,5 +31,14 @@ public class BotChat extends Chat{
     @Override
     public String getChatHeader() {
         return "bot";
+    }
+
+    private MessengerUser getBotFromMembers(){
+        for(ChatMember chatMember: this.members){
+            if(chatMember.getUserClass() == Bot.class){
+                return chatMember.getUser();
+            }
+        }
+        return null;
     }
 }

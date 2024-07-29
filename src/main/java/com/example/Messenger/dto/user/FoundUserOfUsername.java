@@ -1,11 +1,12 @@
 package com.example.Messenger.dto.user;
 
+import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.models.user.User;
 
 public class FoundUserOfUsername {
     private String username;
 
-    public FoundUserOfUsername(User user){
+    public FoundUserOfUsername(MessengerUser user){
         this.username = user.getUsername();
     }
 

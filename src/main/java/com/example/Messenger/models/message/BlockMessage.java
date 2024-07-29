@@ -2,41 +2,23 @@ package com.example.Messenger.models.message;
 
 import com.example.Messenger.models.chat.Chat;
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
+@Data
 @Table(name = "Block_Message")
 public class BlockMessage {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    @Column(name = "text")
-    private String text;
+    private long id;
+    @Column(name = "content")
+    private String content;
     @ManyToOne
     @JoinColumn(name = "chat_id", referencedColumnName = "id")
     private Chat chat;
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public Chat getChat() {
-        return chat;
-    }
-
-    public void setChat(Chat chat) {
-        this.chat = chat;
+    public boolean equalsContent(String content) {
+        return this.content.equalsIgnoreCase(content);
     }
 }

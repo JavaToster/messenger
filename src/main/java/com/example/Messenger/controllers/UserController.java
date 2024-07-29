@@ -1,6 +1,6 @@
 package com.example.Messenger.controllers;
 
-import com.example.Messenger.dto.ChatDTO;
+import com.example.Messenger.dto.chat.ChatDTO;
 import com.example.Messenger.dto.user.InfoOfUserDTO;
 import com.example.Messenger.services.database.SettingsOfUserService;
 import com.example.Messenger.services.database.chat.ChatService;
@@ -35,7 +35,7 @@ public class UserController {
 
         model.addAttribute("chat", new ChatDTO());
         model.addAttribute("chats", chats);
-        model.addAttribute("language", languageOfAppService.getLanguage(userService.findByUsername(username).getLang()));
+        model.addAttribute("language", languageOfAppService.getLanguage(userService.findByUsername(username).getSettingsOfUser().getLang()));
         model.addAttribute("infoOfUser", userService.findUserInfoByUsername(username, username));
 
         return "/html/user/profile";
@@ -56,8 +56,8 @@ public class UserController {
     }
 
     @PostMapping("/{username}/send-message")
-    public String sendMessageToUser(@PathVariable("username") String username, @RequestParam("from") String fromUsername){
-        int id = chatService.createPrivateOrBotChat(messengerUserService.findByUsername(username), fromUsername);
+    public String sendMessageToUser(@PathVariable("username") String usernameOfBotOrUser, @RequestParam("from") String fromUsername){
+        int id = chatService.createPrivateOrBotChat(usernameOfBotOrUser, fromUsername);
 
         return "redirect:/messenger/chats/"+id;
     }

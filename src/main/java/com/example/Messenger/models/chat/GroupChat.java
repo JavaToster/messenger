@@ -1,5 +1,6 @@
 package com.example.Messenger.models.chat;
 
+import com.example.Messenger.dto.chat.channel.chatHead.ChatHeadDTO;
 import jakarta.persistence.*;
 
 @Entity

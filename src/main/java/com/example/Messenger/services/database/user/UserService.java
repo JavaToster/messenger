@@ -1,5 +1,6 @@
 package com.example.Messenger.services.database.user;
 
+import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.dto.user.InfoOfUserDTO;
 import com.example.Messenger.dto.user.RegisterUserDTO;
 import com.example.Messenger.models.chat.Chat;
@@ -16,6 +17,8 @@ import com.example.Messenger.util.enums.ChatMemberType;
 import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.enums.RoleOfUser;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
+import com.example.Messenger.util.exceptions.ChatNotFoundException;
+import com.example.Messenger.util.exceptions.UserNotFoundException;
 import com.example.Messenger.util.threads.DeleteRestoreCodeThread;
 import com.example.Messenger.util.threads.ReBlockUserThread;
 import jakarta.servlet.http.Cookie;
@@ -50,6 +53,7 @@ public class UserService implements UserDetailsService {
     private final ComplaintOfUserRepository complaintOfUserRepository;
     private final SettingsOfUserService settingsOfUserService;
     private final IconOfUserService iconOfUserService;
+    private final MessengerUserDAO messengerUserDAO;
     @Value("${image.path.user.icons}")
     private String imagePath;
 
@@ -63,48 +67,6 @@ public class UserService implements UserDetailsService {
         Cookie cookie = new Cookie(name, "value");
         cookie.setMaxAge(0);
         response.addCookie(cookie);
-    }
-
-    public static String getLastOnlineTime(User user){
-        Calendar calendarOfUser = Calendar.getInstance();
-        Calendar calendarNow = Calendar.getInstance();
-
-        Date dateOfUser = user.getLastOnline();
-        Date dateNow = new Date();
-
-        calendarOfUser.setTime(dateOfUser);
-        calendarNow.setTime(dateNow);
-
-        if(dateOfUser == null){
-            return "Был(а) недавно";
-        }
-
-        int yearNow = calendarNow.get(Calendar.YEAR);
-        int monthNow = calendarNow.get(Calendar.MONTH);
-        int dayNow = calendarNow.get(Calendar.DAY_OF_MONTH);
-        int yearOfUser = calendarOfUser.get(Calendar.YEAR);
-        int monthOfUser = calendarOfUser.get(Calendar.MONTH);
-        int dayOfUser = calendarOfUser.get(Calendar.DAY_OF_MONTH);
-
-        if(yearNow == yearOfUser && monthNow == monthOfUser && dayNow == dayOfUser && dateNow.getHours() == dateOfUser.getHours() && dateNow.getMinutes() == dateOfUser.getMinutes()){
-            return "в cети";
-        }
-
-        if(yearNow > yearOfUser){
-            return "Был(а) в сети "+(yearNow-yearOfUser)+" "+getNameOfYear(yearNow-yearOfUser)+" назад";
-        }else{
-            if(monthNow > monthOfUser){
-                return "Был(а) в сети "+(monthNow - monthOfUser)+" "+getNameOfMonth(monthNow-monthOfUser)+" назад";
-            } else if (dayNow > dayOfUser) {
-                if(dayNow-dayOfUser == 1) {
-                    return "Был(а) в сети вчера";
-                }else{
-                    return "Был(а) в сети "+(dayNow-dayOfUser)+" "+getNameOfDay(dayNow-dayOfUser)+" назад";
-                }
-            }else{
-                return "Был(а) в сети в "+addZeroToTime(dateOfUser.getHours())+":"+addZeroToTime(dateOfUser.getMinutes());
-            }
-        }
     }
 
     public static List<Chat> FIND_CHATS_BY_USERNAME(User user) {
@@ -171,7 +133,7 @@ public class UserService implements UserDetailsService {
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void setLastOnline(String name) {
         User user = userRepository.findByUsername(name).orElse(null);
-        user.setLastOnline(new Date());
+        user.setLastOnlineTime(new Date());
         userRepository.save(user);
     }
 
@@ -188,7 +150,7 @@ public class UserService implements UserDetailsService {
         Calendar calendarOfUser = Calendar.getInstance();
         Calendar calendarNow = Calendar.getInstance();
 
-        Date dateOfUser = userRepository.findByUsername(username).orElse(null).getLastOnline();
+        Date dateOfUser = userRepository.findByUsername(username).orElse(null).getLastOnlineTime();
         Date dateNow = new Date();
 
         calendarOfUser.setTime(dateOfUser);
@@ -226,8 +188,8 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    public boolean isBan(String username, Chat chat){
-        List<ChatMember> banMembers = chatRepository.findById(chat.getId()).orElse(null).getMembers();
+    public boolean isBan(String username, int chatId){
+        List<ChatMember> banMembers = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new).getMembers();
         for(ChatMember chatMember: banMembers){
             if(chatMember.getUser().equals(username) && chatMember.getMemberType() == ChatMemberType.BLOCK){
                 return true;
@@ -252,7 +214,7 @@ public class UserService implements UserDetailsService {
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void block(int id, int chatId) {
-        ChatMember chatMember = chatMemberRepository.findByUserAndChat(userRepository.findById(id).orElse(null), chatRepository.findById(chatId).orElse(null)).orElse(null);
+        ChatMember chatMember = chatMemberRepository.findByUserAndChat(userRepository.findById(id).orElseThrow(UserNotFoundException::new), chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new)).orElse(null);
         chatMember.setMemberType(ChatMemberType.BLOCK);
         chatMemberRepository.save(chatMember);
     }
@@ -356,10 +318,12 @@ public class UserService implements UserDetailsService {
             if(user.getRole().equals(RoleOfUser.ROLE_BAN)){
                 continue;
             }
-            if(user.getComplaints().size() >= 3){
-                user.setRole(RoleOfUser.ROLE_BAN);
+            if(user.getComplaints() != null){
+                if(user.getComplaints().size() >= 3){
+                    user.setRole(RoleOfUser.ROLE_BAN);
+                    userRepository.save(user);
+                }
             }
-            userRepository.save(user);
         }
     }
 
@@ -425,7 +389,7 @@ public class UserService implements UserDetailsService {
 
     private InfoOfUserDTO convertToUserDTO(User user, String myUsername) {
         InfoOfUserDTO info = new InfoOfUserDTO(user.getId(), user.getUsername(), user.getName(), user.getLastname(), user.getEmail(), user.getLinkOfIcon());
-        info.setLastTime(getLastOnlineTime(user.getUsername()));
+        info.setLastTime(messengerUserDAO.getLastOnlineTimeAsString(user));
         info.setImagesUrl(getImagesListByInterlocutors(user.getUsername(), myUsername));
         return info;
     }

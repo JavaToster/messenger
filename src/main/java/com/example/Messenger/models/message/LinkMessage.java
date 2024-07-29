@@ -7,12 +7,15 @@ import com.example.Messenger.util.enums.MessageType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
+@Data
 @Entity
 @Table(name = "Link_message")
-public class LinkMessage extends MessageWrapper{
+public class LinkMessage extends MessageWrapper implements Serializable {
 
     // если ссылок будет несколько, то конкатенировать их в одну строку, разделяя их с помощью символа ';'
     // ссылка1;ссылка2;ссылка3
@@ -29,21 +32,5 @@ public class LinkMessage extends MessageWrapper{
         this.hasBeenRead = MessageStatus.NOT_READ;
         this.sendingTime = new Date();
         this.type = MessageType.LINK;
-    }
-
-    public String getLink() {
-        return link;
-    }
-
-    public void setLink(String link) {
-        this.link = link;
-    }
-
-    public void addLink(String link){
-        if(this.link == null || this.link.isEmpty()){
-            this.link = link;
-        }else{
-            this.link += ";"+link;
-        }
     }
 }

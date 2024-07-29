@@ -6,13 +6,12 @@ import com.example.Messenger.util.enums.MessageStatus;
 import com.example.Messenger.util.enums.MessageType;
 import jakarta.persistence.*;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity
 @Table(name = "Message")
-public class Message extends MessageWrapper{
-
-
+public class Message extends MessageWrapper implements Serializable {
     public Message(){}
 
     public Message(String content, MessengerUser owner, Chat chat) {
@@ -24,8 +23,13 @@ public class Message extends MessageWrapper{
         this.type = MessageType.TEXT;
     }
 
-    public Message setMessageText(String content) {
-        this.content = content;
-        return this;
+    public Message(Chat chat, MessengerUser owner){
+        this.chat = chat;
+        this.owner = owner;
+        this.sendingTime = new Date();
+        this.hasBeenRead = MessageStatus.NOT_READ;
+        this.type = MessageType.TEXT;
+        chat.getMessages().add(this);
+        owner.getMessages().add(this);
     }
 }

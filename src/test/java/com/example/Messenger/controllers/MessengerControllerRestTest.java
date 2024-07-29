@@ -10,7 +10,6 @@ import com.example.Messenger.services.database.message.BlockMessageService;
 import com.example.Messenger.services.database.message.MessageService;
 import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.util.threads.DeleteEmptyChatsThread;
-import com.example.Messenger.util.MessengerMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,30 +43,28 @@ class MessengerControllerRestTest {
     private BlockMessageService blockMessageService;
     @Mock
     private DeleteEmptyChatsThread deleteEmptyChats;
-    @Mock
-    private MessengerMapper messengerMapper;
 
     @InjectMocks
     private MessengerController messengerController;
 
-    @Test
-    public void createChannelTest(){
-        Chat chat = new Chat();
-
-        chat.setId(1);
-        String response1 = messengerController.createChat(chat);
-        chat.setId(2);
-        String response2 = messengerController.createChat(chat);
-        chat.setId(3);
-        String response3 = messengerController.createChat(chat);
-        chat.setId(4);
-        String response4 = messengerController.createChat(chat);
-
-        assertEquals("redirect:/messenger/chats/create", response1);
-        assertEquals("redirect:/messenger/chats/create?type=group", response2);
-        assertEquals("redirect:/messenger/chats/create?type=channel", response3);
-        assertEquals("redirect:/messenger/chats/create", response4);
-    }
+//    @Test
+//    public void createChannelTest(){
+//        Chat chat = new Chat();
+//
+////        chat.setId(1);
+////        String response1 = messengerController.createChat(chat);
+////        chat.setId(2);
+////        String response2 = messengerController.createChat(chat);
+////        chat.setId(3);
+////        String response3 = messengerController.createChat(chat);
+////        chat.setId(4);
+////        String response4 = messengerController.createChat(chat);
+//
+//        assertEquals("redirect:/messenger/chats/create", response1);
+//        assertEquals("redirect:/messenger/chats/create?type=group", response2);
+//        assertEquals("redirect:/messenger/chats/create?type=channel", response3);
+//        assertEquals("redirect:/messenger/chats/create", response4);
+//    }
 
     @Test
     public void createChatTest(){

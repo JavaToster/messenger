@@ -38,7 +38,6 @@ public class MessengerRestController {
     private final GroupChatService groupChatService;
     private final UserService userService;
     private final ChannelService channelService;
-    private final TranslateBalancer loadBalancer;
     private final Convertor convertor;
     private final ForwardMessageService forwardMessageService;
     private final SettingsOfUserService settingsOfUserService;
@@ -59,7 +58,7 @@ public class MessengerRestController {
 
     @PostMapping("/create-channel")
     public ResponseEntity<Map<String, Integer>> createChannel(@RequestBody CreateChannelDTO channelDTO){
-        List<User> subscribers = convertor.convertToUser(channelDTO.getChannelSubscribes());
+        List<User> subscribers = convertor.convertToUserByUsername(channelDTO.getChannelSubscribes());
 
         int chatId = channelService.createNewChannel(subscribers, userService.findByUsername(channelDTO.getChannelOwner()), channelDTO.getChannelName());
 

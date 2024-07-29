@@ -4,6 +4,7 @@ import com.example.Messenger.models.message.BlockMessage;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.repositories.database.message.BlockMessageRepository;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
+import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +20,11 @@ public class BlockMessageService {
     private final ChatRepository chatRepository;
 
     @Transactional
-    public void add(BlockMessage blockMessage) {
-        blockMessageRepository.save(blockMessage);
+    public void add(BlockMessage blockMessage,int chatId) {
+        if(!isBlockMessage(blockMessage.getContent(), chatId)){
+            blockMessage.setChat(chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new));
+            blockMessageRepository.save(blockMessage);
+        }
     }
 
     public List<BlockMessage> findByChat(int chatId) {
@@ -28,20 +32,24 @@ public class BlockMessageService {
     }
 
     @Transactional
-    public void remove(int messageId) {
+    public void remove(long messageId) {
         blockMessageRepository.deleteById(messageId);
     }
-
-    public List<Chat> getChats(int chatId){
-        List<Chat> chats = new ArrayList<>();
-        blockMessageRepository.findByChat(chatRepository.findById(chatId).orElse(null)).forEach(blockMessage -> chats.add(blockMessage.getChat()));
-        return chats;
-    }
     
-    public boolean isBlockMessage(BlockMessage message, int chatId){
+    public boolean isBlockMessage(String content, int chatId){
         List<BlockMessage> blockMessages = blockMessageRepository.findByChat(chatRepository.findById(chatId).orElse(null));
         for(BlockMessage blockMessage: blockMessages){
-            if(blockMessage.getText().equalsIgnoreCase(message.getText().toLowerCase())){
+            if(content.equalsIgnoreCase(blockMessage.getContent())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean contentIsBlocked(String content, int chatId){
+        List<BlockMessage> blockMessagesOfChat = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new).getBlockMessages();
+        for(BlockMessage blockMessage: blockMessagesOfChat){
+            if(blockMessage.equalsContent(content)){
                 return true;
             }
         }

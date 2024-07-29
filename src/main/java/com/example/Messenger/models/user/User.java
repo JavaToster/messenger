@@ -4,16 +4,19 @@ import com.example.Messenger.models.message.Message;
 import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.enums.RoleOfUser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import com.example.Messenger.dto.user.RegisterUserDTO;
+import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.spi.CalendarDataProvider;
 
 @Entity
 @Table(name = "person")
+@Data
 public class User extends MessengerUser implements Serializable {
     @Column(name = "phone")
     private String phone;
@@ -25,19 +28,10 @@ public class User extends MessengerUser implements Serializable {
     private String password;
     @Column(name = "email")
     private String email;
-    @OneToMany(mappedBy = "user")
-    @JsonIgnore
-    private List<ChatMember> members;
-    @OneToMany(mappedBy = "owner")
-    @JsonIgnore
-    private List<Message> messages;
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "lastOnline")
     @JsonIgnore
-    private Date lastOnline;
-    @Enumerated(value = EnumType.STRING)
-    @JsonIgnore
-    private LanguageType lang;
+    private Date lastOnlineTime;
     @Enumerated(value = EnumType.STRING)
     @JsonIgnore
     private RoleOfUser role;
@@ -58,10 +52,9 @@ public class User extends MessengerUser implements Serializable {
         this.username = username;
         this.password = password;
         this.phone = phone;
-        this.lang = LanguageType.valueOf(lang);
         this.email = email;
         this.role = RoleOfUser.ROLE_USER;
-        this.lastOnline = new Date();
+        this.lastOnlineTime = new Date();
 
     }
     public User(RegisterUserDTO registerDTO){
@@ -70,125 +63,12 @@ public class User extends MessengerUser implements Serializable {
         this.username = registerDTO.getUsername();
         this.password = registerDTO.getPassword();
         this.phone = registerDTO.getPhone();
-        this.lang = LanguageType.valueOf(registerDTO.getLang());
         this.email = registerDTO.getEmail();
         this.role = RoleOfUser.ROLE_USER;
-        this.lastOnline = new Date();
+        this.lastOnlineTime = new Date();
     }
-
-    @Override
-    @JsonProperty("id")
-    public int getId(){
-        return this.id;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    @JsonProperty("username")
-    public String getUsername(){
-        return this.username;
-    }
-
-    public void setUsername(String username){
-        this.username = username;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
-    public List<ChatMember> getMembers() {
-        return members;
-    }
-
-    public void setMembers(List<ChatMember> members) {
-        this.members = members;
-    }
-
-    public List<Message> getMessages() {
-        return messages;
-    }
-
-    public void setMessages(List<Message> messages) {
-        this.messages = messages;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Date getLastOnline() {
-        return lastOnline;
-    }
-
-    public void setLastOnline(Date lastOnline) {
-        this.lastOnline = lastOnline;
-    }
-
-    public boolean equals(User user){
-        return this.username.equals(user.getUsername());
-    }
-
-    public boolean equals(String username){
-        return this.username.equals(username);
-    }
-
-    public LanguageType getLang() {
-        return lang;
-    }
-
-    public void setLang(LanguageType lang) {
-        this.lang = lang;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getRole(){
         return this.role.name();
-    }
-    public void setRole(RoleOfUser role){
-        this.role = role;
-    }
-
-    public List<ComplaintOfUser> getComplaints() {
-        return complaints;
-    }
-
-    public void setComplaints(List<ComplaintOfUser> complaints) {
-        this.complaints = complaints;
-    }
-
-    public IconOfUser getIcon() {
-        return icon;
     }
 
     public String getLinkOfIcon(){
@@ -198,15 +78,12 @@ public class User extends MessengerUser implements Serializable {
         return this.icon.getLink();
     }
 
-    public void setIcon(IconOfUser icon) {
-        this.icon = icon;
+    public boolean equals(User user){
+        return equals(user.getUsername());
     }
 
-    public SettingsOfUser getSettingsOfUser() {
-        return settingsOfUser;
+    public boolean equals(String username){
+        return this.username.equals(username);
     }
 
-    public void setSettingsOfUser(SettingsOfUser settingsOfUser) {
-        this.settingsOfUser = settingsOfUser;
-    }
 }

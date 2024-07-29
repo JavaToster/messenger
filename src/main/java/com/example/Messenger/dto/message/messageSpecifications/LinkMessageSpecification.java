@@ -1,8 +1,8 @@
 package com.example.Messenger.dto.message.messageSpecifications;
 
-import com.example.Messenger.util.abstractClasses.UtilSpecification;
+import com.example.Messenger.util.abstractClasses.MessageSpecification;
 
-public class LinkMessageSpecification extends UtilSpecification {
+public class LinkMessageSpecification extends MessageSpecification {
     private String link;
 
     public LinkMessageSpecification(String link) {

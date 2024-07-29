@@ -2,12 +2,16 @@ package com.example.Messenger.models.chat;
 
 import com.example.Messenger.models.message.ForwardMessage;
 import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.models.message.ContainerOfMessages;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.message.BlockMessage;
 import jakarta.persistence.*;
+import lombok.Data;
 
+import java.util.Comparator;
 import java.util.List;
 
+@Data
 @Entity
 @Table(name = "Chat")
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -16,7 +20,7 @@ public class Chat {
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected int id;
-    @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "chat")
     protected List<MessageWrapper> messages;
     @OneToMany(mappedBy = "chat", cascade = CascadeType.REMOVE)
     protected List<ChatMember> members;
@@ -24,46 +28,8 @@ public class Chat {
     protected List<BlockMessage> blockMessages;
     @OneToMany(mappedBy = "fromChat")
     protected List<ForwardMessage> forwardMessages;
-
-    public List<ForwardMessage> getForwardMessages() {
-        return forwardMessages;
-    }
-
-    public void setForwardMessages(List<ForwardMessage> forwardMessages) {
-        this.forwardMessages = forwardMessages;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public List<MessageWrapper> getMessages() {
-        return messages;
-    }
-
-    public void setMessages(List<MessageWrapper> messages) {
-        this.messages = messages;
-    }
-
-    public List<ChatMember> getMembers() {
-        return members;
-    }
-
-    public void setMembers(List<ChatMember> members) {
-        this.members = members;
-    }
-
-    public List<BlockMessage> getBlockMessages() {
-        return blockMessages;
-    }
-
-    public void setBlockMessages(List<BlockMessage> blockMessages) {
-        this.blockMessages = blockMessages;
-    }
+    @OneToMany(mappedBy = "chat")
+    protected List<ContainerOfMessages> containerOfMessages;
 
     @Override
     public String toString() {
@@ -89,5 +55,13 @@ public class Chat {
 
     public String getChatHeader(){
         return "";
+    }
+
+    public MessageWrapper getLastMessage(){
+        return this.messages.stream().sorted(Comparator.comparingInt(MessageWrapper::getId)).toList().getLast();
+    }
+
+    public boolean messagesIsEmpty(){
+        return this.messages == null || this.messages.isEmpty();
     }
 }

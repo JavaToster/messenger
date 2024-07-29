@@ -1,5 +1,6 @@
 package com.example.Messenger.services.database.message;
 
+import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.message.ImageMessage;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
@@ -32,12 +33,10 @@ public class PhotoMessageService {
     private String imagePath;
 
     @Transactional
-    public void sendMessage(MultipartFile file, int chatId, int userId, String underPhoto) throws IOException {
+    public MessageWrapper sendMessage(MultipartFile file, Chat chat, int userId, String underPhoto) throws IOException {
         Optional<String> image = isImage(file.getBytes());
         if(image.isPresent()){
-            ImageMessage imageMessage = new ImageMessage(chatRepository.findById(chatId).orElse(null), userRepository.findById(userId).orElse(null), image.get(), underPhoto, getExpansion(file.getOriginalFilename()));
-            photoMessageRepository.save(imageMessage);
-            return;
+            return new ImageMessage(chat, userRepository.findById(userId).orElse(null), image.get(), underPhoto, getExpansion(file.getOriginalFilename()));
         }
 
         String filePath = imagePath+(getLastImageId()+1)+getExpansion(file.getOriginalFilename());
@@ -45,8 +44,9 @@ public class PhotoMessageService {
         Optional<String> optionalUrl = cloudinaryService.sendMessage(filePath);
         if(optionalUrl.isPresent()){
             String url = optionalUrl.get();
-            ImageMessage imageMessage = new ImageMessage(chatRepository.findById(chatId).orElse(null), userRepository.findById(userId).orElse(null), url, underPhoto, getExpansion(file.getOriginalFilename()));
-            photoMessageRepository.save(imageMessage);
+            return new ImageMessage(chat, userRepository.findById(userId).orElse(null), url, underPhoto, getExpansion(file.getOriginalFilename()));
+        }else {
+            return null;
         }
     }
 
@@ -88,7 +88,6 @@ public class PhotoMessageService {
 
     public byte[] getBytesOfImage(MessageWrapper messageWrapper) throws IOException {
         ImageMessage image = photoMessageRepository.findById(messageWrapper.getId()).orElse(null);
-        System.out.println(imagePath+image.getId()+image.getExpansion());
         FileInputStream fileInputStream = new FileInputStream(imagePath+image.getId()+image.getExpansion());
         return fileInputStream.readAllBytes();
     }

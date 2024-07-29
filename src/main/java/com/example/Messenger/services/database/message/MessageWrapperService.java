@@ -1,12 +1,17 @@
 package com.example.Messenger.services.database.message;
 
+import com.example.Messenger.DAO.chat.ChatDAO;
+import com.example.Messenger.DAO.message.ContainerOfMessagesDAO;
+import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.models.chat.BotChat;
 import com.example.Messenger.models.chat.Chat;
+import com.example.Messenger.models.message.ContainerOfMessages;
 import com.example.Messenger.models.message.MessageWrapper;
+import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.message.MessageWrapperRepository;
-import com.example.Messenger.services.database.chat.ChatService;
 import com.example.Messenger.util.enums.MessageStatus;
+import com.example.Messenger.util.exceptions.ChatNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -28,53 +33,63 @@ public class MessageWrapperService {
     private final MessageWrapperRepository messageWrapperRepository;
     private final MessageService messageService;
     private final PhotoMessageService photoMessageService;
-    private final ChatRepository chatRepository;
-    private final ChatService chatService;
-    private final JdbcTemplate jdbcTemplate;
+    private final ChatDAO chatDAO;
+    private final ContainerOfMessagesDAO containerOfMessagesDAO;
     private final LinkMessageService linkMessageService;
+    private final MessengerUserDAO messengerUserDAO;
+    private final BlockMessageService blockMessageService;
+    private final ContainerOfMessagesService containerOfMessagesService;
 
     @Transactional
-    public void sendTextMessage(MessageWrapper message, int chatId, int userId){
-        if(!(message.getContent() == null) || message.getContent().isEmpty()) {
-            messageService.sendMessage(chatId, userId, message.getContent());
-        }
-    }
-
-    public void send(MultipartFile image, int chatId, int userId, String text){
+    public long send(MultipartFile image, int chatId, int userId, String text){
+        Chat chat = chatDAO.findById(chatId);
+        Optional<MessageWrapper> willSendMessageOptional;
         if(!image.isEmpty()){
-            sendImage(image, chatId, userId, text);
+            willSendMessageOptional = sendImage(image, chat, userId, text);
+        }else {
+            willSendMessageOptional = sendNotImage(text, chatId, userId);
         }
-        sendNotImage(text, chatId, userId);
+
+        if(willSendMessageOptional.isPresent()){
+            MessageWrapper messageWrapper = willSendMessageOptional.get();
+            ContainerOfMessages container = containerOfMessagesService.addMessageToContainer(chat, messageWrapper);
+            messageWrapperRepository.save(messageWrapper);
+            containerOfMessagesDAO.save(container);
+            return container.getIdInChat();
+        }
+        return chat.getContainerOfMessages().getLast().getIdInChat();
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
-    public void sendNotImage(String text, int chatId, int userId){
+    public Optional<MessageWrapper> sendNotImage(String text, int chatId, int userId){
+        if(blockMessageService.contentIsBlocked(text, chatId)){
+           return Optional.empty();
+        }
+
         if(!text.isEmpty()) {
             Optional<String> link = isLink(text);
             if(link.isPresent()){
-                linkMessageService.sendLink(text, chatId, userId, link.get());
+                return Optional.of(linkMessageService.sendLink(text, chatId, userId, link.get()));
             }else{
-                messageService.sendMessage(chatId, userId, text);
+                return Optional.of(messageService.sendTextMessage(chatId, userId, text));
             }
+        }else{
+            return Optional.empty();
         }
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
-    private void sendImage(MultipartFile photo, int chatId, int userId, String underTextPhoto){
+    private Optional<MessageWrapper> sendImage(MultipartFile photo, Chat chat, int userId, String underTextPhoto){
         try {
-            photoMessageService.sendMessage(photo, chatId, userId, underTextPhoto);
+            return Optional.of(photoMessageService.sendMessage(photo, chat, userId, underTextPhoto));
         }catch (IOException ignored){
-            ignored.printStackTrace();
+            return Optional.empty();
         }
-    }
-
-    public List<MessageWrapper> findByChat(Chat chat){
-        return sortMessagesById(messageWrapperRepository.findByChat(chat)).reversed();
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void messageWasBeRead(int chatId, String username){
-        Chat chat = chatRepository.findById(chatId).orElse(null);
+        Chat chat = chatDAO.findById(chatId);
         if(chat.getClass() == BotChat.class){
             List<MessageWrapper> messages = chat.getMessages();
             for(MessageWrapper message: messages){
@@ -83,7 +98,7 @@ public class MessageWrapperService {
             return;
         }
         List<MessageWrapper> messages = chat.getMessages();
-        List<MessageWrapper> messagesOfInterlocutor = getMessagesOfInterlocutor(messages, chatService.getInterlocutor(username, chat).getUsername());
+        List<MessageWrapper> messagesOfInterlocutor = getMessagesOfInterlocutor(messages, messengerUserDAO.getInterlocutorFromChat(chat, username).getUsername());
         for(MessageWrapper message: messagesOfInterlocutor){
             message.setHasBeenRead(MessageStatus.READ);
             messageWrapperRepository.save(message);
@@ -101,18 +116,6 @@ public class MessageWrapperService {
         return messagesOfUser;
     }
 
-    private List<Integer> idiesOfMessageWrapper(int chatId){
-        return jdbcTemplate.query("select * from Message_wrapper where chat_id = ? order by id desc", new Object[] {chatId}, new RowMapper<Integer>() {
-            @Override
-            public Integer mapRow(ResultSet rs, int rowNum) throws SQLException {
-                return rs.getInt("id");
-            }
-        });
-    }
-
-    public static List<MessageWrapper> sortMessagesById(List<MessageWrapper> messages){
-        return messages.stream().sorted(Comparator.comparingInt(MessageWrapper::getId)).toList();
-    }
     public MessageWrapper findById(int id) {
         return messageWrapperRepository.findById(id).orElse(null);
     }

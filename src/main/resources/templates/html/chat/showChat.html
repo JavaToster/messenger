@@ -5,7 +5,6 @@
     <title>Title</title>
     <style>#chat-window {
     margin-left: 650px;
-    margin-top: 120px;
     width: 600px;
     height: 600px;
     border: 1px solid #ccc;
@@ -189,24 +188,54 @@
             border: 2px solid #007bff;
             border-radius: 10px;
         }
+        .next-and-back-containers{
+            margin-left: 650px;
+            margin-top: 100px;
+            display: flex;
+        }
+
+        .next-container{
+            margin-left: 405px;
+        }
+
+        .next-and-back-containers input{
+            font-size: 20px;
+            width: 100px;
+            background-color: white;
+            border: 2px solid black;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
 <a href="/messenger" style="font-size: 42px; text-decoration:none; color: black; margin-left: 20px;">Messenger</a>
-<div id="chat-window">
 
+<div class="next-and-back-containers">
+    <div class="back-container">
+        <form method="post" class="back-form" th:action="@{/messenger/chats/{chatId}/redirect_to_previous_container (chatId=${infoOfChat.getChatId()})}">
+            <input type="hidden" th:value="${infoOfChat.getContainerOfMessagesDTO().getIdInChat()}" name="containerIdInChat">
+            <input type="submit" value="back">
+        </form>
+    </div>
+    <div class="next-container">
+        <form method="post" class="next-form" th:action="@{/messenger/chats/{chatId}/redirect_to_next_container (chatId=${infoOfChat.getChatId()})}">
+            <input type="hidden" th:value="${infoOfChat.getContainerOfMessagesDTO().getIdInChat()}" name="containerIdInChat">
+            <input type="submit" value="next">
+        </form>
+    </div>
+</div>
+
+<div id="chat-window">
     <div id="chat-header">
         <div id="chat-partner"> <a th:href="@{/user/{username} (username=${infoOfChat.getUser().getUsername()}) }" th:text="${infoOfChat.getInterlocutorOrGroupOrChannelName()}"></a></div>
         <div id="last-online" th:text="${infoOfChat.getLastOnlineTimeOrMembersCount()}">Last online at 8:00 PM</div>
     </div>
-    <div class="messagesHere" th:if="${!infoOfChat.isHasMessages()}">
+    <div class="messagesHere">
         <div id="chat-messages">
-            <div th:each="messagesByDate: ${infoOfChat.getMessagesByDateDTO()}">
-                <p th:text="${messagesByDate.getDate()}" style="margin-left: 210px;"></p>
-                <div class="message" th:each="message: ${messagesByDate.getMessages()}">
+            <div class="message" th:each="message: ${infoOfChat.getContainerOfMessagesDTO().getMessages()}">
                     <div class="interlocutor-message" th:if="${!message.isUserIsOwner()}">
                         <div class="text-message" th:if="${message.getType() == 'text'}">
-                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${infoOfChat.isPrivateChat()}">Toster1</div>
+                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${infoOfChat.getChatType().equals('PrivateChat')}">Toster1</div>
                             <div class="text" th:text="${message.getMessage().getContent()}"> some text ept</div>
                             <div class="buttons-div" style="display: flex;">
                                 <div class="forward-div">
@@ -221,7 +250,7 @@
                             <div class="time" th:text="${message.getDate()}">9:06 PM</div>
                         </div>
                         <div class="message-photo" th:if="${message.getType() == 'image'}" >
-                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.isPrivateChat()}">Toster</div>
+                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.getChatType().equals('PrivateChat')}">Toster</div>
                             <div style="background-color: #f5f5f5; width: auto;">
                                 <img th:src="${message.getMessage().getContent()}">
                                 <div th:if="${message.isUserIsOwner()}" style="margin-left: 5px;">
@@ -238,7 +267,7 @@
                             <div class="time" th:text="${message.getDate()}">9:06 PM</div>
                         </div>
                         <div class="message-photo" th:if="${message.getType() == 'forward'}" >
-                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.isPrivateChat()">Toster</div>
+                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.getChatType().equals('PrivateChat')}">Toster</div>
                             <div style="margin-top: 5px; margin-bottom: 5px;">forward message</div>
                             <div th:text="'from' + ${message.getSpecification().getOwnerFrom()}"></div>
                             <div th:if="${message.getSpecification().getForwardMessageType() == 'image'}" style="background-color: #f5f5f5; width: auto;">
@@ -259,7 +288,7 @@
                             <div class="time" th:text="${message.getDate()}">9:06 PM</div>
                         </div>
                         <div class="text-message" th:if="${message.getType() == 'link'}">
-                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.isPrivateChat()}">Toster1</div>
+                            <div class="sender" th:text="${message.getOwner().getUsername()}" th:if="${!infoOfChat.getChatType().equals('PrivateChat')}">Toster1</div>
                             <div class="text">
                                 <a class="link-text" th:text="${message.getMessage().getContent()}" th:href="${message.getSpecification().getLink()}">https://www.youtube.com/watch?v=WL5XBs_ha3g</a>
                             </div>
@@ -360,8 +389,8 @@
                             <div class="time" th:text="${message.getDate()}">9:06 PM</div>
                         </div>
                     </div>
-                </div>
             </div>
+<!--            </div>-->
         </div>
     </div>
     <form id="chat-form" th:method="POST" th:action="@{/messenger/chats/{id}/send-message?user={user_id} (id=${infoOfChat.getChatId()}, user_id=${infoOfChat.getUser().getId()})}" enctype="multipart/form-data">

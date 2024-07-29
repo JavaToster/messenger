@@ -1,4 +1,4 @@
-package com.example.Messenger.dto.chat.channel.chatHead.privateChat;
+package com.example.Messenger.dto.chat.chatHead.privateChat;
 
 import com.example.Messenger.dto.chat.channel.chatHead.ChatHeadDTO;
 
