@@ -1,5 +1,6 @@
 package com.example.Messenger.services.database.message;
 
+import com.example.Messenger.DAO.chat.ChatDAO;
 import com.example.Messenger.DAO.message.ContainerOfMessagesDAO;
 import com.example.Messenger.dto.message.ContainerOfMessagesDTO;
 import com.example.Messenger.models.chat.Chat;
@@ -22,6 +23,7 @@ public class ContainerOfMessagesService {
     private final ContainerOfMessagesDAO containerOfMessagesDAO;
     private final Convertor convertor;
     private final ContainerOfMessagesCachingService containerOfMessagesCachingService;
+    private final ChatDAO chatDAO;
 
     public ContainerOfMessages getLast(Chat chat){
         return chat.getContainerOfMessages().getLast();
@@ -65,5 +67,49 @@ public class ContainerOfMessagesService {
 
     private ContainerOfMessagesDTO updateContainerOfMessages(ContainerOfMessagesDTO container){
         return containerOfMessagesCachingService.save(container);
+    }
+
+    public long getNextContainerId(int chatId, Long idInChat) {
+        Chat chat = chatDAO.findById(chatId);
+
+        if(idInChat == 0){
+            return containerOfMessagesDAO.getIdInChatOfLastContainer(chat);
+        }
+
+        if(!isContainerIsLast(chat, idInChat)){
+            return ++idInChat;
+        }else{
+            return idInChat;
+        }
+    }
+
+    private boolean isContainerIsLast(Chat chat, long currentOneIdInChat){
+        return chat.getContainerOfMessages().getFirst().getIdInChat() <= currentOneIdInChat;
+    }
+
+    public long getPreviousContainerId(int chatId, Long currentOneIdInChat){
+        Chat chat = chatDAO.findById(chatId);
+
+        System.out.println(currentOneIdInChat);
+
+        if(currentOneIdInChat == 0){
+            long lastContainerId = containerOfMessagesDAO.getIdInChatOfLastContainer(chat);
+            if(chat.getContainerOfMessages().size() == 1){
+                return lastContainerId;
+            }else{
+                return lastContainerId - 1;
+            }
+        }
+
+        if(!isContainerIsFirst(chat, currentOneIdInChat)){
+            return --currentOneIdInChat;
+        }else{
+            return currentOneIdInChat;
+        }
+    }
+
+    private boolean isContainerIsFirst(Chat chat, long currentOneIdInChat) {
+        System.out.println(chat.getContainerOfMessages().getLast().getIdInChat());
+        return chat.getContainerOfMessages().getLast().getIdInChat() == currentOneIdInChat;
     }
 }
