@@ -33,7 +33,6 @@ build/
 .vscode/
 
 /src/main/resources/application.properties
-/src/main/java/com/example/Messenger/TestClass.java
 /src/main/java/com/example/Messenger/RedisCource
 /src/main/resources/static/images/
 tasks.txt
