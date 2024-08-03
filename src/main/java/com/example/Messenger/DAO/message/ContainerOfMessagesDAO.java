@@ -11,6 +11,7 @@ import org.hibernate.Hibernate;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -52,9 +53,10 @@ public class ContainerOfMessagesDAO {
 
     public ContainerOfMessages getIdByIdInChat(Chat chat, Long containerIdInChat) {
         List<ContainerOfMessages> containers = chat.getContainerOfMessages();
+
         for(ContainerOfMessages container: containers){
             if(container.equalsByIdInChat(containerIdInChat)){
-               return container;
+                return container;
             }
         }
         return null;

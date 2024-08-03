@@ -19,6 +19,6 @@ public class ContainerOfMessagesCachingService {
 
     @Cacheable(cacheNames = "containerOfMessage", key = "#container.id")
     public ContainerOfMessagesDTO getContainer(ContainerOfMessages container, List<MessageResponseDTO> messages){
-        return new ContainerOfMessagesDTO(container.getId(), messages);
+        return new ContainerOfMessagesDTO(container.getId(), container.getIdInChat(), messages);
     }
 }

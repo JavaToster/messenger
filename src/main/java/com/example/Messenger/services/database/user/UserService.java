@@ -318,10 +318,12 @@ public class UserService implements UserDetailsService {
             if(user.getRole().equals(RoleOfUser.ROLE_BAN)){
                 continue;
             }
-            if(user.getComplaints().size() >= 3){
-                user.setRole(RoleOfUser.ROLE_BAN);
+            if(user.getComplaints() != null){
+                if(user.getComplaints().size() >= 3){
+                    user.setRole(RoleOfUser.ROLE_BAN);
+                    userRepository.save(user);
+                }
             }
-            userRepository.save(user);
         }
     }
 

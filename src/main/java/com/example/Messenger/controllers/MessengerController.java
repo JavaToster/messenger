@@ -14,6 +14,7 @@ import com.example.Messenger.security.UserDetails;
 import com.example.Messenger.services.auth.AuthenticationService;
 import com.example.Messenger.services.database.chat.ChatService;
 import com.example.Messenger.services.database.message.BlockMessageService;
+import com.example.Messenger.services.database.message.ContainerOfMessagesService;
 import com.example.Messenger.services.database.message.MessageWrapperService;
 import com.example.Messenger.services.email.redis.languageOfApp.LanguageOfAppService;
 import com.example.Messenger.services.database.user.BotService;
@@ -51,6 +52,7 @@ public class MessengerController {
     private final AuthenticationService authenticationService;
     private final ChatDAO chatDAO;
     private final Convertor convertor;
+    private final ContainerOfMessagesService containerOfMessagesService;
 
     /** main window
      * главное окно*/
@@ -192,4 +194,17 @@ public class MessengerController {
         balancerOfFoundChats.addFoundedChats(username, foundChatsByChatName, foundChatsByMessage, foundUsers);
         return "redirect:/messenger";
     }
+
+    @PostMapping("/chats/{chatId}/redirect_to_next_container")
+    public String redirectToNextContainer(@RequestParam("containerIdInChat") Long idInChat, @PathVariable("chatId") int chatId) {
+        long nextIdInChat = containerOfMessagesService.getNextContainerId(chatId, idInChat);
+        return "redirect:/messenger/chats/"+chatId+"?container_id="+nextIdInChat;
+    }
+
+    @PostMapping("/chats/{chatId}/redirect_to_previous_container")
+    public String redirectToPreviousContainer(@RequestParam("containerIdInChat") long idInChat, @PathVariable("chatId") int chatId){
+        long previousIdInChat = containerOfMessagesService.getPreviousContainerId(chatId, idInChat);
+        return "redirect:/messenger/chats/"+chatId+"?container_id="+previousIdInChat;
+    }
+
 }

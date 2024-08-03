@@ -12,10 +12,12 @@ import java.util.List;
 public class ContainerOfMessagesDTO implements Serializable {
     @Indexed
     private Long id;
+    private long idInChat;
     private List<MessageResponseDTO> messages;
 
-    public ContainerOfMessagesDTO(long id, List<MessageResponseDTO> messages){
+    public ContainerOfMessagesDTO(long id, long idInChat, List<MessageResponseDTO> messages){
         this.id = id;
+        this.idInChat = idInChat;
         this.messages = messages;
     }
 }

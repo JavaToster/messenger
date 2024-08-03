@@ -5,7 +5,6 @@
     <title>Title</title>
     <style>#chat-window {
     margin-left: 650px;
-    margin-top: 120px;
     width: 600px;
     height: 600px;
     border: 1px solid #ccc;
@@ -189,12 +188,44 @@
             border: 2px solid #007bff;
             border-radius: 10px;
         }
+        .next-and-back-containers{
+            margin-left: 650px;
+            margin-top: 100px;
+            display: flex;
+        }
+
+        .next-container{
+            margin-left: 405px;
+        }
+
+        .next-and-back-containers input{
+            font-size: 20px;
+            width: 100px;
+            background-color: white;
+            border: 2px solid black;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
 <a href="/messenger" style="font-size: 42px; text-decoration:none; color: black; margin-left: 20px;">Messenger</a>
-<div id="chat-window">
 
+<div class="next-and-back-containers">
+    <div class="back-container">
+        <form method="post" class="back-form" th:action="@{/messenger/chats/{chatId}/redirect_to_previous_container (chatId=${infoOfChat.getChatId()})}">
+            <input type="hidden" th:value="${infoOfChat.getContainerOfMessagesDTO().getIdInChat()}" name="containerIdInChat">
+            <input type="submit" value="back">
+        </form>
+    </div>
+    <div class="next-container">
+        <form method="post" class="next-form" th:action="@{/messenger/chats/{chatId}/redirect_to_next_container (chatId=${infoOfChat.getChatId()})}">
+            <input type="hidden" th:value="${infoOfChat.getContainerOfMessagesDTO().getIdInChat()}" name="containerIdInChat">
+            <input type="submit" value="next">
+        </form>
+    </div>
+</div>
+
+<div id="chat-window">
     <div id="chat-header">
         <div id="chat-partner"> <a th:href="@{/user/{username} (username=${infoOfChat.getUser().getUsername()}) }" th:text="${infoOfChat.getInterlocutorOrGroupOrChannelName()}"></a></div>
         <div id="last-online" th:text="${infoOfChat.getLastOnlineTimeOrMembersCount()}">Last online at 8:00 PM</div>

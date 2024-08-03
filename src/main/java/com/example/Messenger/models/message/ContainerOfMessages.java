@@ -10,7 +10,6 @@ import java.util.List;
 @Data
 @Entity
 @Table(name = "container_of_messages")
-//@Builder
 public class ContainerOfMessages implements Serializable {
     @Id
     @Column(name = "id")
@@ -41,5 +40,9 @@ public class ContainerOfMessages implements Serializable {
             return ((ContainerOfMessages) obj).getId() == this.id;
         }
         return false;
+    }
+
+    public List<MessageWrapper> getMessages(){
+        return this.messages.reversed();
     }
 }

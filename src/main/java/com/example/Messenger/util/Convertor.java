@@ -291,7 +291,7 @@ public class Convertor {
     }
 
     public ContainerOfMessagesDTO convertToContainerOfMessagesDTOWithoutCaching(ContainerOfMessages container, String username){
-        return new ContainerOfMessagesDTO(container.getId(), convertToMessageDTO(container.getMessages(), username));
+        return new ContainerOfMessagesDTO(container.getId(), container.getIdInChat(), convertToMessageDTO(container.getMessages(), username));
     }
 
     private long validateAContainerId(Chat chat, Long containerId) {
