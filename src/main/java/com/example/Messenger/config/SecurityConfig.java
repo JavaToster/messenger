@@ -37,7 +37,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/auth/login", "/auth/register", "/error", "/bot-rest/**", "/rest-messenger/**", "/redis/**",
-                                "/auth/**").permitAll()
+                                "/auth/**", "/browser/**", "/browser").permitAll()
                         .requestMatchers("/messenger/**", "/user/**").hasAnyRole("USER", "BLOCKER")
                         .requestMatchers("/admin/blocker/**").hasAnyRole("BLOCKER", "ADMIN")
                         .anyRequest().authenticated());
