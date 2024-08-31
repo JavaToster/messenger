@@ -3,14 +3,12 @@ package com.example.Messenger.DAO.chat;
 import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.models.chat.*;
 import com.example.Messenger.models.user.ChatMember;
-import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.user.MessengerUserRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
-import com.example.Messenger.util.enums.ChatMemberType;
-import com.example.Messenger.util.exceptions.ChatNotFoundException;
-import com.example.Messenger.util.exceptions.UserNotFoundException;
+import com.example.Messenger.exceptions.chat.ChatNotFoundException;
+import com.example.Messenger.exceptions.user.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,12 +43,8 @@ public class ChatDAO{
         return false;
     }
 
-    public List<Chat> sortChatsByLastMessage(String username){
-        List<ChatMember> chatMembers = getUser(username).getMembers();
-        List<Chat> chats = new LinkedList<>();
+    public List<Chat> sortChatsByLastMessage(List<Chat> chats){
         try{
-            chatMembers.forEach(chatMember -> chats.add(chatMember.getChat()));
-
             for(int i = 0; i<chats.size()-1; i++){
                 Chat chat = chats.get(i);
                 if (isLastMessageSendingTimeByFirstChatMoreLastMessageSendingTimeBySecondChat(chat, chats.get(i+1))) {
@@ -68,7 +62,7 @@ public class ChatDAO{
     }
 
     private User getUser(String username){
-        return this.userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+        return this.userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("user with username "+ username + " not found"));
     }
 
     public int hasPrivateChat(User member1, User member2){
@@ -120,5 +114,12 @@ public class ChatDAO{
         return chatRepository.findById(id).orElseThrow(ChatNotFoundException::new);
     }
 
+    public List<Chat> findAll(){
+        return chatRepository.findAll();
+    }
+
+    public void delete(Chat chat){
+        chatRepository.delete(chat);
+    }
 }
 

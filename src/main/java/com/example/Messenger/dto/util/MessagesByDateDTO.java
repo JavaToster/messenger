@@ -1,6 +1,6 @@
 package com.example.Messenger.dto.util;
 
-import com.example.Messenger.dto.message.MessageResponseDTO;
+import com.example.Messenger.dto.message.MessageWrapperDTO;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -9,12 +9,12 @@ import java.util.List;
 
 public class MessagesByDateDTO {
     private Date date;
-    private List<MessageResponseDTO> messages;
+    private List<MessageWrapperDTO> messages;
 
     public MessagesByDateDTO() {
     }
 
-    public MessagesByDateDTO(Date date, List<MessageResponseDTO> messages) {
+    public MessagesByDateDTO(Date date, List<MessageWrapperDTO> messages) {
         this.messages = messages.reversed();
         this.date = date;
     }
@@ -28,11 +28,11 @@ public class MessagesByDateDTO {
         this.date = date;
     }
 
-    public List<MessageResponseDTO> getMessages() {
+    public List<MessageWrapperDTO> getMessages() {
         return messages;
     }
 
-    public void setMessages(List<MessageResponseDTO> messages) {
+    public void setMessages(List<MessageWrapperDTO> messages) {
         this.messages = messages;
     }
 }

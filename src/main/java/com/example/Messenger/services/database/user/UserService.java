@@ -1,8 +1,13 @@
 package com.example.Messenger.services.database.user;
 
+import com.example.Messenger.DAO.chat.ChatDAO;
+import com.example.Messenger.DAO.user.ChatMemberDAO;
+import com.example.Messenger.DAO.user.ComplaintOfUserDAO;
 import com.example.Messenger.DAO.user.MessengerUserDAO;
-import com.example.Messenger.dto.user.InfoOfUserDTO;
+import com.example.Messenger.DAO.user.UserDAO;
+import com.example.Messenger.dto.user.UserDTO;
 import com.example.Messenger.dto.user.RegisterUserDTO;
+import com.example.Messenger.exceptions.user.ChatMemberNotFoundException;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.chat.PrivateChat;
 import com.example.Messenger.models.message.ImageMessage;
@@ -17,8 +22,8 @@ import com.example.Messenger.util.enums.ChatMemberType;
 import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.enums.RoleOfUser;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
-import com.example.Messenger.util.exceptions.ChatNotFoundException;
-import com.example.Messenger.util.exceptions.UserNotFoundException;
+import com.example.Messenger.exceptions.chat.ChatNotFoundException;
+import com.example.Messenger.exceptions.user.UserNotFoundException;
 import com.example.Messenger.util.threads.DeleteRestoreCodeThread;
 import com.example.Messenger.util.threads.ReBlockUserThread;
 import jakarta.servlet.http.Cookie;
@@ -43,17 +48,18 @@ import java.util.*;
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
 
-    private final UserRepository userRepository;
-    private final ChatRepository chatRepository;
-    private final ChatMemberRepository chatMemberRepository;
+    private final ChatDAO chatDAO;
+    private final UserDAO userDAO;
     private final TranslateBalancer loadBalancer;
     private final MessengerUserService messengerUserService;
     private final SendRestoreCodeToEmailService sendRestoreCodeToEmailService;
     private final PasswordEncoder encoder;
-    private final ComplaintOfUserRepository complaintOfUserRepository;
     private final SettingsOfUserService settingsOfUserService;
     private final IconOfUserService iconOfUserService;
     private final MessengerUserDAO messengerUserDAO;
+    private final ChatMemberDAO chatMemberDAO;
+    private final ComplaintOfUserDAO complaintOfUserDAO;
+
     @Value("${image.path.user.icons}")
     private String imagePath;
 
@@ -79,13 +85,12 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<User> person  = userRepository.findByUsername(username);
-
-        if(person.isEmpty()){
-            throw new UsernameNotFoundException("User not found!");
+        try {
+            User user = userDAO.findByUsername(username);
+            return new com.example.Messenger.security.UserDetails(user);
+        }catch (UserNotFoundException e){
+            throw new UsernameNotFoundException("User this username not found");
         }
-
-        return new com.example.Messenger.security.UserDetails(person.get());
     }
 
     public Cookie createCookie(String username, String value, int age){
@@ -98,7 +103,7 @@ public class UserService implements UserDetailsService {
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
     public User register(RegisterUserDTO registerUserDTO) throws RuntimeException, IOException{
         System.out.println("I was registered");
-        User user = userRepository.save(new User(registerUserDTO));
+        User user = userDAO.save(new User(registerUserDTO));
         loadBalancer.add(user.getId());
         settingsOfUserService.create(registerUserDTO, user);
         iconOfUserService.createNewIcon(registerUserDTO.getIcon(), user);
@@ -106,25 +111,25 @@ public class UserService implements UserDetailsService {
     }
 
     public User findById(int id){
-        return userRepository.findById(id).orElse(null);
+        return userDAO.findById(id);
     }
 
 
     public User findByUsername(String username) {
-        return userRepository.findByUsername(username).orElse(null);
+        return userDAO.findByUsername(username);
     }
 
     @Cacheable(value = "userInfoByUsername", key = "#username")
-    public InfoOfUserDTO findUserInfoByUsername(String username, String myUsername){
-        return convertToUserDTO(getUser(username), myUsername);
+    public UserDTO findUserInfoByUsername(String username, String myUsername){
+        return convertToUserDTO(userDAO.findByUsername(username), myUsername);
     }
 
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public List<User> findAll(){
+        return userDAO.findAll();
     }
 
     public List<User> findWithout(String username){
-        List<User> users = userRepository.findAll();
+        List<User> users = userDAO.findAll();
         users.remove(findByUsername(username));
 
         return users;
@@ -132,9 +137,9 @@ public class UserService implements UserDetailsService {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void setLastOnline(String name) {
-        User user = userRepository.findByUsername(name).orElse(null);
+        User user = userDAO.findByUsername(name);
         user.setLastOnlineTime(new Date());
-        userRepository.save(user);
+        userDAO.save(user);
     }
 
 
@@ -150,7 +155,7 @@ public class UserService implements UserDetailsService {
         Calendar calendarOfUser = Calendar.getInstance();
         Calendar calendarNow = Calendar.getInstance();
 
-        Date dateOfUser = userRepository.findByUsername(username).orElse(null).getLastOnlineTime();
+        Date dateOfUser = userDAO.findByUsername(username).getLastOnlineTime();
         Date dateNow = new Date();
 
         calendarOfUser.setTime(dateOfUser);
@@ -189,7 +194,7 @@ public class UserService implements UserDetailsService {
     }
 
     public boolean isBan(String username, int chatId){
-        List<ChatMember> banMembers = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new).getMembers();
+        List<ChatMember> banMembers = chatDAO.findById(chatId).getMembers();
         for(ChatMember chatMember: banMembers){
             if(chatMember.getUser().equals(username) && chatMember.getMemberType() == ChatMemberType.BLOCK){
                 return true;
@@ -213,32 +218,28 @@ public class UserService implements UserDetailsService {
         return differenceOfDay < 5 ? "дня" : "дней";
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void block(int id, int chatId) {
-        ChatMember chatMember = chatMemberRepository.findByUserAndChat(userRepository.findById(id).orElseThrow(UserNotFoundException::new), chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new)).orElse(null);
+    public void block(int userId, int chatId) {
+        ChatMember chatMember = chatMemberDAO.findByChatAndUser(userId, chatId);
         chatMember.setMemberType(ChatMemberType.BLOCK);
-        chatMemberRepository.save(chatMember);
+        chatMemberDAO.save(chatMember);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void unblock(int id, int chatId) {
-        ChatMember chatMember = chatMemberRepository.findByUserAndChat(userRepository.findById(id).orElse(null), chatRepository.findById(chatId).orElse(null)).orElse(null);
+    public void unblock(int userId, int chatId) {
+        ChatMember chatMember = chatMemberDAO.findByChatAndUser(userId, chatId);
         chatMember.setMemberType(ChatMemberType.MEMBER);
-        chatMemberRepository.save(chatMember);
+        chatMemberDAO.save(chatMember);
     }
 
     public boolean isUser(String username, String email) {
-        Optional<User> user = userRepository.findByUsername(username);
-        if(user.isEmpty()){
-            user = userRepository.findByEmail(email);
-            if(user.isEmpty()){
-                return false;
-            }
+        if(userDAO.isUserByUsername(username) || userDAO.isUserByEmail(email)){
+            return true;
         }
-        return true;
+        return false;
     }
 
     public boolean isEmail(String email) {
-        return userRepository.findByEmail(email).isPresent();
+        return userDAO.isUserByEmail(email);
     }
 
     public void sendCodeToRestore(HttpServletResponse response, String email) {
@@ -254,9 +255,9 @@ public class UserService implements UserDetailsService {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void changePasswordByEmail(String email, String password) {
-        User user = userRepository.findByEmail(email).orElse(null);
+        User user = userDAO.findByEmail(email);
         user.setPassword(encoder.encode(password));
-        userRepository.save(user);
+        userDAO.save(user);
         removeEmailFromRestoreBalancer(email);
     }
 
@@ -267,9 +268,9 @@ public class UserService implements UserDetailsService {
     // метод для получения изображений из приватного чата
     // используется в окне просмотра пользователя
 
-    public List<String> getImagesListByInterlocutors(String username, String myUsername) {
-        List<ChatMember> membersList1 = chatMemberRepository.findByUser(getUser(username));
-        List<ChatMember> membersList2 = chatMemberRepository.findByUser(getUser(myUsername));
+    public List<String> getImagesListByInterlocutors(String interlocutorUsername, String viewerUsername) {
+        List<ChatMember> membersList1 = chatMemberDAO.findByUser(interlocutorUsername);
+        List<ChatMember> membersList2 = chatMemberDAO.findByUser(viewerUsername);
 
         List<String> urls = new LinkedList<>();
 
@@ -299,21 +300,14 @@ public class UserService implements UserDetailsService {
         return urlsOfImages;
     }
 
-    private User getUser(String username){
-        return userRepository.findByUsername(username).orElse(null);
-    }
-
-    private User getUser(int id){
-        return userRepository.findById(id).orElse(null);
-    }
 
     public List<ComplaintOfUser> getComplaintsOfUser(User user) {
-        return complaintOfUserRepository.findByOwner(user);
+        return complaintOfUserDAO.findByOwner(user);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void banComplaintsUser() {
-        List<User> users = userRepository.findAll();
+        List<User> users = userDAO.findAll();
         for(User user: users){
             if(user.getRole().equals(RoleOfUser.ROLE_BAN)){
                 continue;
@@ -321,7 +315,7 @@ public class UserService implements UserDetailsService {
             if(user.getComplaints() != null){
                 if(user.getComplaints().size() >= 3){
                     user.setRole(RoleOfUser.ROLE_BAN);
-                    userRepository.save(user);
+                    userDAO.save(user);
                 }
             }
         }
@@ -351,50 +345,51 @@ public class UserService implements UserDetailsService {
             default -> calendar.add(Calendar.MINUTE, 0);
         }
 
-        User user = getUser(username);
+        User user = userDAO.findByUsername(username);
         ReBlockUserThread reBlockUserThread = new ReBlockUserThread(user, (this), calendar);
         reBlockUserThread.start();
 
         user.setRole(RoleOfUser.ROLE_BAN);
-        userRepository.save(user);
+        userDAO.save(user);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
     public synchronized void unban(User user) {
         user.setRole(RoleOfUser.ROLE_USER);
-        userRepository.save(user);
+        userDAO.save(user);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void setBlocker(String username) {
-        User user = getUser(username);
+        User user = userDAO.findByUsername(username);
         user.setRole(RoleOfUser.ROLE_BLOCKER);
-        userRepository.save(user);
+        userDAO.save(user);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public void unsetBlocker(String username){
-        User user = getUser(username);
+        User user = userDAO.findByUsername(username);
         user.setRole(RoleOfUser.ROLE_USER);
-        userRepository.save(user);
-    }
-
-    public LanguageType getUserLanguageMode(String username) {
-        return getUser(username).getSettingsOfUser().getLang();
+        userDAO.save(user);
     }
 
     public SettingsOfUser getSettings(int userId) {
-        return getUser(userId).getSettingsOfUser();
+        return userDAO.findById(userId).getSettingsOfUser();
     }
 
-    private InfoOfUserDTO convertToUserDTO(User user, String myUsername) {
-        InfoOfUserDTO info = new InfoOfUserDTO(user.getId(), user.getUsername(), user.getName(), user.getLastname(), user.getEmail(), user.getLinkOfIcon());
-        info.setLastTime(messengerUserDAO.getLastOnlineTimeAsString(user));
-        info.setImagesUrl(getImagesListByInterlocutors(user.getUsername(), myUsername));
-        return info;
-    }
+    private UserDTO convertToUserDTO(User user, String myUsername) {
+        List<String> linkOfImagesInnerChatOfUser = getImagesListByInterlocutors(user.getUsername(), myUsername);
+        String lastTime = messengerUserDAO.getLastOnlineTimeAsString(user);
 
-    public User initializeUserById(int id){
-        return getUser(id);
+        return UserDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .phone(user.getPhone())
+                .firstname(user.getName())
+                .lastname(user.getLastname())
+                .email(user.getEmail())
+                .imagesUrl(linkOfImagesInnerChatOfUser)
+                .lastTime(lastTime)
+                .build();
     }
 }

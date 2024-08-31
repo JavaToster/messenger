@@ -3,7 +3,7 @@ package com.example.Messenger.services.email.redis.languageOfApp;
 import com.example.Messenger.redisModel.languageData.LanguageOfApp;
 import com.example.Messenger.repositories.redis.languageOfApp.LanguageOfAppRepository;
 import com.example.Messenger.util.enums.LanguageType;
-import com.example.Messenger.util.exceptions.LanguageNotSupportedException;
+import com.example.Messenger.exceptions.translate.LanguageNotSupportedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

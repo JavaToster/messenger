@@ -4,30 +4,24 @@ import com.example.Messenger.DAO.chat.BotChatDAO;
 import com.example.Messenger.models.chat.BotChat;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.message.Message;
-import com.example.Messenger.models.message.MessageWrapper;
-import com.example.Messenger.models.user.Bot;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.chat.BotChatRepository;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.message.MessageRepository;
-import com.example.Messenger.repositories.database.message.MessageWrapperRepository;
 import com.example.Messenger.repositories.database.user.ChatMemberRepository;
 import com.example.Messenger.repositories.database.user.MessengerUserRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.database.user.BotFatherService;
 import com.example.Messenger.util.enums.ChatMemberType;
-import com.example.Messenger.util.enums.MessageType;
-import com.example.Messenger.util.exceptions.ChatNotFoundException;
-import com.example.Messenger.util.exceptions.UserNotFoundException;
+import com.example.Messenger.exceptions.chat.ChatNotFoundException;
+import com.example.Messenger.exceptions.user.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Service

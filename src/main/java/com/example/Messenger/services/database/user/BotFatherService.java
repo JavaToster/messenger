@@ -3,22 +3,16 @@ package com.example.Messenger.services.database.user;
 import com.example.Messenger.DAO.user.BotDAO;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.message.Message;
-import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.Bot;
-import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.message.MessageRepository;
 import com.example.Messenger.repositories.database.user.BotRepository;
-import com.example.Messenger.repositories.database.user.MessengerUserRepository;
-import com.example.Messenger.util.exceptions.bot.BotUsernameIsUsedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @Transactional(readOnly = true)

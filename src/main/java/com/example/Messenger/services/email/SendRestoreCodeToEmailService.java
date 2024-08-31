@@ -2,7 +2,7 @@ package com.example.Messenger.services.email;
 
 import com.example.Messenger.balancers.RestoreByEmailBalancer;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
-import com.example.Messenger.util.exceptions.redis.RestoreCodeNotFoundException;
+import com.example.Messenger.exceptions.redis.RestoreCodeNotFoundException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

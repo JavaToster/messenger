@@ -1,11 +1,12 @@
 package com.example.Messenger.services.database.message;
 
+import com.example.Messenger.DAO.user.UserDAO;
+import com.example.Messenger.exceptions.message.ImageReadingException;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.message.ImageMessage;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.message.PhotoMessageRepository;
-import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.cloudinary.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.processing.FilerException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -27,27 +29,22 @@ import java.util.Optional;
 public class PhotoMessageService {
     private final PhotoMessageRepository photoMessageRepository;
     private final CloudinaryService cloudinaryService;
-    private final UserRepository userRepository;
+    private final UserDAO userDAO;
     private final ChatRepository chatRepository;
     @Value("${image.path.messages}")
     private String imagePath;
 
     @Transactional
-    public MessageWrapper sendMessage(MultipartFile file, Chat chat, int userId, String underPhoto) throws IOException {
-        Optional<String> image = isImage(file.getBytes());
+    public MessageWrapper sendMessage(MultipartFile file, Chat chat, int userId, String underPhoto) throws IOException, ImageReadingException{
+        Optional<String> image = imageIsExist(file);
         if(image.isPresent()){
-            return new ImageMessage(chat, userRepository.findById(userId).orElse(null), image.get(), underPhoto, getExpansion(file.getOriginalFilename()));
+            return new ImageMessage(chat, userDAO.findById(userId), image.get(), underPhoto, getExpansion(file.getOriginalFilename()));
         }
 
         String filePath = imagePath+(getLastImageId()+1)+getExpansion(file.getOriginalFilename());
         file.transferTo(new File(filePath));
-        Optional<String> optionalUrl = cloudinaryService.sendMessage(filePath);
-        if(optionalUrl.isPresent()){
-            String url = optionalUrl.get();
-            return new ImageMessage(chat, userRepository.findById(userId).orElse(null), url, underPhoto, getExpansion(file.getOriginalFilename()));
-        }else {
-            return null;
-        }
+        String url = cloudinaryService.sendMessage(filePath);
+        return new ImageMessage(chat, userDAO.findById(userId), url, underPhoto, getExpansion(file.getOriginalFilename()));
     }
 
     private int getLastImageId(){
@@ -60,13 +57,18 @@ public class PhotoMessageService {
     }
 
 
-    private Optional<String> isImage(byte[] imageBytes) {
+    private Optional<String> imageIsExist(MultipartFile file) throws ImageReadingException {
+        try {
+            byte[] fileBytes = file.getBytes();
+        }catch (IOException e){
+            throw new ImageReadingException("Could not processing file");
+        }
         List<ImageMessage> images = photoMessageRepository.findAll();
         for(ImageMessage image: images){
             FileInputStream fileInputStream;
             try {
                 fileInputStream = new FileInputStream(imagePath + image.getId() + getExpansion(image));
-                if (Arrays.equals(fileInputStream.readAllBytes(), imageBytes)) {
+                if (Arrays.equals(fileInputStream.readAllBytes(), file.getBytes())) {
                     return Optional.of(image.getContent());
                 }
                 fileInputStream.close();

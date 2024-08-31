@@ -10,13 +10,12 @@ import com.example.Messenger.repositories.database.chat.ChannelRepository;
 import com.example.Messenger.repositories.database.user.ChatMemberRepository;
 import com.example.Messenger.repositories.database.user.MessengerUserRepository;
 import com.example.Messenger.util.enums.ChatMemberType;
-import com.example.Messenger.util.exceptions.ChatNotFoundException;
+import com.example.Messenger.exceptions.chat.ChatNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service

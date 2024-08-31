@@ -1,18 +1,14 @@
 package com.example.Messenger.DAO.message;
 
-import com.example.Messenger.dto.message.ContainerOfMessagesDTO;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.message.ContainerOfMessages;
 import com.example.Messenger.repositories.database.message.ContainerOfMessagesRepository;
-import com.example.Messenger.util.exceptions.ContainerOfMessagesNotFoundException;
-import com.example.Messenger.util.exceptions.MessagesBoxNotFoundException;
+import com.example.Messenger.exceptions.containerOfMessages.ContainerOfMessagesNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 @Component
 @RequiredArgsConstructor
@@ -22,12 +18,7 @@ public class ContainerOfMessagesDAO {
     private static final long CONTAINER_MAX_MESSAGES_LIMIT = 5;
 
     public ContainerOfMessages findByIdInChat(Chat chat, long theCurrentOneId){
-        for(ContainerOfMessages box: chat.getContainerOfMessages()){
-           if(box.equals(theCurrentOneId)){
-               return box;
-           }
-        }
-        throw new MessagesBoxNotFoundException();
+        return containerOfMessagesRepository.findByChatAndIdInChat(chat, theCurrentOneId).orElse(getEmpty());
     }
     public ContainerOfMessages getNext(Chat chat, long theCurrentOneId){
         return findByIdInChat(chat, ++theCurrentOneId);
@@ -52,13 +43,12 @@ public class ContainerOfMessagesDAO {
     }
 
     public ContainerOfMessages getIdByIdInChat(Chat chat, Long containerIdInChat) {
-        List<ContainerOfMessages> containers = chat.getContainerOfMessages();
+       return containerOfMessagesRepository.findByChatAndIdInChat(chat, containerIdInChat).orElse(getEmpty());
+    }
 
-        for(ContainerOfMessages container: containers){
-            if(container.equalsByIdInChat(containerIdInChat)){
-                return container;
-            }
-        }
-        return null;
+    public ContainerOfMessages getEmpty(){
+        ContainerOfMessages container = new ContainerOfMessages();
+        container.setMessages(Collections.emptyList());
+        return container;
     }
 }

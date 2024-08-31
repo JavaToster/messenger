@@ -1,7 +1,7 @@
 package com.example.Messenger.controllers;
 
 import com.example.Messenger.dto.chat.ChatDTO;
-import com.example.Messenger.dto.user.InfoOfUserDTO;
+import com.example.Messenger.dto.user.UserDTO;
 import com.example.Messenger.services.database.SettingsOfUserService;
 import com.example.Messenger.services.database.chat.ChatService;
 import com.example.Messenger.services.database.user.ComplaintOfUserService;
@@ -47,8 +47,8 @@ public class UserController {
             return "redirect:/user/profile";
         }
 
-        InfoOfUserDTO infoOfUserDTO = userService.findUserInfoByUsername(username, myUsername);
-        model.addAttribute("infoOfUser", infoOfUserDTO);
+        UserDTO userDTO = userService.findUserInfoByUsername(username, myUsername);
+        model.addAttribute("infoOfUser", userDTO);
         model.addAttribute("myUsername", myUsername);
         model.addAttribute("url", new String());
 

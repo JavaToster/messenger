@@ -1,19 +1,19 @@
 package com.example.Messenger.services.database.message;
 
-import com.example.Messenger.DAO.message.ContainerOfMessagesDAO;
 import com.example.Messenger.models.chat.Chat;
-import com.example.Messenger.models.message.ContainerOfMessages;
 import com.example.Messenger.models.message.LinkMessage;
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.message.ContainerOfMessagesRepository;
 import com.example.Messenger.repositories.database.message.LinkMessageRepository;
 import com.example.Messenger.repositories.database.user.MessengerUserRepository;
-import com.example.Messenger.util.exceptions.ChatNotFoundException;
-import com.example.Messenger.util.exceptions.UserNotFoundException;
+import com.example.Messenger.exceptions.chat.ChatNotFoundException;
+import com.example.Messenger.exceptions.user.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @Transactional(readOnly = true)
@@ -31,5 +31,22 @@ public class LinkMessageService {
 
         LinkMessage newLink = new LinkMessage(text, chat, messengerUserRepository.findById(userId).orElseThrow(UserNotFoundException::new), link);
         return newLink;
+    }
+
+    public Optional<String> isLink(String text){
+        String[] splitWords = text.split(" ");
+        String link = "";
+        for(String word: splitWords){
+            if(word.length() < 9){
+                continue;
+            }
+            if(word.substring(0, 8).equals("https://") || word.substring(0, 8).equals("http://")){
+                link = word;
+            }
+        }
+        if(link.isEmpty()){
+            return Optional.empty();
+        }
+        return Optional.of(link);
     }
 }

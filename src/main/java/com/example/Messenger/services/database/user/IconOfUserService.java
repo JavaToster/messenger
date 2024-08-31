@@ -4,7 +4,7 @@ import com.example.Messenger.models.user.IconOfUser;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.user.IconOfUserRepository;
 import com.example.Messenger.services.cloudinary.CloudinaryService;
-import com.example.Messenger.services.email.redis.user.UserCachingService;
+import com.example.Messenger.redisManagers.UserCachingManager;
 import com.example.Messenger.util.threads.AutoUploadIcon;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,7 +22,7 @@ import java.util.List;
 public class IconOfUserService {
     private final IconOfUserRepository iconOfUserRepository;
     private final CloudinaryService cloudinaryService;
-    private final UserCachingService userCachingService;
+    private final UserCachingManager userCachingManager;
     @Value("${image.path.user.icons}")
     private String imagePath;
 
@@ -30,7 +30,7 @@ public class IconOfUserService {
     public void createNewIcon(MultipartFile icon, User owner) throws IOException, RuntimeException {
         String filePath = imagePath+(getLastImageId()+1)+getExpansion(icon.getOriginalFilename());
         icon.transferTo(new File(filePath));
-        AutoUploadIcon autoUploadIcon = new AutoUploadIcon(filePath, owner, cloudinaryService, userCachingService);
+        AutoUploadIcon autoUploadIcon = new AutoUploadIcon(filePath, owner, cloudinaryService, userCachingManager);
         autoUploadIcon.start();
     }
 

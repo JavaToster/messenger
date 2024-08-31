@@ -13,9 +13,9 @@ public class ContainerOfMessagesDTO implements Serializable {
     @Indexed
     private Long id;
     private long idInChat;
-    private List<MessageResponseDTO> messages;
+    private List<MessageWrapperDTO> messages;
 
-    public ContainerOfMessagesDTO(long id, long idInChat, List<MessageResponseDTO> messages){
+    public ContainerOfMessagesDTO(long id, long idInChat, List<MessageWrapperDTO> messages){
         this.id = id;
         this.idInChat = idInChat;
         this.messages = messages;
