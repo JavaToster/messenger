@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "Photo_message")
+@Table(name = "Image_message")
 public class ImageMessage extends MessageWrapper implements Serializable {
     @Column(name = "text_under_photo")
     private String textUnderPhoto;

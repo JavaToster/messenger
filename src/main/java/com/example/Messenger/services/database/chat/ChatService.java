@@ -3,6 +3,8 @@ package com.example.Messenger.services.database.chat;
 import com.example.Messenger.DAO.chat.ChatDAO;
 import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.DAO.user.UserDAO;
+import com.example.Messenger.dto.chat.NewChatDTO;
+import com.example.Messenger.dto.user.UserDTO;
 import com.example.Messenger.models.chat.*;
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.ChatMember;
@@ -55,9 +57,23 @@ public class ChatService {
     }
 
     @Transactional
-    public int createPrivateOrBotChat(int userOrBotId, String userUsername) {
-        MessengerUser interlocutorIsUserOrBot = messengerUserDAO.findById(userOrBotId);
+    public int createPrivateOrBotChat(UserDTO interlocutorOfUser, String userUsername) {
+        MessengerUser interlocutorIsUserOrBot = messengerUserDAO.findById(interlocutorOfUser.getId());
         User interlocutorIsUser = (User) messengerUserDAO.findByUsername(userUsername);
+        if(interlocutorIsUserOrBot.getClass() == User.class){
+            int idOfChat = chatDAO.hasPrivateChat((User) interlocutorIsUserOrBot, interlocutorIsUser);
+            if(idOfChat == -1)
+                idOfChat = privateChatService.createNewChat((User) interlocutorIsUserOrBot, interlocutorIsUser);
+            return idOfChat;
+        }else{
+            return botChatService.createNewChat(interlocutorIsUser, interlocutorIsUserOrBot);
+        }
+    }
+
+    @Transactional
+    public int createPrivateOrBotChat(NewChatDTO chatDTO) {
+        MessengerUser interlocutorIsUserOrBot = messengerUserDAO.findByUsername(chatDTO.getInterlocutorUsername());
+        User interlocutorIsUser = (User) messengerUserDAO.findByUsername(chatDTO.getUsername());
         if(interlocutorIsUserOrBot.getClass() == User.class){
             int idOfChat = chatDAO.hasPrivateChat((User) interlocutorIsUserOrBot, interlocutorIsUser);
             if(idOfChat == -1)

@@ -40,32 +40,4 @@ public class MessengerUserService {
     public MessengerUser findByUsername(String username) {
         return messengerUserDAO.findByUsername(username);
     }
-
-    @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void setAdmin(int userId, int channelId) {
-        MessengerUser user = messengerUserDAO.findById(userId);
-        Chat chat = chatDAO.findById(channelId);
-
-        Optional<ChatMember> member = ChatMemberService.findByChatAndUser(user, chat);
-
-        // если этот юзер не будет найдет в этом чате, то есть у него не будет chatMember в этом чате, то значит мы не будем ему назначить админство
-        // поэтому тут стоит условие
-        if(member.isPresent()){
-            ChatMember newAdminMember = member.get();
-            newAdminMember.setMemberType(ChatMemberType.ADMIN);
-            chatMemberDAO.save(newAdminMember);
-        }
-    }
-
-    @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void resetAdmin(int userId, int channelId) {
-        MessengerUser user = messengerUserDAO.findById(userId);
-        Chat chat = chatDAO.findById(channelId);
-
-        // тут мы сразу получаем member потому что до этого он уже был назначем на должность админа, поэтому условие его проверки тут не требуется
-        ChatMember member = ChatMemberService.findByChatAndUser(user, chat).get();
-
-        member.setMemberType(ChatMemberType.MEMBER);
-        chatMemberDAO.save(member);
-    }
 }

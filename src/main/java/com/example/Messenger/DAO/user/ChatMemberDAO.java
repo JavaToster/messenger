@@ -19,8 +19,12 @@ public class ChatMemberDAO {
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
 
-    public ChatMember findByChatAndUser(int userId, int chatId){
-        return chatMemberRepository.findByUserAndChat(userRepository.findById(userId).orElseThrow(UserNotFoundException::new), chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new)).orElseThrow(ChatMemberNotFoundException::new);
+    public ChatMember findByChatAndUser(int chatId, int userId){
+        return chatMemberRepository.findByUserAndChat(userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user with id '" +userId+"' not found")), chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new)).orElseThrow(ChatMemberNotFoundException::new);
+    }
+
+    public ChatMember findByChatAndUser(int chatId, String username){
+        return chatMemberRepository.findByUserAndChat(userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("user with id '" +username+"' not found")), chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new)).orElseThrow(ChatMemberNotFoundException::new);
     }
 
     public ChatMember save(ChatMember chatMember){
@@ -28,6 +32,6 @@ public class ChatMemberDAO {
     }
 
     public List<ChatMember> findByUser(String username) {
-        return chatMemberRepository.findByUser(userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new));
+        return chatMemberRepository.findByUser(userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("user with username '" +username+"' not found")));
     }
 }

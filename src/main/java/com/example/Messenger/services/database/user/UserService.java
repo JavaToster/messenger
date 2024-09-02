@@ -7,6 +7,7 @@ import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.DAO.user.UserDAO;
 import com.example.Messenger.dto.user.UserDTO;
 import com.example.Messenger.dto.user.RegisterUserDTO;
+import com.example.Messenger.exceptions.security.ForbiddenException;
 import com.example.Messenger.exceptions.user.ChatMemberNotFoundException;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.chat.PrivateChat;
@@ -218,24 +219,33 @@ public class UserService implements UserDetailsService {
         return differenceOfDay < 5 ? "дня" : "дней";
     }
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void block(int userId, int chatId) {
-        ChatMember chatMember = chatMemberDAO.findByChatAndUser(userId, chatId);
+    public void block(int userId, int chatId, String blockerUsername) {
+        if(!(chatMemberDAO.findByChatAndUser(chatId, blockerUsername).getMemberType() == ChatMemberType.ADMIN)){
+            if(!(chatMemberDAO.findByChatAndUser(chatId, blockerUsername).getMemberType() == ChatMemberType.OWNER)){
+                throw new ForbiddenException("You can't block this user, because you are not a admin or owner a this group");
+            }
+        }
+
+        ChatMember chatMember = chatMemberDAO.findByChatAndUser(chatId, userId);
         chatMember.setMemberType(ChatMemberType.BLOCK);
         chatMemberDAO.save(chatMember);
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void unblock(int userId, int chatId) {
+    public void unblock(int userId, int chatId, String blockerUsername) {
+        if(!(chatMemberDAO.findByChatAndUser(chatId, blockerUsername).getMemberType() == ChatMemberType.ADMIN)){
+            if(!(chatMemberDAO.findByChatAndUser(chatId, blockerUsername).getMemberType() == ChatMemberType.OWNER)){
+                throw new ForbiddenException("You can't unblock this user, because you are not a admin or owner a this group");
+            }
+        }
+
         ChatMember chatMember = chatMemberDAO.findByChatAndUser(userId, chatId);
         chatMember.setMemberType(ChatMemberType.MEMBER);
         chatMemberDAO.save(chatMember);
     }
 
     public boolean isUser(String username, String email) {
-        if(userDAO.isUserByUsername(username) || userDAO.isUserByEmail(email)){
-            return true;
-        }
-        return false;
+        return userDAO.isUserByUsername(username) || userDAO.isUserByEmail(email);
     }
 
     public boolean isEmail(String email) {
@@ -391,5 +401,36 @@ public class UserService implements UserDetailsService {
                 .imagesUrl(linkOfImagesInnerChatOfUser)
                 .lastTime(lastTime)
                 .build();
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void setAdmin(int userId, int channelId, String userSetterUsername) {
+        if((!(chatMemberDAO.findByChatAndUser(channelId, userSetterUsername).getMemberType() == ChatMemberType.OWNER))){
+            throw new ForbiddenException("You can't set admin this user, because you are not a owner of group");
+        }
+
+        MessengerUser user = messengerUserDAO.findById(userId);
+        Chat chat = chatDAO.findById(channelId);
+
+        ChatMember member = chatMemberDAO.findByChatAndUser(channelId, userId);
+
+        member.setMemberType(ChatMemberType.ADMIN);
+        chatMemberDAO.save(member);
+
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public void resetAdmin(int userId, int channelId, String userSetterUsername) {
+        if((!(chatMemberDAO.findByChatAndUser(channelId, userSetterUsername).getMemberType() == ChatMemberType.OWNER))){
+            throw new ForbiddenException("You can't reset admin this user, because you are not a owner of group");
+        }
+        MessengerUser user = messengerUserDAO.findById(userId);
+        Chat chat = chatDAO.findById(channelId);
+
+        // тут мы сразу получаем member потому что до этого он уже был назначем на должность админа, поэтому условие его проверки тут не требуется
+        ChatMember member = ChatMemberService.findByChatAndUser(user, chat).get();
+
+        member.setMemberType(ChatMemberType.MEMBER);
+        chatMemberDAO.save(member);
     }
 }

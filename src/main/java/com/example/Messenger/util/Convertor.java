@@ -11,6 +11,7 @@ import com.example.Messenger.dto.MainWindowInfoDTO;
 import com.example.Messenger.dto.chat.InfoOfChatDTO;
 import com.example.Messenger.dto.chat.SearchedChatsAndUsersDTO;
 import com.example.Messenger.dto.message.ContainerOfMessagesDTO;
+import com.example.Messenger.dto.message.NewBlockMessageDTO;
 import com.example.Messenger.dto.rest.bot.response.message.InfoByImageMessageDTO;
 import com.example.Messenger.dto.rest.bot.response.message.InfoByTextMessageDTO;
 import com.example.Messenger.dto.message.BlockMessageDTO;
@@ -339,5 +340,9 @@ public class Convertor {
                 .foundChatsByMessages(chatDTOOfFoundChatsByMessages)
                 .foundUsers(userDTOOfFoundUsers)
                 .build();
+    }
+
+    public BlockMessage convertToBlockMessage(NewBlockMessageDTO newBlockMessage) {
+        return modelMapper.map(newBlockMessage, BlockMessage.class);
     }
 }
