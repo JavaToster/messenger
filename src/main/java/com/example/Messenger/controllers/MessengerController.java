@@ -10,6 +10,7 @@ import com.example.Messenger.dto.chat.SearchedChatsAndUsersDTO;
 import com.example.Messenger.dto.message.BlockMessageDTO;
 import com.example.Messenger.dto.message.ContainerOfMessagesDTO;
 import com.example.Messenger.dto.message.NewBlockMessageDTO;
+import com.example.Messenger.dto.message.NewMessageDTO;
 import com.example.Messenger.dto.user.UserDTO;
 import com.example.Messenger.dto.util.SearchDTO;
 import com.example.Messenger.exceptions.chat.ChatNotFoundException;
@@ -95,12 +96,12 @@ public class MessengerController {
 
         return new ResponseEntity<>(convertor.convertToInfoOfChatDTO(chatId, principal.getName(), containerId), HttpStatus.OK);
     }
-    //UPDATEME изменить параметры запроса на json
+
     @PostMapping("/chats/{id}/send-message")
     public ResponseEntity<ContainerOfMessagesDTO> sendMessage(@RequestParam("image") MultipartFile image,
-                                                              @RequestParam("text") String text, @RequestParam("user") int userId,
-                                                              @PathVariable("id") int chatId){
-        ContainerOfMessages container = messageWrapperService.send(image, chatId, userId, text);
+                                                              @RequestBody NewMessageDTO messageDTO, @PathVariable("id") int chatId,
+                                                              Principal principal){
+        ContainerOfMessages container = messageWrapperService.send(image, chatId, principal.getName(), messageDTO.getText());
 
         return new ResponseEntity<>(convertor.convertToContainerOfMessagesDTO(container), HttpStatus.OK);
     }

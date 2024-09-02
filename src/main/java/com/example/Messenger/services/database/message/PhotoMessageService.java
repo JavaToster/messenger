@@ -35,16 +35,16 @@ public class PhotoMessageService {
     private String imagePath;
 
     @Transactional
-    public MessageWrapper sendMessage(MultipartFile file, Chat chat, int userId, String underPhoto) throws IOException, ImageReadingException{
+    public MessageWrapper sendMessage(MultipartFile file, Chat chat, String username, String underPhoto) throws IOException, ImageReadingException{
         Optional<String> image = imageIsExist(file);
         if(image.isPresent()){
-            return new ImageMessage(chat, userDAO.findById(userId), image.get(), underPhoto, getExpansion(file.getOriginalFilename()));
+            return new ImageMessage(chat, userDAO.findByUsername(username), image.get(), underPhoto, getExpansion(file.getOriginalFilename()));
         }
 
         String filePath = imagePath+(getLastImageId()+1)+getExpansion(file.getOriginalFilename());
         file.transferTo(new File(filePath));
         String url = cloudinaryService.sendMessage(filePath);
-        return new ImageMessage(chat, userDAO.findById(userId), url, underPhoto, getExpansion(file.getOriginalFilename()));
+        return new ImageMessage(chat, userDAO.findByUsername(username), url, underPhoto, getExpansion(file.getOriginalFilename()));
     }
 
     private int getLastImageId(){

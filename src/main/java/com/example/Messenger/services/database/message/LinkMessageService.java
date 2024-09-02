@@ -26,11 +26,10 @@ public class LinkMessageService {
     private final ContainerOfMessagesRepository containerOfMessagesRepository;
 
     @Transactional
-    public MessageWrapper sendLink(String text, int chatId, int userId, String link) {
+    public MessageWrapper sendLink(String text, int chatId, String username, String link) {
         Chat chat = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new);
 
-        LinkMessage newLink = new LinkMessage(text, chat, messengerUserRepository.findById(userId).orElseThrow(UserNotFoundException::new), link);
-        return newLink;
+        return new LinkMessage(text, chat, messengerUserRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("user with username '"+ username + "' not found")), link);
     }
 
     public Optional<String> isLink(String text){

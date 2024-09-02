@@ -49,11 +49,10 @@ public class MessageService {
     }
 
     @Transactional
-    public MessageWrapper sendTextMessage(int chatId, int userId, String textOfMessage){
-        User ownerOfMessage = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+    public MessageWrapper sendTextMessage(int chatId, String username, String textOfMessage){
+        User ownerOfMessage = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User with username '"+username+"' not found"));
         Chat chatOfMessage = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new);
 
-        Message newMessage = new Message(textOfMessage, ownerOfMessage, chatOfMessage);
-        return newMessage;
+        return new Message(textOfMessage, ownerOfMessage, chatOfMessage);
     }
 }

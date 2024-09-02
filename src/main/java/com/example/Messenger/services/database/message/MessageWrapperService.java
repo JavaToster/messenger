@@ -38,13 +38,13 @@ public class MessageWrapperService {
     private final MessageWrapperDAO messageWrapperDAO;
 
     @Transactional
-    public ContainerOfMessages send(MultipartFile image, int chatId, int userId, String text){
+    public ContainerOfMessages send(MultipartFile image, int chatId, String username, String text){
         Chat chat = chatDAO.findById(chatId);
         Optional<MessageWrapper> willSendMessageOptional;
         if(!image.isEmpty()){
-            willSendMessageOptional = sendImage(image, chat, userId, text);
+            willSendMessageOptional = sendImage(image, chat, username, text);
         }else {
-            willSendMessageOptional = sendNotImage(text, chatId, userId);
+            willSendMessageOptional = sendNotImage(text, chatId, username);
         }
 
 
@@ -60,7 +60,7 @@ public class MessageWrapperService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
-    public Optional<MessageWrapper> sendNotImage(String text, int chatId, int userId){
+    public Optional<MessageWrapper> sendNotImage(String text, int chatId, String username){
         if(blockMessageService.contentIsBlocked(text, chatId)){
            throw new MessageBlockedException("message with text '"+text+"' blocked this chat");
         }
@@ -68,9 +68,9 @@ public class MessageWrapperService {
         if(!text.isEmpty()) {
             Optional<String> link = linkMessageService.isLink(text);
             if(link.isPresent()){
-                return Optional.of(linkMessageService.sendLink(text, chatId, userId, link.get()));
+                return Optional.of(linkMessageService.sendLink(text, chatId, username, link.get()));
             }else{
-                return Optional.of(messageService.sendTextMessage(chatId, userId, text));
+                return Optional.of(messageService.sendTextMessage(chatId, username, text));
             }
         }else{
             throw new MessageSendingException("Empty message text");
@@ -78,9 +78,9 @@ public class MessageWrapperService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
-    private Optional<MessageWrapper> sendImage(MultipartFile photo, Chat chat, int userId, String underTextPhoto){
+    private Optional<MessageWrapper> sendImage(MultipartFile photo, Chat chat, String username, String underTextPhoto){
         try {
-            return Optional.of(photoMessageService.sendMessage(photo, chat, userId, underTextPhoto));
+            return Optional.of(photoMessageService.sendMessage(photo, chat, username, underTextPhoto));
         }catch (IOException ignored){
             throw new MessageSendingException("image not found");
         }
