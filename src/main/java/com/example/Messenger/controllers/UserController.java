@@ -3,6 +3,7 @@ package com.example.Messenger.controllers;
 import com.example.Messenger.dto.ExceptionMessageDTO;
 import com.example.Messenger.dto.user.ComplaintDTO;
 import com.example.Messenger.dto.user.UserProfileDTO;
+import com.example.Messenger.exceptions.BadRequestException;
 import com.example.Messenger.exceptions.user.UserNotFoundException;
 import com.example.Messenger.services.database.SettingsOfUserService;
 import com.example.Messenger.services.database.chat.ChatService;
@@ -53,7 +54,7 @@ public class UserController {
     }
 
     @ExceptionHandler
-    public ResponseEntity<ExceptionMessageDTO> handleException(UserNotFoundException e){
+    public ResponseEntity<ExceptionMessageDTO> handleException(BadRequestException e){
         return new ResponseEntity<>(new ExceptionMessageDTO(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }
