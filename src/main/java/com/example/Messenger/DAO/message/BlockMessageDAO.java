@@ -25,7 +25,7 @@ public class BlockMessageDAO {
     }
 
     public List<BlockMessage> findByChat(int chatId){
-        return blockMessageRepository.findByChat(chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new));
+        return blockMessageRepository.findByChat(chatRepository.findById(chatId).orElseThrow(() -> new ChatNotFoundException("Chat not found")));
     }
 
     public void deleteById(long messageId) {

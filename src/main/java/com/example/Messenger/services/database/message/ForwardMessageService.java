@@ -28,8 +28,8 @@ public class ForwardMessageService {
     @Transactional
     public ForwardMessage forward(int forwardMessageId, int toChatId, int ownerId, int fromChatId) {
         MessageWrapper message = messageWrapperRepository.findById(forwardMessageId).orElse(null);
-        Chat toChat = chatRepository.findById(toChatId).orElseThrow(ChatNotFoundException::new);
-        Chat fromChat = chatRepository.findById(fromChatId).orElseThrow(ChatNotFoundException::new);
+        Chat toChat = chatRepository.findById(toChatId).orElseThrow(() -> new ChatNotFoundException("Chat not found"));
+        Chat fromChat = chatRepository.findById(fromChatId).orElseThrow(() -> new ChatNotFoundException("Chat not found"));
 
         ForwardMessage forwardMessage = new ForwardMessage(message.getContent(), toChat, fromChat, messengerUserRepository.findById(ownerId).orElse(null), message.getOwner());
         forwardMessage.setTextUnderMessage(message.getClass() == ImageMessage.class ? ((ImageMessage) message).getTextUnderPhoto() : "");

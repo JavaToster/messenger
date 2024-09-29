@@ -41,8 +41,7 @@ public class SendRestoreCodeToEmailService {
     }
 
     public StatusOfEqualsCodes checkCode(String email, int code){
-        StatusOfEqualsCodes status = restoreEmailBalancer.checkCode(email, code);
-        return status;
+        return restoreEmailBalancer.checkCode(email, code);
     }
 
     // возвращает освободившийся код
@@ -52,7 +51,6 @@ public class SendRestoreCodeToEmailService {
             return;
         }
         codesForRestore.add(code);
-        System.out.println("email was removed");
     }
 
     private int getIndexOfRestoreCode(){

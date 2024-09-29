@@ -1,91 +1,24 @@
 package com.example.Messenger.dto.user;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
+@Data
 public class RegisterUserDTO {
+    @NotBlank(message = "firstname must be not empty")
     private String firstname;
+    @NotBlank(message = "lastname must be not empty")
     private String lastname;
+    @NotBlank(message = "username must be not empty")
     private String username;
+    @NotBlank(message = "password must be not empty")
     private String password;
+    @NotBlank(message = "email must be not empty")
+    @Email(message = "is not email, please enter valid email address")
     private String email;
+    @NotBlank(message = "phone must be not empty")
     private String phone;
     private String lang;
-    private MultipartFile icon;
-
-    public RegisterUserDTO(String firstname, String lastname, String username, String password, String email, String phone, String lang, MultipartFile icon) {
-        this.firstname = firstname;
-        this.lastname = lastname;
-        this.username = username;
-        this.password = password;
-        this.email = email;
-        this.phone = phone;
-        this.lang = lang;
-        this.icon = icon;
-    }
-
-    public RegisterUserDTO(){}
-
-    public String getFirstname() {
-        return firstname;
-    }
-
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public void setLastname(String lastname) {
-        this.lastname = lastname;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getLang() {
-        return lang;
-    }
-
-    public void setLang(String lang) {
-        this.lang = lang;
-    }
-
-    public MultipartFile getIcon() {
-        return icon;
-    }
-
-    public void setIcon(MultipartFile icon) {
-        this.icon = icon;
-    }
 }

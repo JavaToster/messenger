@@ -18,6 +18,7 @@ import com.example.Messenger.dto.message.BlockMessageDTO;
 import com.example.Messenger.dto.message.MessageWrapperDTO;
 import com.example.Messenger.dto.message.rest.ForwardMessageResponseDTO;
 import com.example.Messenger.dto.user.UserDTO;
+import com.example.Messenger.dto.user.UserProfileDTO;
 import com.example.Messenger.dto.util.MessagesByDateDTO;
 import com.example.Messenger.models.chat.*;
 import com.example.Messenger.models.message.*;
@@ -267,7 +268,7 @@ public class Convertor {
                 .user(user)
                 .interlocutorOrGroupOrChannelName(chatDAO.getChatTitle(chat, username))
                 .lastOnlineTimeOrMembersCount(getInfoOfLastOnlineTimeOrMembersCount(chat, user))
-                .willForwardChats(convertToChatDTO(UserService.FIND_CHATS_BY_USERNAME(user), username))
+                .willForwardChats(convertToChatDTO(chatDAO.findByUser(userDAO.findByUsername(username)), username))
                 .containerOfMessagesDTO(containerDTO)
                 .chatType(chat.getClass().getSimpleName())
                 .userIsOwner(chatDAO.userIsOwner(chat, username))
@@ -322,6 +323,14 @@ public class Convertor {
         userDTO.setLastTime(convertTimeToString(user.getLastOnlineTime()));
         userDTO.setIconUrl(user.getLinkOfIcon());
         return userDTO;
+    }
+    public UserProfileDTO convertToUserProfileDTO(User user, List<Chat> chats){
+        UserProfileDTO userProfileDTO = modelMapper.map(user, UserProfileDTO.class);
+        userProfileDTO.setLastTime(convertTimeToString(user.getLastOnlineTime()));
+        userProfileDTO.setIconUrl(user
+                .getLinkOfIcon());
+        userProfileDTO.setChats(chats);
+        return userProfileDTO;
     }
 
     public List<UserDTO> convertToUserDTO(List<User> users){

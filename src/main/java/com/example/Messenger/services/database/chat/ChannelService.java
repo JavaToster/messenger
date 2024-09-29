@@ -121,7 +121,7 @@ public class ChannelService {
     }
 
     private boolean isOwner(int chatId, MessengerUser user){
-        List<ChatMember> members = channelRepository.findById(chatId).orElseThrow(ChatNotFoundException::new).getMembers();
+        List<ChatMember> members = channelRepository.findById(chatId).orElseThrow(() -> new ChatNotFoundException("Chat not found")).getMembers();
         for(ChatMember member: members){
             if(member.getMemberType() == ChatMemberType.OWNER && member.getUser().equals(user.getUsername())){
                 return true;

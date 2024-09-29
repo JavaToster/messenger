@@ -54,8 +54,8 @@ public class BotChatService {
 
     @Transactional
     public void sendMessage(int chatId, int userId, String text) {
-        Chat chat = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new);
-        User user = (User) messengerUserRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new ChatNotFoundException("Chat not found"));
+        User user = (User) messengerUserRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found"));
         Message message = new Message(text, user, chat);
         chat.getMessages().add(message);
         user.getMessages().add(message);

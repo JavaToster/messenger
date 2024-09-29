@@ -5,25 +5,25 @@ import com.example.Messenger.DAO.user.ChatMemberDAO;
 import com.example.Messenger.DAO.user.ComplaintOfUserDAO;
 import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.DAO.user.UserDAO;
+import com.example.Messenger.dto.auth.ForgotPasswordDTO;
+import com.example.Messenger.dto.auth.NewPasswordDTO;
 import com.example.Messenger.dto.user.UserDTO;
 import com.example.Messenger.dto.user.RegisterUserDTO;
+import com.example.Messenger.exceptions.ValidateException;
+import com.example.Messenger.exceptions.auth.RegistrationException;
 import com.example.Messenger.exceptions.security.ForbiddenException;
-import com.example.Messenger.exceptions.user.ChatMemberNotFoundException;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.chat.PrivateChat;
 import com.example.Messenger.models.message.ImageMessage;
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.*;
-import com.example.Messenger.repositories.database.user.*;
-import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.services.database.SettingsOfUserService;
 import com.example.Messenger.services.email.SendRestoreCodeToEmailService;
 import com.example.Messenger.balancers.TranslateBalancer;
+import com.example.Messenger.util.ErrorMessageCreator;
 import com.example.Messenger.util.enums.ChatMemberType;
-import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.enums.RoleOfUser;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
-import com.example.Messenger.exceptions.chat.ChatNotFoundException;
 import com.example.Messenger.exceptions.user.UserNotFoundException;
 import com.example.Messenger.util.threads.DeleteRestoreCodeThread;
 import com.example.Messenger.util.threads.ReBlockUserThread;
@@ -40,8 +40,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.BindingResult;
 
-import java.io.IOException;
 import java.util.*;
 
 @Service
@@ -56,10 +56,11 @@ public class UserService implements UserDetailsService {
     private final SendRestoreCodeToEmailService sendRestoreCodeToEmailService;
     private final PasswordEncoder encoder;
     private final SettingsOfUserService settingsOfUserService;
-    private final IconOfUserService iconOfUserService;
     private final MessengerUserDAO messengerUserDAO;
     private final ChatMemberDAO chatMemberDAO;
     private final ComplaintOfUserDAO complaintOfUserDAO;
+    private final PasswordEncoder passwordEncoder;
+    private final ErrorMessageCreator errorMessageCreator;
 
     @Value("${image.path.user.icons}")
     private String imagePath;
@@ -76,12 +77,11 @@ public class UserService implements UserDetailsService {
         response.addCookie(cookie);
     }
 
-    public static List<Chat> FIND_CHATS_BY_USERNAME(User user) {
-        List<Chat> userChats = new ArrayList<>();
-
-        List<ChatMember> chatMembers = user.getMembers();
-        chatMembers.forEach(chatMember -> userChats.add(chatMember.getChat()));
-        return userChats;
+    public List<Chat> findChatOfUser(String username) {
+        User user = findByUsername(username);
+        List<Chat> chatsOfUser = new ArrayList<>();
+        user.getMembers().forEach(chatMember -> chatsOfUser.add(chatMember.getChat()));
+        return chatsOfUser;
     }
 
     @Override
@@ -102,13 +102,16 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
-    public User register(RegisterUserDTO registerUserDTO) throws RuntimeException, IOException{
-        System.out.println("I was registered");
+    public void register(RegisterUserDTO registerUserDTO, BindingResult errors) throws RuntimeException{
+        if(errors.hasErrors()){
+            String msg = errorMessageCreator.createErrorMessage(errors);
+            throw new ValidateException(msg);
+        }
+
+        registerUserDTO.setPassword(passwordEncoder.encode(registerUserDTO.getPassword()));
         User user = userDAO.save(new User(registerUserDTO));
         loadBalancer.add(user.getId());
         settingsOfUserService.create(registerUserDTO, user);
-        iconOfUserService.createNewIcon(registerUserDTO.getIcon(), user);
-        return user;
     }
 
     public User findById(int id){
@@ -244,31 +247,35 @@ public class UserService implements UserDetailsService {
         chatMemberDAO.save(chatMember);
     }
 
-    public boolean isUser(String username, String email) {
-        return userDAO.isUserByUsername(username) || userDAO.isUserByEmail(email);
-    }
+    public void sendCodeToRestore(ForgotPasswordDTO forgotPasswordDTO, BindingResult errors) {
+        if(errors.hasFieldErrors("email")){
+            String msg = errorMessageCreator.createErrorMessageByField(errors, "email");
+            throw new ValidateException(msg);
+        }
 
-    public boolean isEmail(String email) {
-        return userDAO.isUserByEmail(email);
-    }
-
-    public void sendCodeToRestore(HttpServletResponse response, String email) {
-        sendRestoreCodeToEmailService.sendCode(email);
-        DeleteRestoreCodeThread deleteRestoreCodeThread = new DeleteRestoreCodeThread(email, sendRestoreCodeToEmailService);
-        UserService.setCookie(response, "restoreEmail", email, 120);
+        sendRestoreCodeToEmailService.sendCode(forgotPasswordDTO.getEmail());
+        DeleteRestoreCodeThread deleteRestoreCodeThread = new DeleteRestoreCodeThread(forgotPasswordDTO.getEmail(), sendRestoreCodeToEmailService);
         deleteRestoreCodeThread.start();
     }
 
-    public StatusOfEqualsCodes checkRestoreCode(String email, int code){
-        return sendRestoreCodeToEmailService.checkCode(email, code);
+    public StatusOfEqualsCodes checkRestoreCode(ForgotPasswordDTO data, BindingResult errors){
+        if(errors.hasErrors()){
+            String msg = errorMessageCreator.createErrorMessage(errors);
+            throw new ValidateException(msg);
+        }
+        return sendRestoreCodeToEmailService.checkCode(data.getEmail(), data.getCode());
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void changePasswordByEmail(String email, String password) {
-        User user = userDAO.findByEmail(email);
-        user.setPassword(encoder.encode(password));
+    public void changePasswordByEmail(NewPasswordDTO newPasswordDTO, BindingResult errors) {
+        if(errors.hasErrors()){
+            throw new ValidateException(errorMessageCreator.createErrorMessage(errors));
+
+        }
+        User user = userDAO.findByEmail(newPasswordDTO.getEmail());
+        user.setPassword(encoder.encode(newPasswordDTO.getPassword()));
         userDAO.save(user);
-        removeEmailFromRestoreBalancer(email);
+        removeEmailFromRestoreBalancer(newPasswordDTO.getEmail());
     }
 
     private void removeEmailFromRestoreBalancer(String email) {
@@ -432,5 +439,16 @@ public class UserService implements UserDetailsService {
 
         member.setMemberType(ChatMemberType.MEMBER);
         chatMemberDAO.save(member);
+    }
+
+    public List<Chat> findCommonChats(String username, String name) {
+        List<Chat> chats = chatDAO.findByUser(findByUsername(username));
+        List<Chat> commonChats = new ArrayList<>();
+        for (Chat chat: chats){
+            if(chatMemberDAO.userIsMember(name, chat.getMembers())){
+                commonChats.add(chat);
+            }
+        }
+        return commonChats;
     }
 }

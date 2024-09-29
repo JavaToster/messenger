@@ -1,20 +1,24 @@
 package com.example.Messenger.controllers;
 
-import com.example.Messenger.dto.chat.ChatDTO;
-import com.example.Messenger.dto.user.UserDTO;
+import com.example.Messenger.dto.ExceptionMessageDTO;
+import com.example.Messenger.dto.user.ComplaintDTO;
+import com.example.Messenger.dto.user.UserProfileDTO;
+import com.example.Messenger.exceptions.user.UserNotFoundException;
 import com.example.Messenger.services.database.SettingsOfUserService;
 import com.example.Messenger.services.database.chat.ChatService;
 import com.example.Messenger.services.database.user.ComplaintOfUserService;
-import com.example.Messenger.services.database.user.MessengerUserService;
 import com.example.Messenger.services.database.user.UserService;
-import com.example.Messenger.services.email.redis.languageOfApp.LanguageOfAppService;
 import com.example.Messenger.util.Convertor;
+import com.example.Messenger.validators.user.UserValidator;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.security.Principal;
 
 @Controller
 @RequestMapping("/user")
@@ -23,56 +27,33 @@ public class UserController {
 
     private final UserService userService;
     private final ChatService chatService;
-    private final MessengerUserService messengerUserService;
-    private final LanguageOfAppService languageOfAppService;
     private final Convertor convertor;
-    private final ComplaintOfUserService complaintOfUserService;
     private final SettingsOfUserService settingsOfUserService;
-
+    private final ComplaintOfUserService complaintOfUserService;
+    private final UserValidator userValidator;
     @GetMapping("/profile")
-    public String profile(Model model, @CookieValue("username") String username){
-        List<ChatDTO> chats = convertor.convertToChatDTO(userService.FIND_CHATS_BY_USERNAME(userService.findByUsername(username)), username);
-
-        model.addAttribute("chat", new ChatDTO());
-        model.addAttribute("chats", chats);
-        model.addAttribute("language", languageOfAppService.getLanguage(userService.findByUsername(username).getSettingsOfUser().getLang()));
-        model.addAttribute("infoOfUser", userService.findUserInfoByUsername(username, username));
-
-        return "/html/user/profile";
+    public ResponseEntity<UserProfileDTO> profile(Principal principal){
+        UserProfileDTO profile = convertor.convertToUserProfileDTO(userService.findByUsername(principal.getName()), userService.findChatOfUser(principal.getName()));
+        return new ResponseEntity<>(profile, HttpStatus.OK);
     }
     @GetMapping("/{username}")
-    public String showUserProfile(@PathVariable("username") String username, Model model, @CookieValue("username") String myUsername){
-        // нужно чтобы проверять не смотрит ли пользователь на свое же окно
-        if (username.equals(myUsername)) {
-            return "redirect:/user/profile";
+    public ResponseEntity<UserProfileDTO> showUserProfile(@PathVariable("username") String username, Principal principal){
+        if (username.equals(principal.getName())){
+            return profile(principal);
         }
 
-        UserDTO userDTO = userService.findUserInfoByUsername(username, myUsername);
-        model.addAttribute("infoOfUser", userDTO);
-        model.addAttribute("myUsername", myUsername);
-        model.addAttribute("url", new String());
-
-        return "/html/user/showUserProfile";
-    }
-
-    @PostMapping("/{username}/send-message")
-    public String sendMessageToUser(@PathVariable("username") String usernameOfBotOrUser, @RequestParam("from") String fromUsername){
-        int id = chatService.createPrivateOrBotChat(usernameOfBotOrUser, fromUsername);
-
-        return "redirect:/messenger/chats/"+id;
+        return new ResponseEntity<>(convertor.convertToUserProfileDTO(userService.findByUsername(username), userService.findCommonChats(username, principal.getName())), HttpStatus.OK);
     }
 
     @PostMapping("/{username}/complaint")
-    public String sendAComplain(@RequestParam("complaint-text") String complaintText, @PathVariable("username") String username, @CookieValue("username") String fromUsername){
-        complaintOfUserService.addComplaint(username, complaintText, fromUsername);
-
-        return "redirect:/user/"+username;
+    public ResponseEntity<HttpStatus> sendAComplaint(@RequestBody @Valid ComplaintDTO complaintDTO, BindingResult errors, @PathVariable("username") String username, Principal principal){
+        userValidator.validate(errors);
+        complaintOfUserService.addComplaint(username, complaintDTO.getComplaint(), principal.getName());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/{id}/changeUserLang")
-    public String changeAppLang(@RequestParam("app-lang") String lang, @PathVariable("id") int id){
-        settingsOfUserService.changeAppLanguage(id, lang);
-
-        return "redirect:/user/profile";
+    @ExceptionHandler
+    public ResponseEntity<ExceptionMessageDTO> handleException(UserNotFoundException e){
+        return new ResponseEntity<>(new ExceptionMessageDTO(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }

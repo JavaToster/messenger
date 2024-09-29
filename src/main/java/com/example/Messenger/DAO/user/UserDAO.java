@@ -14,11 +14,11 @@ public class UserDAO {
     private final UserRepository userRepository;
 
     public User findById(int id){
-        return userRepository.findById(id).orElseThrow(UserNotFoundException::new);
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("user with id not found"));
     }
 
     public User findByUsername(String username){
-        return userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
+        return userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("user with email address not found"));
     }
 
     public User save(User user) {
@@ -38,6 +38,10 @@ public class UserDAO {
     }
 
     public User findByEmail(String email){
-        return userRepository.findByEmail(email).orElseThrow(UserNotFoundException::new);
+        return userRepository.findByEmail(email).orElseThrow(() -> new UserNotFoundException("user with email address not found"));
+    }
+
+    public boolean userIsExist(String username, String email) {
+        return isUserByUsername(username) || isUserByEmail(email);
     }
 }

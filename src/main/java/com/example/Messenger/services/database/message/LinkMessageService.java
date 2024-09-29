@@ -27,7 +27,7 @@ public class LinkMessageService {
 
     @Transactional
     public MessageWrapper sendLink(String text, int chatId, String username, String link) {
-        Chat chat = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new);
+        Chat chat = chatRepository.findById(chatId).orElseThrow(() -> new ChatNotFoundException("Chat not found"));
 
         return new LinkMessage(text, chat, messengerUserRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("user with username '"+ username + "' not found")), link);
     }

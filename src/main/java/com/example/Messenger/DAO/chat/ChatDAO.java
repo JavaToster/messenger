@@ -86,19 +86,6 @@ public class ChatDAO{
         return chatsByUser;
     }
 
-    public String getReturnedHtmlFile(int chatId) {
-        Chat chat = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new);
-        if(chat.getClass() == BotChat.class){
-            //в этом случае мы изменяем возвращаемую страницу на botChat.html, ведь тут собеседник будет другого типа
-            return "/html/chat/botChat";
-        }else if(chat.getClass() == Channel.class){
-            //опять же проверка на успешное создание чата, также изменение возвращаемой страницы на showChannel, ведь в канале все чуть по другому
-            return "/html/chat/showChannel";
-        }else{
-            return "/html/chat/showChat";
-        }
-    }
-
     public Optional<Chat> findChatByMemberUsername(String username){
         User user = (User) messengerUserRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
         List<ChatMember> chatMembers = user.getMembers();
@@ -111,7 +98,7 @@ public class ChatDAO{
     }
 
     public Chat findById(int id){
-        return chatRepository.findById(id).orElseThrow(ChatNotFoundException::new);
+        return chatRepository.findById(id).orElseThrow(() -> new ChatNotFoundException("Chat not found"));
     }
 
     public List<Chat> findAll(){
@@ -120,6 +107,12 @@ public class ChatDAO{
 
     public void delete(Chat chat){
         chatRepository.delete(chat);
+    }
+
+    public List<Chat> findByUser(User user) {
+        List<Chat> chats = new ArrayList<>();
+        user.getMembers().forEach(member -> chats.add(member.getChat()));
+        return chats;
     }
 }
 

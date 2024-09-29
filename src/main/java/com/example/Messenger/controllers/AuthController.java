@@ -1,6 +1,11 @@
 package com.example.Messenger.controllers;
 
+import com.example.Messenger.dto.ExceptionMessageDTO;
+import com.example.Messenger.dto.auth.ForgotPasswordDTO;
+import com.example.Messenger.dto.auth.NewPasswordDTO;
 import com.example.Messenger.dto.user.RegisterUserDTO;
+import com.example.Messenger.exceptions.ValidateException;
+import com.example.Messenger.exceptions.auth.RegistrationException;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.services.database.user.IconOfUserService;
 import com.example.Messenger.services.database.user.UserService;
@@ -8,152 +13,66 @@ import com.example.Messenger.services.email.redis.languageOfApp.LanguageOfAppSer
 import com.example.Messenger.balancers.UserStatusBalancer;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
 import com.example.Messenger.util.enums.UserStatus;
+import com.example.Messenger.validators.user.UserValidator;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Map;
 
-@Controller
+@RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
-    private final LanguageOfAppService languageOfAppService;
     private final UserStatusBalancer statusBalancer;
-
-    /** the login page
-     * страница аутентификации*/
-    @GetMapping("/login")
-    public String login(@RequestParam(value = "error", required = false) String error, Model model){
-        model.addAttribute("error", !(error==null));
-
-        return "/html/auth/login";
-    }
-
-    /** the register page
-     * страница регистрации*/
-    @GetMapping("/register")
-    public String register(Model model, @RequestParam(value = "error", required = false) String error){
-        model.addAttribute("error", !(error==null));
-        model.addAttribute("user", new User());
-        model.addAttribute("register_user", new RegisterUserDTO());
-
-        return "/html/auth/register";
-    }
-
+    private final UserValidator userValidator;
 
     @PostMapping("/register")
-    public String registerPost(@Valid @ModelAttribute("register_user") RegisterUserDTO registerUser){
-        if(userService.isUser(registerUser.getUsername(), registerUser.getEmail())){
-            return "redirect:/auth/register?error";
-        }
+    public ResponseEntity<RegisterUserDTO> register(@RequestBody @Valid RegisterUserDTO registerUser, BindingResult errors){
+        userValidator.validate(registerUser, errors);
 
-        System.out.println(registerUser.getEmail());
-
-        registerUser.setPassword(passwordEncoder.encode(registerUser.getPassword()));
-        try {
-            User user = userService.register(registerUser);
-        }catch (IOException e){
-            return "redirect:/auth/register";
-        }
-        return "redirect:/auth/login";
-    }
-
-    @GetMapping("/forgot_password")
-    public String forgotPassword(@RequestParam(value = "step", required = false) Integer step, @RequestParam(value = "error", required = false) String error,
-                                 Model model, @CookieValue(value = "restoreEmail", required = false) String email){
-        // параметр error нужен для вывода текста, то есть неправильный email(для 1 этапа) и неправильный код(для 2 этапа)
-        if(error != null){
-            model.addAttribute("error", true);
-        }
-
-        if(step == null || step == 1){
-            return "/html/auth/forgot_password_1";
-        }else if(step == 2){
-            if(email == null || email.isEmpty()){
-                return "redirect:/auth/forgot_password?step=1";
-            }
-            return "/html/auth/forgot_password_2";
-        }else{
-            return "redirect:/auth/forgot_password";
-        }
-    }
-
-    @GetMapping("/forgot_password_2")
-    public String forgotPassword2(@CookieValue(value = "restoreEmail", required = false) String email){
-        if(email == null || email.isEmpty()){
-            return "redirect:/auth/forgot_password";
-        }
-        return "/html/auth/forgot_password_2";
+        userService.register(registerUser, errors);
+        return new ResponseEntity<>(registerUser, HttpStatus.OK);
     }
 
     @PostMapping("/forgot_password_1")
-    public String sendCodeToEmailToRestore(@RequestParam(value = "email", required = false) String email, HttpServletResponse response){
-        if(email == null || email.isEmpty()){
-            return "redirect:/auth/forgot_password?error";
-        }
+    public ResponseEntity<HttpStatus> sendCodeToEmailToRestore(@RequestBody @Valid ForgotPasswordDTO forgotPasswordData, BindingResult errors){
+        userService.sendCodeToRestore(forgotPasswordData, errors);
 
-        if(!userService.isEmail(email)){
-            return "redirect:/auth/forgot_password?error";
-        }
-        userService.sendCodeToRestore(response, email);
-        return "redirect:/auth/forgot_password?step=2";
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/check_restore_code")
-    public String checkRestoreCode(@RequestParam("restoreCode") int code, @CookieValue(value = "restoreEmail", required = false) String email){
-        if(email == null){
-            return "redirect:/auth/forgot_password";
-        }
-        StatusOfEqualsCodes status = userService.checkRestoreCode(email, code);
-        if(status == StatusOfEqualsCodes.EQUAL){
-            statusBalancer.addUserByEmail(email, UserStatus.CHANGE_PASSWORD);
-            return "redirect:/auth/change_password";
-        }else if(status == StatusOfEqualsCodes.NOT_EQUAL){
-            return "redirect:/auth/forgot_password?step=2&error";
-        }else{
-            return "redirect:/auth/login";
-        }
+    public ResponseEntity<Map<String, String>> checkRestoreCode(@RequestBody ForgotPasswordDTO forgotPasswordData, BindingResult errors){
+        StatusOfEqualsCodes status = userService.checkRestoreCode(forgotPasswordData, errors);
+        return new ResponseEntity<>(Map.of("status", status.name()), HttpStatus.OK);
     }
 
     @PostMapping("/change_password")
-    public String changePassword(@RequestParam("newPassword") String password, @CookieValue("restoreEmail") String email,
-                                 HttpServletResponse response){
-        if(password == null || password.isEmpty()){
-            return "redirect:/auth/change_password?error";
-        }
+    public ResponseEntity<HttpStatus> changePassword(@RequestBody @Valid NewPasswordDTO newPasswordDTO, BindingResult errors){
 
-        userService.changePasswordByEmail(email, password);
-        statusBalancer.removeUserFromEmail(email);
-        UserService.deleteCookie(response, "restoreEmail");
-        return "redirect:/auth/login";
+        userService.changePasswordByEmail(newPasswordDTO, errors);
+        statusBalancer.removeUserFromEmail(newPasswordDTO.getEmail());
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping("/change_password")
-    public String changePasswordGet(@CookieValue(value = "restoreEmail", required = false) String email, @RequestParam(value = "error", required = false) String error,
-                                    Model model){
-        if(error != null){
-            model.addAttribute("error", true);
-        }
-
-        if(!statusBalancer.checkStatusByEmail(email, UserStatus.CHANGE_PASSWORD)){
-            return "redirect:/auth/login";
-        }
-
-        return "/html/auth/change_password";
+    @ExceptionHandler
+    public ResponseEntity<ExceptionMessageDTO> exceptionHandle(ValidateException e){
+        return new ResponseEntity<>(new ExceptionMessageDTO(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
-    /**if languages in redis was removed to add
-     * если языки в redis были удалены, то добавляем заново*/
-    @Deprecated
-    private void addLanguagesToCache(){
-        languageOfAppService.addToCache();
+    public ResponseEntity<ExceptionMessageDTO> exceptionHandle(RegistrationException e){
+        return new ResponseEntity<>(new ExceptionMessageDTO(e.getMessage()), HttpStatus.CONFLICT);
     }
 }
