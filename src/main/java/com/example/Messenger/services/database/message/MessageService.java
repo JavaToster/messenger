@@ -11,8 +11,8 @@ import com.example.Messenger.repositories.database.message.MessageRepository;
 import com.example.Messenger.repositories.database.message.MessageWrapperRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.services.database.chat.ChatService;
-import com.example.Messenger.util.exceptions.ChatNotFoundException;
-import com.example.Messenger.util.exceptions.UserNotFoundException;
+import com.example.Messenger.exceptions.chat.ChatNotFoundException;
+import com.example.Messenger.exceptions.user.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,7 +32,7 @@ public class MessageService {
     private final MessageWrapperRepository messageWrapperRepository;
 
     public List<Message> findByChat(int id) throws ChatNotFoundException {
-        Chat chat = chatRepository.findById(id).orElseThrow(ChatNotFoundException::new);
+        Chat chat = chatRepository.findById(id).orElseThrow(() -> new ChatNotFoundException("Chat not found"));
         return messageRepository.findByChat(chat).reversed();
     }
 
@@ -49,11 +49,10 @@ public class MessageService {
     }
 
     @Transactional
-    public MessageWrapper sendTextMessage(int chatId, int userId, String textOfMessage){
-        User ownerOfMessage = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
-        Chat chatOfMessage = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new);
+    public MessageWrapper sendTextMessage(int chatId, String username, String textOfMessage){
+        User ownerOfMessage = userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("User with username '"+username+"' not found"));
+        Chat chatOfMessage = chatRepository.findById(chatId).orElseThrow(() -> new ChatNotFoundException("Chat not found"));
 
-        Message newMessage = new Message(textOfMessage, ownerOfMessage, chatOfMessage);
-        return newMessage;
+        return new Message(textOfMessage, ownerOfMessage, chatOfMessage);
     }
 }

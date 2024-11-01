@@ -6,13 +6,14 @@ import com.example.Messenger.dto.message.ContainerOfMessagesDTO;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.message.ContainerOfMessages;
 import com.example.Messenger.models.message.MessageWrapper;
-import com.example.Messenger.models.user.MessengerUser;
-import com.example.Messenger.services.redis.message.ContainerOfMessagesCachingService;
+import com.example.Messenger.services.redis.message.ContainerOfMessagesCacheManager;
 import com.example.Messenger.util.Convertor;
+import com.example.Messenger.util.Sorter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,11 +23,15 @@ import java.util.List;
 public class ContainerOfMessagesService {
     private final ContainerOfMessagesDAO containerOfMessagesDAO;
     private final Convertor convertor;
-    private final ContainerOfMessagesCachingService containerOfMessagesCachingService;
+    private final ContainerOfMessagesCacheManager containerOfMessagesCacheManager;
     private final ChatDAO chatDAO;
+    private final Sorter sorter;
 
     public ContainerOfMessages getLast(Chat chat){
-        return chat.getContainerOfMessages().getLast();
+        if(!chat.getContainerOfMessages().isEmpty()){
+            return chat.getContainerOfMessages().getLast();
+        }
+        return null;
     }
 
     public ContainerOfMessages getContainerByIdInChat(Chat chat, long idInChat){
@@ -35,17 +40,21 @@ public class ContainerOfMessagesService {
 
     public ContainerOfMessages addMessageToContainer(Chat chat, MessageWrapper messageWrapper){
         ContainerOfMessages lastContainer = getLast(chat);
-        if(containerOfMessagesDAO.containerIsFull(lastContainer)){
+        if(lastContainer == null){
+            ContainerOfMessages firstContainer = createNewContainer(chat, 1L);
+            firstContainer.setMessages(Collections.singletonList(messageWrapper));
+            messageWrapper.setContainerOfMessages(firstContainer);
+            return firstContainer;
+        } else if(containerOfMessagesDAO.containerIsFull(lastContainer)){
             ContainerOfMessages newContainer = createNewContainer(chat, containerOfMessagesDAO.getIdInChatOfLastContainer(chat)+1);
             newContainer.setMessages(new LinkedList<>(List.of(messageWrapper)));
             messageWrapper.setContainerOfMessages(newContainer);
-            updateContainerOfMessages(convertor.convertToContainerOfMessagesDTO(newContainer, messageWrapper.getOwner().getUsername()));
+            updateContainerOfMessages(convertor.convertToContainerOfMessagesDTO(newContainer));
             return newContainer;
         }
 
         lastContainer.getMessages().add(messageWrapper);
         messageWrapper.setContainerOfMessages(lastContainer);
-        System.out.println(lastContainer.getMessages().size());
         updateContainerOfMessages(convertor.convertToContainerOfMessagesDTOWithoutCaching(lastContainer, messageWrapper.getOwner().getUsername()));
         return lastContainer;
     }
@@ -58,15 +67,15 @@ public class ContainerOfMessagesService {
         List<ContainerOfMessages> containers = chat.getContainerOfMessages();
         for(ContainerOfMessages container: containers){
             if(container.equalsByIdInChat(idInChat)){
-                System.out.println(container.getId());
                 return container.getId();
             }
         }
         return 0;
     }
 
-    private ContainerOfMessagesDTO updateContainerOfMessages(ContainerOfMessagesDTO container){
-        return containerOfMessagesCachingService.save(container);
+    private void updateContainerOfMessages(ContainerOfMessagesDTO container){
+        container.setMessages(sorter.sortMessageWrapperDTO(container.getMessages()));
+        containerOfMessagesCacheManager.save(container);
     }
 
     public long getNextContainerId(int chatId, Long idInChat) {

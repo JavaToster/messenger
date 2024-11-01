@@ -17,13 +17,9 @@ public class CloudinaryService {
 
     private final Cloudinary cloudinary;
 
-    public Optional<String> sendMessage(String path) {
-        try {
-            File file = new File(path);
-            return Optional.of( (String) cloudinary.uploader().upload(file, ObjectUtils.asMap("resource_type", "image")).get("secure_url"));
-        }catch (IOException e){
-            return Optional.empty();
-        }
+    public String sendMessage(String path) throws IOException{
+        File file = new File(path);
+        return (String) cloudinary.uploader().upload(file, ObjectUtils.asMap("resource_type", "image")).get("secure_url");
     }
     public Optional<String> sendIcon(String path){
         try {

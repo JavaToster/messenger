@@ -4,38 +4,40 @@ import com.example.Messenger.DAO.chat.ChatDAO;
 import com.example.Messenger.DAO.message.ContainerOfMessagesDAO;
 import com.example.Messenger.DAO.message.MessageWrapperDAO;
 import com.example.Messenger.DAO.user.MessengerUserDAO;
+import com.example.Messenger.DAO.user.UserDAO;
 import com.example.Messenger.balancers.BalancerOfFoundChats;
 import com.example.Messenger.dto.chat.ChatDTO;
 import com.example.Messenger.dto.MainWindowInfoDTO;
 import com.example.Messenger.dto.chat.InfoOfChatDTO;
+import com.example.Messenger.dto.chat.SearchedChatsAndUsersDTO;
 import com.example.Messenger.dto.message.ContainerOfMessagesDTO;
+import com.example.Messenger.dto.message.NewBlockMessageDTO;
 import com.example.Messenger.dto.rest.bot.response.message.InfoByImageMessageDTO;
 import com.example.Messenger.dto.rest.bot.response.message.InfoByTextMessageDTO;
 import com.example.Messenger.dto.message.BlockMessageDTO;
-import com.example.Messenger.dto.message.MessageResponseDTO;
+import com.example.Messenger.dto.message.MessageWrapperDTO;
 import com.example.Messenger.dto.message.rest.ForwardMessageResponseDTO;
-import com.example.Messenger.dto.user.InfoOfUserDTO;
+import com.example.Messenger.dto.user.UserDTO;
+import com.example.Messenger.dto.user.UserProfileDTO;
 import com.example.Messenger.dto.util.MessagesByDateDTO;
 import com.example.Messenger.models.chat.*;
 import com.example.Messenger.models.message.*;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
-import com.example.Messenger.repositories.database.message.ContainerOfMessagesRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
-import com.example.Messenger.services.database.message.ContainerOfMessagesService;
 import com.example.Messenger.services.database.message.PhotoMessageService;
 import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.services.email.redis.languageOfApp.LanguageOfAppService;
-import com.example.Messenger.services.redis.message.ContainerOfMessagesCachingService;
+import com.example.Messenger.services.redis.message.ContainerOfMessagesCacheManager;
 import com.example.Messenger.util.abstractClasses.InfoOfMessage;
+import com.example.Messenger.util.abstractClasses.MessageSpecification;
 import com.example.Messenger.util.enums.ChatMemberType;
-import com.example.Messenger.util.exceptions.ChatNotFoundException;
-import com.example.Messenger.util.exceptions.UserNotFoundException;
+import com.example.Messenger.exceptions.chat.ChatContainersOfMessagesIsEmpty;
+import com.example.Messenger.exceptions.user.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Hibernate;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
+import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,11 +59,10 @@ public class Convertor {
     private final LanguageOfAppService languageOfAppService;
     private final BalancerOfFoundChats balancerOfFoundChats;
     private final ContainerOfMessagesDAO containerOfMessagesDAO;
-    private final ContainerOfMessagesCachingService containerOfMessagesCachingService;
-
-    public static InfoOfUserDTO convertToInfoOfUser(User user) {
-        return new InfoOfUserDTO(user.getId(), user.getUsername(), user.getName(), user.getLastname(), user.getEmail(), user.getLinkOfIcon());
-    }
+    private final ContainerOfMessagesCacheManager containerOfMessagesCacheManager;
+    private final Sorter sorter;
+    private final ModelMapper modelMapper;
+    private final UserDAO userDAO;
 
     public List<ChatDTO> convertToChatDTO(List<Chat> chats, String username){
         List<ChatDTO> chatsDTO = new LinkedList<>();
@@ -92,17 +93,31 @@ public class Convertor {
     }
 
 
-    public List<MessageResponseDTO> convertToMessageDTO(List<MessageWrapper> messages, String username){
-        List<MessageResponseDTO> messageResponseDTOS = new LinkedList<>();
+    public List<MessageWrapperDTO> convertToMessageDTO(List<MessageWrapper> messages){
+        List<MessageWrapperDTO> messageWrapperDTOS = new LinkedList<>();
 
         for(MessageWrapper message: messages){
-            MessageResponseDTO messageResponseDTO = new MessageResponseDTO(message);
-            messageResponseDTO.setSpecification(messageWrapperDAO.getSpecificationOfMessage(message));
-            messageResponseDTO.setUserIsOwner(messageWrapperDAO.userIsMessageOwner(message, username));
-            messageResponseDTOS.add(messageResponseDTO);
+            String sendingTime = convertTimeToString(message.getSendingTime());
+            MessageSpecification specification = messageWrapperDAO.getSpecificationOfMessage(message);
+            UserDTO owner = convertToUserDTO((User) message.getOwner());
+
+            MessageWrapperDTO messageDTO  = MessageWrapperDTO.builder()
+                    .id(message.getId())
+                    .content(message.getContent())
+                    .type(message.getType().name().toLowerCase())
+                    .sendingTime(sendingTime)
+                    .specification(specification)
+                    .owner(owner)
+                    .build();
         }
 
-        return messageResponseDTOS;
+        return messageWrapperDTOS;
+    }
+
+    private String convertTimeToString(Date sendingTime) {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(sendingTime.getHours()).append(":").append(sendingTime.getMinutes());
+        return stringBuilder.toString();
     }
 
     public List<InfoOfMessage> convertToInfoOfMessage(List<MessageWrapper> messages){
@@ -114,7 +129,7 @@ public class Convertor {
 
     public List<User> convertToUserByUsername(List<String> usernames){
         List<User> users = new ArrayList<>();
-        usernames.forEach(username -> users.add(getUser(username)));
+        usernames.forEach(username -> users.add(userDAO.findByUsername(username)));
         return users;
     }
 
@@ -135,7 +150,7 @@ public class Convertor {
                 continue;
             }
 
-            MessagesByDateDTO dayOfMessages = new MessagesByDateDTO(beginDate, convertToMessageDTO(messagesByDate, username));
+            MessagesByDateDTO dayOfMessages = new MessagesByDateDTO(beginDate, convertToMessageDTO(messagesByDate));
             returnMessageList.add(dayOfMessages);
 
             allMessagesInChat = deleteMessageByDateFromAllMessages(allMessagesInChat, messagesByDate);
@@ -145,7 +160,7 @@ public class Convertor {
 
         List<MessageWrapper> messagesOfDate = getMessagesOfDate(allMessagesInChat, beginDate);
 
-        MessagesByDateDTO dayOfMessages = new MessagesByDateDTO(beginDate, convertToMessageDTO(messagesOfDate, username));
+        MessagesByDateDTO dayOfMessages = new MessagesByDateDTO(beginDate, convertToMessageDTO(messagesOfDate));
         returnMessageList.add(dayOfMessages);
 
         return returnMessageList;
@@ -239,20 +254,21 @@ public class Convertor {
     }
 
     public InfoOfChatDTO convertToInfoOfChatDTO(int chatId, String username, Long containerIdInChat){
-        User user = getUser(username);
-        Chat chat = chatRepository.findById(chatId).orElseThrow(ChatNotFoundException::new);
+        User user = userDAO.findByUsername(username);
+        Chat chat = chatDAO.findById(chatId);
 
-        containerIdInChat = validateAContainerId(chat, containerIdInChat);
+        containerIdInChat = checkContainerId(chat, containerIdInChat);
 
         ContainerOfMessages container = containerOfMessagesDAO.getIdByIdInChat(chat, containerIdInChat);
-        ContainerOfMessagesDTO containerDTO = convertToContainerOfMessagesDTO(container, username);
+        ContainerOfMessagesDTO containerDTO = convertToContainerOfMessagesDTO(container);
+
 
         return InfoOfChatDTO.builder()
                 .chatId(chat.getId())
                 .user(user)
                 .interlocutorOrGroupOrChannelName(chatDAO.getChatTitle(chat, username))
                 .lastOnlineTimeOrMembersCount(getInfoOfLastOnlineTimeOrMembersCount(chat, user))
-                .willForwardChats(convertToChatDTO(UserService.FIND_CHATS_BY_USERNAME(user), username))
+                .willForwardChats(convertToChatDTO(chatDAO.findByUser(userDAO.findByUsername(username)), username))
                 .containerOfMessagesDTO(containerDTO)
                 .chatType(chat.getClass().getSimpleName())
                 .userIsOwner(chatDAO.userIsOwner(chat, username))
@@ -268,12 +284,12 @@ public class Convertor {
     }
 
     public MainWindowInfoDTO convertToMainInfoDTO(String username){
-        List<Chat> sortedChats = chatDAO.sortChatsByLastMessage(username);
+        List<Chat> sortedChats = chatDAO.sortChatsByLastMessage(chatDAO.getChatsByUser(userDAO.findByUsername(username)));
         List<ChatDTO> chatDTOList = convertToChatDTO(sortedChats, username);
         Map<String, List<ChatDTO>> mapOfFoundChatBySearchText = balancerOfFoundChats.userFoundedChats(username);
 
         return MainWindowInfoDTO.builder()
-                .language(languageOfAppService.getLanguage(userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new).getSettingsOfUser().getLang()))
+                .language(languageOfAppService.getLanguage(userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("user with username "+username+" not found")).getSettingsOfUser().getLang()))
                 .chats(chatDTOList)
                 .foundedChatsOfChatName(mapOfFoundChatBySearchText.get("ChatName"))
                 .foundedChatsOfMessage(mapOfFoundChatBySearchText.get("MessageText"))
@@ -281,23 +297,61 @@ public class Convertor {
                 .build();
     }
 
-    private User getUser(String username){
-        return userRepository.findByUsername(username).orElseThrow(UserNotFoundException::new);
-    }
-
-    public ContainerOfMessagesDTO convertToContainerOfMessagesDTO(ContainerOfMessages container, String username){
-        List<MessageResponseDTO> messagesDTO = convertToMessageDTO(container.getMessages(), username);
-        return containerOfMessagesCachingService.getContainer(container, messagesDTO);
+    public ContainerOfMessagesDTO convertToContainerOfMessagesDTO(ContainerOfMessages container){
+        List<MessageWrapperDTO> messagesDTO = convertToMessageDTO(container.getMessages());
+        ContainerOfMessagesDTO containerDTO = containerOfMessagesCacheManager.getContainer(container, messagesDTO);
+        containerDTO.setMessages(sorter.sortMessageWrapperDTO(containerDTO.getMessages()));
+        return containerDTO;
     }
 
     public ContainerOfMessagesDTO convertToContainerOfMessagesDTOWithoutCaching(ContainerOfMessages container, String username){
-        return new ContainerOfMessagesDTO(container.getId(), container.getIdInChat(), convertToMessageDTO(container.getMessages(), username));
+        return new ContainerOfMessagesDTO(container.getId(), container.getIdInChat(), convertToMessageDTO(container.getMessages()));
     }
 
-    private long validateAContainerId(Chat chat, Long containerId) {
-        if(containerId == null){
-            containerId = chat.getContainerOfMessages().getLast().getIdInChat();
+    private long checkContainerId(Chat chat, Long containerId) {
+        if(containerId == null || containerId == 0){
+            if(chat.getContainerOfMessages().isEmpty()){
+                throw new ChatContainersOfMessagesIsEmpty();
+            }
+            return chat.getContainerOfMessages().getLast().getIdInChat();
         }
         return containerId;
+    }
+
+    public UserDTO convertToUserDTO(User user){
+        UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+        userDTO.setLastTime(convertTimeToString(user.getLastOnlineTime()));
+        userDTO.setIconUrl(user.getLinkOfIcon());
+        return userDTO;
+    }
+    public UserProfileDTO convertToUserProfileDTO(User user, List<Chat> chats){
+        UserProfileDTO userProfileDTO = modelMapper.map(user, UserProfileDTO.class);
+        userProfileDTO.setLastTime(convertTimeToString(user.getLastOnlineTime()));
+        userProfileDTO.setIconUrl(user
+                .getLinkOfIcon());
+        userProfileDTO.setChats(chats);
+        return userProfileDTO;
+    }
+
+    public List<UserDTO> convertToUserDTO(List<User> users){
+        List<UserDTO> userDTOList = new ArrayList<>();
+        users.forEach(user -> userDTOList.add(convertToUserDTO(user)));
+        return userDTOList;
+    }
+
+    public SearchedChatsAndUsersDTO convertToSearchedChatsAndUsersDTO(List<Chat> foundChatsByTitle, List<Chat> foundChatsByMessages,
+                                                                      List<User> foundUsers, String username) {
+        List<ChatDTO> chatDTOOfFoundChatsByTitle = convertToChatDTO(foundChatsByTitle, username);
+        List<ChatDTO> chatDTOOfFoundChatsByMessages = convertToChatDTO(foundChatsByMessages, username);
+        List<UserDTO> userDTOOfFoundUsers = convertToUserDTO(foundUsers);
+        return SearchedChatsAndUsersDTO.builder()
+                .foundChatsByTitle(chatDTOOfFoundChatsByTitle)
+                .foundChatsByMessages(chatDTOOfFoundChatsByMessages)
+                .foundUsers(userDTOOfFoundUsers)
+                .build();
+    }
+
+    public BlockMessage convertToBlockMessage(NewBlockMessageDTO newBlockMessage) {
+        return modelMapper.map(newBlockMessage, BlockMessage.class);
     }
 }

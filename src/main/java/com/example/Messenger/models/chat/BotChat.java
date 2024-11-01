@@ -1,11 +1,8 @@
 package com.example.Messenger.models.chat;
 
-import com.example.Messenger.dto.chat.channel.chatHead.ChatHeadDTO;
-import com.example.Messenger.dto.chat.chatHead.botChat.BotChatHeadDTO;
 import com.example.Messenger.models.user.Bot;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.MessengerUser;
-import com.example.Messenger.util.exceptions.UserNotMemberException;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 

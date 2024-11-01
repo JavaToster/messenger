@@ -5,7 +5,7 @@ import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.MessengerUser;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.user.MessengerUserRepository;
-import com.example.Messenger.util.exceptions.UserNotFoundException;
+import com.example.Messenger.exceptions.user.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -104,6 +104,14 @@ public class MessengerUserDAO {
     }
 
     public MessengerUser findById(int userId) {
-        return messengerUserRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        return messengerUserRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("user with id " + userId + " not found"));
+    }
+
+    public MessengerUser findByUsername(String username) {
+        return messengerUserRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("user with id " + username + " not found"));
+    }
+
+    public List<MessengerUser> findAll() {
+        return messengerUserRepository.findAll();
     }
 }

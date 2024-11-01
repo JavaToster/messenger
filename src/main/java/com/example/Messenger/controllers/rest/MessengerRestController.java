@@ -1,5 +1,6 @@
 package com.example.Messenger.controllers.rest;
 
+import com.example.Messenger.dto.ExceptionMessageDTO;
 import com.example.Messenger.dto.chat.channel.CreateChannelDTO;
 import com.example.Messenger.dto.chat.group.CreateGroupChatDTO;
 import com.example.Messenger.dto.message.TranslateTextRequestDTO;
@@ -15,11 +16,9 @@ import com.example.Messenger.services.database.message.ForwardMessageService;
 import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.services.translate.TranslateService;
 import com.example.Messenger.util.Convertor;
-import com.example.Messenger.balancers.TranslateBalancer;
-import com.example.Messenger.util.exceptions.ErrorResponse;
-import com.example.Messenger.util.exceptions.LanguageModeException;
-import com.example.Messenger.util.exceptions.LengthOfTextException;
-import com.example.Messenger.util.exceptions.UserNotOwnerOfChannelException;
+import com.example.Messenger.dto.ErrorResponse;
+import com.example.Messenger.exceptions.BadRequestException;
+import com.example.Messenger.exceptions.user.UserNotOwnerOfChannelException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -80,10 +79,10 @@ public class MessengerRestController {
         String translatedText = translateService.translate(requestDTO.getText(), userService.getSettings(requestDTO.getUserId()).getTranslateMessageMode());
 
         if(requestDTO.getText().length()>500){
-            throw new LengthOfTextException("Length of text more 500 characters, please using another translator");
+            throw new BadRequestException("Length of text more 500 characters, please using another translator");
         }
         else if(translatedText.equals(requestDTO.getText())){
-            throw new LanguageModeException("Not supported language, please change language in profile");
+            throw new BadRequestException("Not supported language, please change language in profile");
         }
         return new ResponseEntity<>(Map.of("translateText", translatedText), HttpStatus.OK);
     }
@@ -107,22 +106,17 @@ public class MessengerRestController {
     }
 
     @ExceptionHandler
-    public ResponseEntity<ErrorResponse> exceptionHandle(LengthOfTextException e){
-        return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ExceptionMessageDTO> exceptionHandle(BadRequestException e){
+        return new ResponseEntity<>(new ExceptionMessageDTO(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<ErrorResponse> exceptionHandle(LanguageModeException e){
-        return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ExceptionMessageDTO> exceptionHandle(UserNotOwnerOfChannelException e){
+        return new ResponseEntity<>(new ExceptionMessageDTO("You isn't owner of this channel"), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    public ResponseEntity<ErrorResponse> exceptionHandle(UserNotOwnerOfChannelException e){
-        return new ResponseEntity<>(new ErrorResponse("You isn't owner of this channel"), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler
-    public ResponseEntity<ErrorResponse> exceptionHandle(NullPointerException e){
-        return new ResponseEntity<>(new ErrorResponse(e.getMessage()), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ExceptionMessageDTO> exceptionHandle(NullPointerException e){
+        return new ResponseEntity<>(new ExceptionMessageDTO(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }

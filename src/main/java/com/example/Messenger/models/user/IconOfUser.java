@@ -18,7 +18,7 @@ public class IconOfUser implements Serializable {
     @OneToOne
     @JoinColumn(name = "owner_id")
     @JsonIgnore
-    private com.example.Messenger.models.user.User owner;
+    private User owner;
 
     public IconOfUser(){}
     public IconOfUser(String link, com.example.Messenger.models.user.User owner){

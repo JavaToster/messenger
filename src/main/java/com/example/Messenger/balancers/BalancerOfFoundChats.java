@@ -5,20 +5,17 @@ import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.services.database.user.UserService;
 import com.example.Messenger.util.chat.UserFoundedChats;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 @Component
+@RequiredArgsConstructor
 public class BalancerOfFoundChats {
     private static Map<Integer, UserFoundedChats> mapOfUsersChats = new HashMap<>();
     private final UserService userService;
-
-    @Autowired
-    public BalancerOfFoundChats(UserService userService) {
-        this.userService = userService;
-    }
 
     public void addNewUser(User user){
         mapOfUsersChats.put(user.getId(), new UserFoundedChats());

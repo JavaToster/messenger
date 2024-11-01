@@ -7,10 +7,9 @@ import com.example.Messenger.models.user.User;
 import com.example.Messenger.repositories.database.user.SettingsOfUserRepository;
 import com.example.Messenger.repositories.database.user.UserRepository;
 import com.example.Messenger.util.enums.LanguageType;
-import com.example.Messenger.util.exceptions.LanguageNotSupportedException;
+import com.example.Messenger.exceptions.translate.LanguageNotSupportedException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 

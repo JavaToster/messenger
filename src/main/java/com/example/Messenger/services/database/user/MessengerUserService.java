@@ -1,5 +1,8 @@
 package com.example.Messenger.services.database.user;
 
+import com.example.Messenger.DAO.chat.ChatDAO;
+import com.example.Messenger.DAO.user.ChatMemberDAO;
+import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.models.chat.Chat;
 import com.example.Messenger.models.user.ChatMember;
 import com.example.Messenger.models.user.MessengerUser;
@@ -12,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,49 +23,21 @@ import java.util.Optional;
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class MessengerUserService {
-    private final MessengerUserRepository messengerUserRepository;
-    private final ChatRepository chatRepository;
-    private final ChatMemberRepository chatMemberRepository;
+    private final ChatDAO chatDAO;
+    private final MessengerUserDAO messengerUserDAO;
+    private final ChatMemberDAO chatMemberDAO;
 
     public MessengerUser findById(int id) {
-        return messengerUserRepository.findById(id).orElse(null);
+        return messengerUserDAO.findById(id);
     }
 
     public List<MessengerUser> findWithout(String username){
-        List<MessengerUser> users = messengerUserRepository.findAll();
+        List<MessengerUser> users = messengerUserDAO.findAll();
         users.removeIf(user -> user.getUsername().equals(username));
         return users;
     }
 
     public MessengerUser findByUsername(String username) {
-        return messengerUserRepository.findByUsername(username).orElse(null);
-    }
-
-    @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void setAdmin(int userId, int channelId) {
-        MessengerUser user = messengerUserRepository.findById(userId).orElse(null);
-        Chat chat = chatRepository.findById(channelId).orElse(null);
-
-        Optional<ChatMember> member = ChatMemberService.findByChatAndUser(user, chat);
-
-        // если этот юзер не будет найдет в этом чате, то есть у него не будет chatMember в этом чате, то значит мы не будем ему назначить админство
-        // поэтому тут стоит условие
-        if(member.isPresent()){
-            ChatMember newAdminMember = member.get();
-            newAdminMember.setMemberType(ChatMemberType.ADMIN);
-            chatMemberRepository.save(newAdminMember);
-        }
-    }
-
-    @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void resetAdmin(int userId, int channelId) {
-        MessengerUser user = messengerUserRepository.findById(userId).orElse(null);
-        Chat chat = chatRepository.findById(channelId).orElse(null);
-
-        // тут мы сразу получаем member потому что до этого он уже был назначем на должность админа, поэтому условие его проверки тут не требуется
-        ChatMember member = ChatMemberService.findByChatAndUser(user, chat).get();
-
-        member.setMemberType(ChatMemberType.MEMBER);
-        chatMemberRepository.save(member);
+        return messengerUserDAO.findByUsername(username);
     }
 }

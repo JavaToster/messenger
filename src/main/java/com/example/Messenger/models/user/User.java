@@ -1,5 +1,6 @@
 package com.example.Messenger.models.user;
 
+import com.example.Messenger.models.message.LateMessagesContainer;
 import com.example.Messenger.models.message.Message;
 import com.example.Messenger.util.enums.LanguageType;
 import com.example.Messenger.util.enums.RoleOfUser;
@@ -12,7 +13,6 @@ import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.spi.CalendarDataProvider;
 
 @Entity
 @Table(name = "person")
@@ -43,6 +43,8 @@ public class User extends MessengerUser implements Serializable {
     @OneToOne(mappedBy = "owner")
     @JsonIgnore
     private SettingsOfUser settingsOfUser;
+    @OneToOne(mappedBy = "user")
+    private LateMessagesContainer lateMessagesContainer;
 
     public User(){}
 

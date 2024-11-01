@@ -7,11 +7,9 @@ import com.example.Messenger.models.message.ImageMessage;
 import com.example.Messenger.repositories.database.chat.ChatRepository;
 import com.example.Messenger.repositories.database.message.ForwardMessageRepository;
 import com.example.Messenger.repositories.database.message.MessageWrapperRepository;
-import com.example.Messenger.repositories.database.message.PhotoMessageRepository;
 import com.example.Messenger.repositories.database.user.MessengerUserRepository;
-import com.example.Messenger.services.database.chat.ChatService;
 import com.example.Messenger.util.enums.MessageType;
-import com.example.Messenger.util.exceptions.ChatNotFoundException;
+import com.example.Messenger.exceptions.chat.ChatNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,8 +28,8 @@ public class ForwardMessageService {
     @Transactional
     public ForwardMessage forward(int forwardMessageId, int toChatId, int ownerId, int fromChatId) {
         MessageWrapper message = messageWrapperRepository.findById(forwardMessageId).orElse(null);
-        Chat toChat = chatRepository.findById(toChatId).orElseThrow(ChatNotFoundException::new);
-        Chat fromChat = chatRepository.findById(fromChatId).orElseThrow(ChatNotFoundException::new);
+        Chat toChat = chatRepository.findById(toChatId).orElseThrow(() -> new ChatNotFoundException("Chat not found"));
+        Chat fromChat = chatRepository.findById(fromChatId).orElseThrow(() -> new ChatNotFoundException("Chat not found"));
 
         ForwardMessage forwardMessage = new ForwardMessage(message.getContent(), toChat, fromChat, messengerUserRepository.findById(ownerId).orElse(null), message.getOwner());
         forwardMessage.setTextUnderMessage(message.getClass() == ImageMessage.class ? ((ImageMessage) message).getTextUnderPhoto() : "");

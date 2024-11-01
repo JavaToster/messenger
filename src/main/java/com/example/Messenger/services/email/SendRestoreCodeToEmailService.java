@@ -2,7 +2,7 @@ package com.example.Messenger.services.email;
 
 import com.example.Messenger.balancers.RestoreByEmailBalancer;
 import com.example.Messenger.util.enums.StatusOfEqualsCodes;
-import com.example.Messenger.util.exceptions.redis.RestoreCodeNotFoundException;
+import com.example.Messenger.exceptions.redis.RestoreCodeNotFoundException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -37,12 +37,14 @@ public class SendRestoreCodeToEmailService {
 
         try {
             restoreEmailBalancer.addEmail(email, code);
-        }catch (RestoreCodeNotFoundException ignored) {}
+            System.out.println(1);
+        }catch (RestoreCodeNotFoundException ignored) {
+            System.out.println(2);
+        }
     }
 
     public StatusOfEqualsCodes checkCode(String email, int code){
-        StatusOfEqualsCodes status = restoreEmailBalancer.checkCode(email, code);
-        return status;
+        return restoreEmailBalancer.checkCode(email, code);
     }
 
     // возвращает освободившийся код
@@ -52,7 +54,6 @@ public class SendRestoreCodeToEmailService {
             return;
         }
         codesForRestore.add(code);
-        System.out.println("email was removed");
     }
 
     private int getIndexOfRestoreCode(){
