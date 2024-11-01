@@ -3,6 +3,7 @@ package com.example.Messenger.util.threads;
 import com.example.Messenger.models.user.User;
 import com.example.Messenger.services.cloudinary.CloudinaryService;
 import com.example.Messenger.redisManagers.UserCachingManager;
+import com.example.Messenger.util.Convertor;
 
 import java.util.Optional;
 

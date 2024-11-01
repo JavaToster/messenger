@@ -12,17 +12,12 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class UserCachingManager {
-
-    private final UserRepository userRepository;
+    private final Convertor convertor;
 
     @CachePut(value = "userInfoByUsername", key = "#result.username")
     public UserDTO setLinkOfUserIcon(String link, User user){
         IconOfUser icon = new IconOfUser(link, user);
         user.setIcon(icon);
-        return Convertor.convertToUserDTO(user);
-    }
-
-    private UserDTO convertToUserDTO(){
-        return 
+        return convertor.convertToUserDTO(user);
     }
 }

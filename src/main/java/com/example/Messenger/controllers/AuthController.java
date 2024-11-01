@@ -39,11 +39,11 @@ public class AuthController {
     private final UserValidator userValidator;
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterUserDTO> register(@RequestBody @Valid RegisterUserDTO registerUser, BindingResult errors){
+    public ResponseEntity<HttpStatus> register(@RequestBody @Valid RegisterUserDTO registerUser, BindingResult errors){
         userValidator.validate(registerUser, errors);
 
         userService.register(registerUser, errors);
-        return new ResponseEntity<>(registerUser, HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/forgot_password_1")
@@ -72,6 +72,7 @@ public class AuthController {
         return new ResponseEntity<>(new ExceptionMessageDTO(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler
     public ResponseEntity<ExceptionMessageDTO> exceptionHandle(RegistrationException e){
         return new ResponseEntity<>(new ExceptionMessageDTO(e.getMessage()), HttpStatus.CONFLICT);
     }

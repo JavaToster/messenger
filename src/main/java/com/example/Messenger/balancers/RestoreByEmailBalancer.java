@@ -14,7 +14,7 @@ public class RestoreByEmailBalancer {
     private final ConcurrentHashMap<String, RestoreEmailsBox> emailToCodeMap = new ConcurrentHashMap<>();
     public void addEmail(String email, int code){
         if(!emailToCodeMap.containsKey(email)){
-            emailToCodeMap.put(email, new RestoreEmailsBox(Integer.valueOf(code)));
+            emailToCodeMap.put(email, new RestoreEmailsBox(code));
         }else{
             RestoreEmailsBox box = emailToCodeMap.get(email);
             box.setCode(code);

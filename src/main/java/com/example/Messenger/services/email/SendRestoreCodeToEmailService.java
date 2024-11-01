@@ -37,7 +37,10 @@ public class SendRestoreCodeToEmailService {
 
         try {
             restoreEmailBalancer.addEmail(email, code);
-        }catch (RestoreCodeNotFoundException ignored) {}
+            System.out.println(1);
+        }catch (RestoreCodeNotFoundException ignored) {
+            System.out.println(2);
+        }
     }
 
     public StatusOfEqualsCodes checkCode(String email, int code){

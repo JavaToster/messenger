@@ -10,7 +10,7 @@ import java.util.List;
 public class Sorter {
 
     public List<MessageWrapperDTO> sortMessageWrapperDTO(List<MessageWrapperDTO> messages){
-        return messages.stream().sorted(Comparator.comparingInt(message -> message.getMessage().getId())).toList();
+        return messages.stream().sorted(Comparator.comparingInt(MessageWrapperDTO::getId)).toList();
     }
 
 }
