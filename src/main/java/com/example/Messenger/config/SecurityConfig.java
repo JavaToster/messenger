@@ -8,7 +8,9 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
 @Configuration
@@ -16,32 +18,30 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final AuthProvider authProvider;
+    private final JwtFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
+        http
+                .authorizeHttpRequests(request -> request
+                        .requestMatchers( "/error", "/bot-rest/**", "/rest-messenger/**", "/redis/**",
+                                "/auth/**", "/browser/**", "/browser/search").permitAll()
+                        .requestMatchers("/messenger/**", "/user/**").hasAnyRole("USER", "BLOCKER")
+                        .requestMatchers("/admin/blocker/**").hasAnyRole("BLOCKER", "ADMIN")
+                        .anyRequest().authenticated());
         http
                 .csrf(AbstractHttpConfigurer::disable);
 
         http
                 .formLogin(login -> login
                         .loginPage("/auth/login").loginProcessingUrl("/process_login")
-                        .permitAll()
-                        .defaultSuccessUrl("/messenger", true)
-                        .failureUrl("/auth/login?error"));
-
+                        .permitAll());
 
         http
-                .logout(logout -> logout.logoutUrl("/auth/logout").logoutSuccessUrl("/user/auth")
-                        .deleteCookies("username", "JSESSIONID").invalidateHttpSession(true));
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http
-                .authorizeHttpRequests(request -> request
-                        .requestMatchers("/auth/login", "/auth/register", "/error", "/bot-rest/**", "/rest-messenger/**", "/redis/**",
-                                "/auth/**", "/browser/**", "/browser/search").permitAll()
-                        .requestMatchers("/messenger/**", "/user/**").hasAnyRole("USER", "BLOCKER")
-                        .requestMatchers("/admin/blocker/**").hasAnyRole("BLOCKER", "ADMIN")
-                        .anyRequest().authenticated());
-
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

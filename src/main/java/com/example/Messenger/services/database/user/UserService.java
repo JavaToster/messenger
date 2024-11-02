@@ -5,11 +5,13 @@ import com.example.Messenger.DAO.user.ChatMemberDAO;
 import com.example.Messenger.DAO.user.ComplaintOfUserDAO;
 import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.DAO.user.UserDAO;
+import com.example.Messenger.dto.auth.AuthDTO;
 import com.example.Messenger.dto.auth.ForgotPasswordDTO;
 import com.example.Messenger.dto.auth.NewPasswordDTO;
 import com.example.Messenger.dto.user.UserDTO;
 import com.example.Messenger.dto.user.RegisterUserDTO;
 import com.example.Messenger.exceptions.ValidateException;
+import com.example.Messenger.exceptions.auth.AuthException;
 import com.example.Messenger.exceptions.auth.RegistrationException;
 import com.example.Messenger.exceptions.security.ForbiddenException;
 import com.example.Messenger.models.chat.Chat;
@@ -17,6 +19,7 @@ import com.example.Messenger.models.chat.PrivateChat;
 import com.example.Messenger.models.message.ImageMessage;
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.*;
+import com.example.Messenger.security.JwtUtil;
 import com.example.Messenger.services.database.SettingsOfUserService;
 import com.example.Messenger.services.email.SendRestoreCodeToEmailService;
 import com.example.Messenger.balancers.TranslateBalancer;
@@ -32,9 +35,11 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -61,6 +66,7 @@ public class UserService implements UserDetailsService {
     private final ComplaintOfUserDAO complaintOfUserDAO;
     private final PasswordEncoder passwordEncoder;
     private final ErrorMessageCreator errorMessageCreator;
+    private final JwtUtil jwtUtil;
 
     @Value("${image.path.user.icons}")
     private String imagePath;
@@ -86,14 +92,19 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user;
         try {
-            User user = userDAO.findByUsername(username);
+            user = userDAO.findByUsername(username);
             return new com.example.Messenger.security.UserDetails(user);
         }catch (UserNotFoundException e){
-            throw new UsernameNotFoundException("User this username not found");
+            try{
+                user = userDAO.findByEmail(username);
+                return new com.example.Messenger.security.UserDetails(user);
+            }catch (UserNotFoundException g){
+                throw new AuthException("Not correct authentication data");
+            }
         }
     }
-
     public Cookie createCookie(String username, String value, int age){
         Cookie cookie = new Cookie(username, value);
         cookie.setMaxAge(age);
@@ -108,9 +119,12 @@ public class UserService implements UserDetailsService {
             throw new ValidateException(msg);
         }
 
-        registerUserDTO.setPassword(passwordEncoder.encode(registerUserDTO.getPassword()));
+
+        System.out.println(registerUserDTO.getPassword());
+        String encodedPassword = passwordEncoder.encode(registerUserDTO.getPassword());
+        registerUserDTO.setPassword(encodedPassword);
         User user = userDAO.save(new User(registerUserDTO));
-        loadBalancer.add(user.getId());
+//        loadBalancer.add(user.getId());
         settingsOfUserService.create(registerUserDTO, user);
     }
 
@@ -416,9 +430,6 @@ public class UserService implements UserDetailsService {
             throw new ForbiddenException("You can't set admin this user, because you are not a owner of group");
         }
 
-        MessengerUser user = messengerUserDAO.findById(userId);
-        Chat chat = chatDAO.findById(channelId);
-
         ChatMember member = chatMemberDAO.findByChatAndUser(channelId, userId);
 
         member.setMemberType(ChatMemberType.ADMIN);
@@ -450,5 +461,18 @@ public class UserService implements UserDetailsService {
             }
         }
         return commonChats;
+    }
+
+    public String login(AuthDTO authDTO) {
+        try {
+            UserDetails userDetails = loadUserByUsername(authDTO.getLogin());
+            if (passwordEncoder.matches(authDTO.getPassword(), userDetails.getPassword())) {
+                return jwtUtil.generateToken(authDTO.getLogin());
+            } else {
+                throw new AuthException("Not correct authentication data ");
+            }
+        }catch (UsernameNotFoundException e){
+            throw new AuthException("Not correct authentication data");
+        }
     }
 }

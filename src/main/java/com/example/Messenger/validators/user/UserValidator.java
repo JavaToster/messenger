@@ -14,19 +14,12 @@ import org.springframework.validation.BindingResult;
 public class UserValidator {
     private final UserDAO userDAO;
     private final ErrorMessageCreator errorMessageCreator;
-    public void validate(RegisterUserDTO registerUserDTO, BindingResult errors){
-        if (userDAO.userIsExist(registerUserDTO.getUsername(), registerUserDTO.getEmail())){
-            throw new RegistrationException("User with username/email exist, please enter another username/email");
-        }
-
-        if (errors.hasErrors()){
-            throw new ValidateException(errorMessageCreator.createErrorMessage(errors));
-        }
-    }
 
     public void validate(BindingResult errors){
         if(errors.hasErrors()){
             throw new ValidateException(errorMessageCreator.createErrorMessage(errors));
         }
     }
+
+
 }

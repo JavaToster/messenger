@@ -49,7 +49,6 @@ public class SettingsOfUserService {
     @Transactional
     public void create(RegisterUserDTO registerUserDTO, User user) {
         SettingsOfUser settingsOfUser = new SettingsOfUser();
-        settingsOfUser.setLang(LanguageType.valueOf(registerUserDTO.getLang()));
         settingsOfUser.setTranslateMessageMode("en|ru");
         settingsOfUser.setOwner(user);
         settingsOfUserRepository.save(settingsOfUser);
