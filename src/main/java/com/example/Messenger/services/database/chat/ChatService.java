@@ -3,6 +3,8 @@ package com.example.Messenger.services.database.chat;
 import com.example.Messenger.DAO.chat.ChatDAO;
 import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.DAO.user.UserDAO;
+import com.example.Messenger.balancers.BalancerOfFoundChats;
+import com.example.Messenger.dto.chat.ChatDTO;
 import com.example.Messenger.dto.chat.NewChatDTO;
 import com.example.Messenger.dto.user.UserDTO;
 import com.example.Messenger.models.chat.*;
@@ -27,11 +29,10 @@ public class ChatService {
 
     private final ChatDAO chatDAO;
     private final UserDAO userDAO;
-    private final MessengerUserService messengerUserService;
     private final BotChatService botChatService;
     private final MessengerUserDAO messengerUserDAO;
     private final PrivateChatService privateChatService;
-    private final Convertor convertor;
+    private final BalancerOfFoundChats balancerOfFoundChats;
 
     public Chat findById(int id) {
         return chatDAO.findById(id);
@@ -96,5 +97,13 @@ public class ChatService {
         } else {
             return botChatService.createNewChat(interlocutorIsUser, interlocutorIsUserOrBot);
         }
+    }
+
+    public List<Chat> getSortedChats(String username) {
+        return chatDAO.sortChatsByLastMessage(chatDAO.getChatsByUser(userDAO.findByUsername(username)));
+    }
+
+    public Map<String, List<ChatDTO>> findFoundedChatsBySearchText(String username) {
+        return balancerOfFoundChats.userFoundedChats(username);
     }
 }

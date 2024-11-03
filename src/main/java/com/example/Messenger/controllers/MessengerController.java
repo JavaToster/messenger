@@ -3,14 +3,12 @@ package com.example.Messenger.controllers;
 import com.example.Messenger.dto.ExceptionMessageDTO;
 import com.example.Messenger.dto.MainWindowInfoDTO;
 
-import com.example.Messenger.dto.chat.CreatedChatDTO;
-import com.example.Messenger.dto.chat.InfoOfChatDTO;
-import com.example.Messenger.dto.chat.NewChatDTO;
-import com.example.Messenger.dto.chat.SearchedChatsAndUsersDTO;
+import com.example.Messenger.dto.chat.*;
 import com.example.Messenger.dto.message.BlockMessageDTO;
 import com.example.Messenger.dto.message.ContainerOfMessagesDTO;
 import com.example.Messenger.dto.message.NewBlockMessageDTO;
 import com.example.Messenger.dto.message.NewMessageDTO;
+import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.dto.user.UserDTO;
 import com.example.Messenger.dto.util.SearchDTO;
 import com.example.Messenger.exceptions.chat.ChatNotFoundException;
@@ -46,6 +44,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping({"/messenger", "/messenger/", "/", ""})
@@ -70,13 +69,16 @@ public class MessengerController {
         deleteEmptyChatsThread.start();
         checkComplaintsOfUserThread.start();
     }
-
     @GetMapping("")
     public ResponseEntity<MainWindowInfoDTO> messengerWindow(Principal principal){
 
         authenticationService.setUserSpecification(principal.getName());
 
-        return new ResponseEntity<>(convertor.convertToMainInfoDTO(principal.getName()), HttpStatus.OK);
+        List<Chat> sortedChats = chatService.getSortedChats(principal.getName());
+        Map<String, List<ChatDTO>> mapOfFoundChatBySearchText = chatService.findFoundedChatsBySearchText(principal.getName());
+        List<FoundUserOfUsername> foundUsers = userService.findUsersBySearchText(principal.getName());
+
+        return new ResponseEntity<>(convertor.convertToMainInfoDTO(principal.getName(), sortedChats, mapOfFoundChatBySearchText, foundUsers), HttpStatus.OK);
     }
 
     @PostMapping("/chats/create-chat-private-or-bot")

@@ -17,6 +17,7 @@ import com.example.Messenger.dto.rest.bot.response.message.InfoByTextMessageDTO;
 import com.example.Messenger.dto.message.BlockMessageDTO;
 import com.example.Messenger.dto.message.MessageWrapperDTO;
 import com.example.Messenger.dto.message.rest.ForwardMessageResponseDTO;
+import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.dto.user.UserDTO;
 import com.example.Messenger.dto.user.UserProfileDTO;
 import com.example.Messenger.dto.util.MessagesByDateDTO;
@@ -57,8 +58,7 @@ public class Convertor {
     private final MessengerUserDAO messengerUserDAO;
     private final ChatDAO chatDAO;
     private final LanguageOfAppService languageOfAppService;
-    private final BalancerOfFoundChats balancerOfFoundChats;
-    private final ContainerOfMessagesDAO containerOfMessagesDAO;
+    private  final ContainerOfMessagesDAO containerOfMessagesDAO;
     private final ContainerOfMessagesCacheManager containerOfMessagesCacheManager;
     private final Sorter sorter;
     private final ModelMapper modelMapper;
@@ -283,17 +283,14 @@ public class Convertor {
         }
     }
 
-    public MainWindowInfoDTO convertToMainInfoDTO(String username){
-        List<Chat> sortedChats = chatDAO.sortChatsByLastMessage(chatDAO.getChatsByUser(userDAO.findByUsername(username)));
+    public MainWindowInfoDTO convertToMainInfoDTO(String username, List<Chat> sortedChats, Map<String, List<ChatDTO>> mapOfFoundChatBySearchText, List<FoundUserOfUsername> foundUsersBySearchText){
         List<ChatDTO> chatDTOList = convertToChatDTO(sortedChats, username);
-        Map<String, List<ChatDTO>> mapOfFoundChatBySearchText = balancerOfFoundChats.userFoundedChats(username);
 
         return MainWindowInfoDTO.builder()
-                .language(languageOfAppService.getLanguage(userRepository.findByUsername(username).orElseThrow(() -> new UserNotFoundException("user with username "+username+" not found")).getSettingsOfUser().getLang()))
                 .chats(chatDTOList)
                 .foundedChatsOfChatName(mapOfFoundChatBySearchText.get("ChatName"))
                 .foundedChatsOfMessage(mapOfFoundChatBySearchText.get("MessageText"))
-                .foundUsers(balancerOfFoundChats.foundUsers(username))
+                .foundUsers(foundUsersBySearchText)
                 .build();
     }
 
@@ -353,5 +350,18 @@ public class Convertor {
 
     public BlockMessage convertToBlockMessage(NewBlockMessageDTO newBlockMessage) {
         return modelMapper.map(newBlockMessage, BlockMessage.class);
+    }
+
+    public String addZeroInStart(int number) {
+        if(number >= 100000){
+            return String.valueOf(number);
+        }
+
+        String zero = "";
+        for(int i = 0 ; i< (6 - String.valueOf(number).length()) ; i++){
+            zero += 0;
+        }
+
+        return zero+number;
     }
 }

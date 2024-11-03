@@ -39,7 +39,6 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService userService;
-    private final UserStatusBalancer statusBalancer;
     private final AuthValidator authValidator;
 
     @PostMapping("/register")
@@ -50,24 +49,24 @@ public class AuthController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/forgot_password_1")
+    @PostMapping("/forgot_password")
     public ResponseEntity<HttpStatus> sendCodeToEmailToRestore(@RequestBody @Valid ForgotPasswordDTO forgotPasswordData, BindingResult errors){
-        userService.sendCodeToRestore(forgotPasswordData, errors);
+        authValidator.validate(forgotPasswordData, errors);
+        userService.sendCodeToRestore(forgotPasswordData);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping("/check_restore_code")
     public ResponseEntity<Map<String, String>> checkRestoreCode(@RequestBody ForgotPasswordDTO forgotPasswordData, BindingResult errors){
-        StatusOfEqualsCodes status = userService.checkRestoreCode(forgotPasswordData, errors);
+        StatusOfEqualsCodes status = userService.checkRestoreCode(forgotPasswordData);
         return new ResponseEntity<>(Map.of("status", status.name()), HttpStatus.OK);
     }
 
     @PostMapping("/change_password")
     public ResponseEntity<HttpStatus> changePassword(@RequestBody @Valid NewPasswordDTO newPasswordDTO, BindingResult errors){
-
-        userService.changePasswordByEmail(newPasswordDTO, errors);
-        statusBalancer.removeUserFromEmail(newPasswordDTO.getEmail());
+        authValidator.validate(errors);
+        userService.changePasswordByEmail(newPasswordDTO);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

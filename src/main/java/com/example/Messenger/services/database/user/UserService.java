@@ -5,9 +5,11 @@ import com.example.Messenger.DAO.user.ChatMemberDAO;
 import com.example.Messenger.DAO.user.ComplaintOfUserDAO;
 import com.example.Messenger.DAO.user.MessengerUserDAO;
 import com.example.Messenger.DAO.user.UserDAO;
+import com.example.Messenger.balancers.BalancerOfFoundChats;
 import com.example.Messenger.dto.auth.AuthDTO;
 import com.example.Messenger.dto.auth.ForgotPasswordDTO;
 import com.example.Messenger.dto.auth.NewPasswordDTO;
+import com.example.Messenger.dto.user.FoundUserOfUsername;
 import com.example.Messenger.dto.user.UserDTO;
 import com.example.Messenger.dto.user.RegisterUserDTO;
 import com.example.Messenger.exceptions.ValidateException;
@@ -20,6 +22,7 @@ import com.example.Messenger.models.message.ImageMessage;
 import com.example.Messenger.models.message.MessageWrapper;
 import com.example.Messenger.models.user.*;
 import com.example.Messenger.security.JwtUtil;
+import com.example.Messenger.services.auth.PasswordRestoreService;
 import com.example.Messenger.services.database.SettingsOfUserService;
 import com.example.Messenger.services.email.SendRestoreCodeToEmailService;
 import com.example.Messenger.balancers.TranslateBalancer;
@@ -56,7 +59,7 @@ public class UserService implements UserDetailsService {
 
     private final ChatDAO chatDAO;
     private final UserDAO userDAO;
-    private final TranslateBalancer loadBalancer;
+    private final PasswordRestoreService passwordRestoreService;
     private final MessengerUserService messengerUserService;
     private final SendRestoreCodeToEmailService sendRestoreCodeToEmailService;
     private final PasswordEncoder encoder;
@@ -67,6 +70,7 @@ public class UserService implements UserDetailsService {
     private final PasswordEncoder passwordEncoder;
     private final ErrorMessageCreator errorMessageCreator;
     private final JwtUtil jwtUtil;
+    private final BalancerOfFoundChats balancerOfFoundChats;
 
     @Value("${image.path.user.icons}")
     private String imagePath;
@@ -261,35 +265,30 @@ public class UserService implements UserDetailsService {
         chatMemberDAO.save(chatMember);
     }
 
-    public void sendCodeToRestore(ForgotPasswordDTO forgotPasswordDTO, BindingResult errors) {
-        if(errors.hasFieldErrors("email")){
-            String msg = errorMessageCreator.createErrorMessageByField(errors, "email");
-            throw new ValidateException(msg);
-        }
-
+    public void sendCodeToRestore(ForgotPasswordDTO forgotPasswordDTO) {
         sendRestoreCodeToEmailService.sendCode(forgotPasswordDTO.getEmail());
         DeleteRestoreCodeThread deleteRestoreCodeThread = new DeleteRestoreCodeThread(forgotPasswordDTO.getEmail(), sendRestoreCodeToEmailService);
         deleteRestoreCodeThread.start();
     }
 
-    public StatusOfEqualsCodes checkRestoreCode(ForgotPasswordDTO data, BindingResult errors){
-        if(errors.hasErrors()){
-            String msg = errorMessageCreator.createErrorMessage(errors);
-            throw new ValidateException(msg);
+    public StatusOfEqualsCodes checkRestoreCode(ForgotPasswordDTO data){
+        StatusOfEqualsCodes status = sendRestoreCodeToEmailService.checkCode(data.getEmail(), data.getCode());
+        if (status == StatusOfEqualsCodes.EQUAL){
+            passwordRestoreService.add(data.getEmail());
         }
-        return sendRestoreCodeToEmailService.checkCode(data.getEmail(), data.getCode());
+
+        return status;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
-    public void changePasswordByEmail(NewPasswordDTO newPasswordDTO, BindingResult errors) {
-        if(errors.hasErrors()){
-            throw new ValidateException(errorMessageCreator.createErrorMessage(errors));
-
+    public void changePasswordByEmail(NewPasswordDTO newPasswordDTO) {
+        if(passwordRestoreService.hasEmail(newPasswordDTO.getEmail())) {
+            User user = userDAO.findByEmail(newPasswordDTO.getEmail());
+            user.setPassword(encoder.encode(newPasswordDTO.getPassword()));
+            userDAO.save(user);
+            removeEmailFromRestoreBalancer(newPasswordDTO.getEmail());
+            passwordRestoreService.remove(newPasswordDTO.getEmail());
         }
-        User user = userDAO.findByEmail(newPasswordDTO.getEmail());
-        user.setPassword(encoder.encode(newPasswordDTO.getPassword()));
-        userDAO.save(user);
-        removeEmailFromRestoreBalancer(newPasswordDTO.getEmail());
     }
 
     private void removeEmailFromRestoreBalancer(String email) {
@@ -474,5 +473,9 @@ public class UserService implements UserDetailsService {
         }catch (UsernameNotFoundException e){
             throw new AuthException("Not correct authentication data");
         }
+    }
+
+    public List<FoundUserOfUsername> findUsersBySearchText(String name) {
+        return balancerOfFoundChats.foundUsers(name);
     }
 }
